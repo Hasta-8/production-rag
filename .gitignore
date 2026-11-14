@@ -1,0 +1,46 @@
+# Secrets (never commit; see .env.example)
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Virtual environments
+.venv
+venv/
+
+# Node / frontend
+node_modules/
+frontend/dist/
+
+# Data and generated artifacts (rebuilt from code + manifests)
+data/
+corpus/pdfs/
+indexes/
+.cache/
+eval/results/*.local.json
+
+# Logs
+*.log
+
+# Local-only working notes (same convention as ImgSimiSearch)
+notes/
+report.md
+startup.md
+docs/Production_RAG_Project_Report.pdf
+docs/build_report.py
+
+# Editor / OS
+.DS_Store
+.vscode/
+.idea/
