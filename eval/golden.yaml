@@ -1,0 +1,216 @@
+# Golden question set v1 (written 2026-11-20).
+#
+# answerable questions:
+#   arxiv_id          paper that contains the answer
+#   evidence_phrases  lower-case phrases that appear on the evidence pages; the harness
+#                     finds those pages in the paper's text (retriever-independent labels)
+#                     and fails if a phrase is missing
+#   keywords          answer-check terms; each must appear in the answer. Alternatives
+#                     are separated by "|"
+#   reference         short reference answer, for humans reviewing results
+# unanswerable questions (answerable: false) must be declined. Several are traps: the
+# corpus contains a similar-looking fact (for example RETRO's dropout rate, or "Canberra"
+# as a distance metric in the Faiss paper) that must not be used as the answer.
+version: 1
+questions:
+  - id: q01
+    question: What new data type does QLoRA introduce for 4-bit quantization?
+    arxiv_id: "2305.14314"
+    evidence_phrases: ["4-bit normalfloat"]
+    keywords: ["normalfloat|nf4"]
+    reference: 4-bit NormalFloat (NF4), a data type that is information-theoretically optimal for normally distributed weights.
+  - id: q02
+    question: What is double quantization in QLoRA?
+    arxiv_id: "2305.14314"
+    evidence_phrases: ["quantizing the quantization constants"]
+    keywords: ["quantization constants"]
+    reference: Quantizing the quantization constants themselves, which saves further memory.
+  - id: q03
+    question: What problem do paged optimizers solve in QLoRA?
+    arxiv_id: "2305.14314"
+    evidence_phrases: ["memory spikes"]
+    keywords: ["spike"]
+    reference: They handle memory spikes during training by paging optimizer states between GPU and CPU memory.
+  - id: q04
+    question: What kind of loss does DPO use instead of reinforcement learning?
+    arxiv_id: "2305.18290"
+    evidence_phrases: ["classification loss"]
+    keywords: ["classification|cross-entropy|cross entropy"]
+    reference: A simple (binary cross-entropy) classification loss on preference pairs, with no explicit reward model or RL loop.
+  - id: q05
+    question: Which attention mechanisms does Mistral 7B use for faster inference?
+    arxiv_id: "2310.06825"
+    evidence_phrases: ["grouped-query attention", "sliding window attention"]
+    keywords: ["grouped-query|gqa", "sliding window|swa"]
+    reference: Grouped-query attention (GQA) and sliding window attention (SWA).
+  - id: q06
+    question: How many experts does each Mixtral layer have, and how many are used for each token?
+    arxiv_id: "2401.04088"
+    evidence_phrases: ["8 feedforward blocks", "selects two experts"]
+    keywords: ["8|eight", "two|2"]
+    reference: Eight feedforward blocks (experts) per layer; a router selects two of them for each token.
+  - id: q07
+    question: Which data sources were used to pre-train LLaMA?
+    arxiv_id: "2302.13971"
+    evidence_phrases: ["commoncrawl"]
+    keywords: ["commoncrawl|common crawl", "c4", "github", "wikipedia"]
+    reference: Publicly available data including English CommonCrawl, C4, GitHub, Wikipedia, books, ArXiv and Stack Exchange.
+  - id: q08
+    question: How many tokens were LLaMA-33B and LLaMA-65B trained on?
+    arxiv_id: "2302.13971"
+    evidence_phrases: ["1.4t tokens"]
+    keywords: ["1.4t|1.4 trillion"]
+    reference: 1.4 trillion tokens.
+  - id: q09
+    question: What is chain-of-thought prompting?
+    arxiv_id: "2201.11903"
+    evidence_phrases: ["intermediate reasoning steps"]
+    keywords: ["intermediate|steps"]
+    reference: Prompting with exemplars that include a series of intermediate natural-language reasoning steps before the answer.
+  - id: q10
+    question: How does self-consistency choose the final answer?
+    arxiv_id: "2203.11171"
+    evidence_phrases: ["most consistent answer"]
+    keywords: ["sampl|diverse", "consistent|majority|marginaliz"]
+    reference: It samples a diverse set of reasoning paths and picks the most consistent answer by marginalizing over them (majority vote).
+  - id: q11
+    question: Which tasks were used to evaluate Tree of Thoughts?
+    arxiv_id: "2305.10601"
+    evidence_phrases: ["mini crosswords"]
+    keywords: ["game of 24", "creative writing", "crossword"]
+    reference: Game of 24, Creative Writing and Mini Crosswords.
+  - id: q12
+    question: What does ReAct interleave when prompting a language model?
+    arxiv_id: "2210.03629"
+    evidence_phrases: ["reasoning traces"]
+    keywords: ["reasoning", "action"]
+    reference: Reasoning traces and task-specific actions.
+  - id: q13
+    question: How large is RETRO's retrieval database?
+    arxiv_id: "2112.04426"
+    evidence_phrases: ["2 trillion"]
+    keywords: ["2 trillion|2t|two trillion"]
+    reference: About 2 trillion tokens.
+  - id: q14
+    question: What are reflection tokens in Self-RAG?
+    arxiv_id: "2310.11511"
+    evidence_phrases: ["reflection tokens"]
+    keywords: ["retriev|critique|reflect"]
+    reference: Special tokens the model generates to decide when to retrieve and to critique the relevance and support of passages and its own output.
+  - id: q15
+    question: How does RAPTOR build its retrieval tree?
+    arxiv_id: "2401.18059"
+    evidence_phrases: ["recursively embedding, clustering, and summarizing"]
+    keywords: ["cluster", "summar"]
+    reference: By recursively embedding, clustering and summarizing chunks of text, bottom up.
+  - id: q16
+    question: How does GraphRAG answer global questions about a whole corpus?
+    arxiv_id: "2404.16130"
+    evidence_phrases: ["community summaries"]
+    keywords: ["graph", "communit"]
+    reference: It builds an entity knowledge graph, pre-generates summaries for communities of related entities, and combines partial answers from those community summaries.
+  - id: q17
+    question: What retrieval unit does the Dense X Retrieval paper propose?
+    arxiv_id: "2312.06648"
+    evidence_phrases: ["proposition"]
+    keywords: ["proposition"]
+    reference: Propositions, atomic expressions that each contain a single distinct fact.
+  - id: q18
+    question: Which quality dimensions does RAGAS evaluate?
+    arxiv_id: "2309.15217"
+    evidence_phrases: ["answer relevance"]
+    keywords: ["faithfulness", "answer relevance", "context relevance"]
+    reference: Faithfulness, answer relevance and context relevance.
+  - id: q19
+    question: How does ColBERTv2 reduce the storage cost of late interaction?
+    arxiv_id: "2112.01488"
+    evidence_phrases: ["residual compression"]
+    keywords: ["residual"]
+    reference: With residual compression of the token embeddings (a centroid plus a quantized residual).
+  - id: q20
+    question: How is Contriever trained without supervision?
+    arxiv_id: "2112.09118"
+    evidence_phrases: ["contrastive learning"]
+    keywords: ["contrastive"]
+    reference: With contrastive learning on unlabeled text, using cropped spans of documents as positive pairs.
+  - id: q21
+    question: How many datasets does the BEIR benchmark include?
+    arxiv_id: "2104.08663"
+    evidence_phrases: ["18 publicly available", "18 diverse"]
+    keywords: ["18|eighteen"]
+    reference: 18 publicly available datasets.
+  - id: q22
+    question: According to BEIR, which retrieval method is a robust baseline for zero-shot retrieval?
+    arxiv_id: "2104.08663"
+    evidence_phrases: ["robust baseline"]
+    keywords: ["bm25"]
+    reference: BM25.
+  - id: q23
+    question: How many scientific claims does the SciFact dataset contain?
+    arxiv_id: "2004.14974"
+    evidence_phrases: ["1.4k", "1,409"]
+    keywords: ["1.4k|1,409|1409"]
+    reference: 1,409 expert-written scientific claims (about 1.4K).
+  - id: q24
+    question: Why is BERT too slow for finding the most similar pair of sentences in a large collection?
+    arxiv_id: "1908.10084"
+    evidence_phrases: ["65 hours"]
+    keywords: ["65 hours|50 million|both sentences|every pair|each pair"]
+    reference: Every pair must go through the network together; 10,000 sentences need about 50 million inference computations (about 65 hours).
+  - id: q25
+    question: What data was E5 pre-trained on?
+    arxiv_id: "2212.03533"
+    evidence_phrases: ["ccpairs"]
+    keywords: ["ccpairs|text pairs"]
+    reference: CCPairs, a large curated dataset of text pairs from web sources.
+  - id: q26
+    question: How does DETR match its predictions to ground-truth objects during training?
+    arxiv_id: "2005.12872"
+    evidence_phrases: ["bipartite matching"]
+    keywords: ["bipartite|hungarian"]
+    reference: With a set loss based on bipartite (Hungarian) matching between predictions and ground-truth objects.
+  - id: q27
+    question: What self-supervised training method does DINO use?
+    arxiv_id: "2104.14294"
+    evidence_phrases: ["self-distillation"]
+    keywords: ["distillation"]
+    reference: Self-distillation with no labels, where a student network matches the output of a momentum teacher.
+  - id: q28
+    question: What does ColPali embed instead of text extracted from documents?
+    arxiv_id: "2407.01449"
+    evidence_phrases: ["images of document pages"]
+    keywords: ["image"]
+    reference: Images of the document pages, using a vision language model.
+  - id: q29
+    question: What is late chunking?
+    arxiv_id: "2409.04701"
+    evidence_phrases: ["late chunking"]
+    keywords: ["token", "chunk"]
+    reference: Embedding the whole document with a long-context model first, then pooling the token embeddings of each chunk afterwards.
+  - id: q30
+    question: What are the two training stages of Constitutional AI?
+    arxiv_id: "2212.08073"
+    evidence_phrases: ["rlaif"]
+    keywords: ["supervised", "reinforcement|rl"]
+    reference: A supervised learning stage (critique and revision of responses) and a reinforcement learning stage from AI feedback (RLAIF).
+  # Unanswerable: must be declined
+  - id: u01
+    question: What dropout rate did the original Transformer base model use?
+    answerable: false
+    note: Trap. The corpus states RETRO's dropout rate (0.25), not the Transformer's.
+  - id: u02
+    question: What is the capital of Australia?
+    answerable: false
+    note: Trap. "Canberra" appears only as a distance metric in the Faiss paper.
+  - id: u03
+    question: How many parameters does GPT-4 have?
+    answerable: false
+    note: GPT-4 is mentioned (Tree of Thoughts, QLoRA) but its size is never stated.
+  - id: u04
+    question: What is the context window length of Llama 3?
+    answerable: false
+    note: Trap. The corpus has the original LLaMA paper only.
+  - id: u05
+    question: Who won the 2022 FIFA World Cup?
+    answerable: false
+    note: The phrase World Cup appears only in a sample text in the RETRO paper.

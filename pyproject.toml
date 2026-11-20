@@ -15,6 +15,7 @@ dependencies = [
     "langchain-openai>=1.2.2",
     "langchain-text-splitters>=1.1.2",
     "langgraph>=1.2.2",
+    "llama-cpp-python==0.3.35",
     "pydantic-settings>=2.14.1",
     "pypdf>=7.1.1",
     "python-dotenv>=1.2.2",
@@ -24,6 +25,15 @@ dependencies = [
 
 [project.scripts]
 rag = "rag.cli:main"
+
+# llama-cpp-python: use the project's prebuilt CPU wheels instead of compiling from source.
+[[tool.uv.index]]
+name = "llama-cpp-cpu"
+url = "https://abetlen.github.io/llama-cpp-python/whl/cpu"
+explicit = true
+
+[tool.uv.sources]
+llama-cpp-python = { index = "llama-cpp-cpu" }
 
 [build-system]
 requires = ["hatchling"]

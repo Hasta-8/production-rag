@@ -29,6 +29,14 @@ class Settings(BaseSettings):
     models_dir: Path = Path(".cache/models")
     llm_model_file: str = "llm/Qwen3-1.7B-Q8_0.gguf"  # relative to models_dir
     llm_fallback_model_file: str = "llm/Qwen3-0.6B-Q8_0.gguf"
+    llm_threads: int = 8  # measured faster than 4 on the 4-core/8-thread laptop CPU
+    llm_n_ctx: int = 4096
+
+    # Answering (Phase 2 baseline)
+    retrieve_k: int = 10
+    context_k: int = 3
+    min_relevance: float = 0.60  # see eval/results calibration table
+    answer_max_tokens: int = 150
 
     # Indexing
     index_dir: Path = Path("indexes")

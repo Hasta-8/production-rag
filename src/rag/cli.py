@@ -151,6 +151,71 @@ def cmd_search(args: argparse.Namespace) -> int:
     return 0
 
 
+def _make_llm(settings, fallback: bool = False):
+    from rag.generation.llm import LlamaCppClient
+
+    path = settings.llm_fallback_model_path if fallback else settings.llm_model_path
+    return LlamaCppClient(path, n_ctx=settings.llm_n_ctx, n_threads=settings.llm_threads)
+
+
+def _answer_settings(settings):
+    from rag.generation.answer import AnswerSettings
+
+    return AnswerSettings(
+        retrieve_k=settings.retrieve_k,
+        context_k=settings.context_k,
+        min_relevance=settings.min_relevance,
+        max_tokens=settings.answer_max_tokens,
+    )
+
+
+def cmd_ask(args: argparse.Namespace) -> int:
+    import json
+
+    from rag.generation.answer import answer_question
+
+    settings = get_settings()
+    index, _ = _open_index(settings)
+    llm = _make_llm(settings, fallback=args.small)
+    streamed = []
+
+    def show(token: str) -> None:
+        streamed.append(token)
+        if not args.json:
+            print(token, end="", flush=True)
+
+    if not args.json:
+        _print(f"Q: {args.question}\n(retrieving, then generating with {llm.name}…)\n")
+    answer = answer_question(args.question, index, llm, _answer_settings(settings), on_token=show)
+
+    if args.json:
+        from dataclasses import asdict
+
+        data = asdict(answer)
+        data["trace"] = answer.trace.to_list()
+        print(json.dumps(data, indent=2, ensure_ascii=False))
+        return 0
+
+    _print("\n\n--- final answer (after citation checks) ---")
+    _print(answer.text)
+    if answer.abstained:
+        _print(f"\n[abstained: {answer.abstain_reason}]")
+    for s in answer.cited_sources:
+        _print(f"  [{s.tag}] {s.title} — p. {s.page} (score {s.score:.3f})")
+    if answer.citations_inferred:
+        _print("  (citations inferred by word overlap: the model gave none)")
+    if args.trace:
+        _print("\n--- trace ---")
+        for step in answer.trace.steps:
+            data = {k: v for k, v in step.data.items() if k != "hits"}
+            _print(f"{step.name:<10} {step.ms:>9.1f} ms  {data}")
+            if step.name == "retrieve":
+                for h in step.data["hits"]:
+                    _print(f"           {h['score']:.3f}  {h['title'][:50]} p. {h['page']}")
+        _print(f"total      {answer.trace.total_ms:>9.1f} ms")
+    return 0
+
+
 def cmd_index_info(args: argparse.Namespace) -> int:
     settings = get_settings()
     index, _ = _open_index(settings)
@@ -202,6 +267,74 @@ def cmd_eval_phrases(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_eval_golden(args: argparse.Namespace) -> int:
+    from pathlib import Path
+
+    from rag.evaluation import golden
+
+    settings = get_settings()
+    index, _ = _open_index(settings)
+    questions = golden.load_golden(Path(args.golden))
+    if args.limit:
+        questions = questions[: args.limit]
+    config = {
+        "index_version": index.info.version,
+        "embedding_model": settings.embedding_model,
+        "retrieval": "dense",
+        "retrieve_k": settings.retrieve_k,
+        "context_k": settings.context_k,
+        "min_relevance": settings.min_relevance,
+        "questions": len(questions),
+    }
+
+    rows, summary = golden.evaluate_retrieval(index, questions)
+    _print(f"Retrieval ({len(questions)} questions, dense):")
+    for key, value in summary.items():
+        if key != "calibration":
+            _print(f"  {key:<16} {value:.3f}")
+    _print("  Abstention threshold calibration (best dense score):")
+    _print("    threshold  answerable kept  unanswerable rejected")
+    for row in summary["calibration"]:
+        _print(
+            f"    {row['threshold']:.2f}       {row['answerable_kept']:>6.0%}"
+            f"           {row['unanswerable_rejected']:>6.0%}"
+        )
+    if args.verbose:
+        for r in rows:
+            _print(
+                f"    {r.id} best={r.best_score:.3f} page_rank={r.first_hit_rank} "
+                f"paper_rank={r.paper_rank}"
+            )
+    out_dir = Path("eval/results")
+    golden.save_results(out_dir, f"{args.label}_retrieval", config, summary, rows)
+    if args.retrieval_only:
+        return 0
+
+    llm = _make_llm(settings, fallback=args.small)
+    config["llm"] = llm.name
+    config["max_tokens"] = settings.answer_max_tokens
+    _print(f"\nAnswers with {llm.name} (about a minute each)…")
+
+    def show(r):
+        status = (
+            "declined" if r.abstained else f"kw={r.keyword_recall} cite_ok={r.citation_on_evidence}"
+        )
+        mark = (
+            "ok " if (r.correct_abstention and (r.abstained or r.citation_on_evidence)) else "!! "
+        )
+        _print(f"  {mark}{r.id} {r.seconds:>6.1f}s {status}")
+
+    arows, asummary = golden.evaluate_answers(
+        index, llm, questions, _answer_settings(settings), on_row=show
+    )
+    _print("\nAnswer summary:")
+    for key, value in asummary.items():
+        _print(f"  {key:<24} {value}")
+    out = golden.save_results(out_dir, args.label, config, {**summary, **asummary}, arows)
+    _print(f"\nSaved {out}")
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="rag", description="Production RAG command line")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -224,6 +357,13 @@ def build_parser() -> argparse.ArgumentParser:
     search_p.add_argument("-k", type=int, default=5)
     search_p.set_defaults(func=cmd_search)
 
+    ask_p = sub.add_parser("ask", help="Answer a question with citations (local LLM)")
+    ask_p.add_argument("question")
+    ask_p.add_argument("--trace", action="store_true", help="Show every pipeline step")
+    ask_p.add_argument("--json", action="store_true", help="Print the full answer as JSON")
+    ask_p.add_argument("--small", action="store_true", help="Use the fallback model (0.6B)")
+    ask_p.set_defaults(func=cmd_ask)
+
     index_p = sub.add_parser("index", help="Index information")
     index_sub = index_p.add_subparsers(dest="index_command", required=True)
     index_sub.add_parser("info", help="Show the active index").set_defaults(func=cmd_index_info)
@@ -238,6 +378,14 @@ def build_parser() -> argparse.ArgumentParser:
     phrases_p.add_argument("--seed", type=int, default=7)
     phrases_p.add_argument("-v", "--verbose", action="store_true", help="List every miss")
     phrases_p.set_defaults(func=cmd_eval_phrases)
+    golden_p = eval_sub.add_parser("golden", help="Golden question set: retrieval and answers")
+    golden_p.add_argument("--golden", default="eval/golden.yaml")
+    golden_p.add_argument("--label", default="run")
+    golden_p.add_argument("--retrieval-only", action="store_true", help="Skip the LLM (fast)")
+    golden_p.add_argument("--limit", type=int, default=0)
+    golden_p.add_argument("--small", action="store_true", help="Use the fallback model")
+    golden_p.add_argument("-v", "--verbose", action="store_true")
+    golden_p.set_defaults(func=cmd_eval_golden)
     return parser
 
 
