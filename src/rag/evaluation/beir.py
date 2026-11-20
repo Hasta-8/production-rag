@@ -9,16 +9,13 @@ from __future__ import annotations
 
 import csv
 import hashlib
-import io
 import json
 import math
 import time
-import zipfile
 from collections.abc import Callable, Iterable
 from dataclasses import dataclass
 from pathlib import Path
 
-import httpx
 from langchain_chroma import Chroma
 from langchain_core.documents import Document
 
@@ -26,7 +23,10 @@ from rag.retrieval.bm25 import BM25Index, StoredChunk
 from rag.retrieval.hybrid import Retriever
 from rag.retrieval.rerank import Reranker
 
-BEIR_URL = "https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/{name}.zip"
+# The original BEIR host (public.ukp.informatik.tu-darmstadt.de) was unreachable on
+# 2026-11-20, so datasets come from the BEIR maintainers' Hugging Face organisation.
+HF_CORPUS_REPO = "BeIR/{name}"
+HF_QRELS_REPO = "BeIR/{name}-qrels"
 
 
 @dataclass
@@ -37,26 +37,61 @@ class BeirDataset:
     qrels: dict[str, dict[str, int]]  # query id -> {doc id: relevance}
 
 
-def download(name: str, dest: Path, client: httpx.Client | None = None) -> tuple[Path, str]:
-    """Download and unzip a BEIR dataset once. Returns its folder and the zip's SHA-256."""
+def _sha256(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as fh:
+        for block in iter(lambda: fh.read(1 << 20), b""):
+            digest.update(block)
+    return digest.hexdigest()
+
+
+def download(name: str, dest: Path, split: str = "test") -> tuple[Path, dict[str, str]]:
+    """Fetch a BEIR dataset from the BeIR Hugging Face org once, in the standard BEIR layout.
+
+    Writes corpus.jsonl, queries.jsonl and qrels/<split>.tsv, and returns the folder plus
+    the SHA-256 of each downloaded source file (recorded with the results).
+    """
     folder = dest / name
-    marker = folder / ".sha256"
+    marker = folder / "sources.json"
     if marker.exists():
-        return folder, marker.read_text().strip()
-    own_client = client is None
-    client = client or httpx.Client(timeout=300, follow_redirects=True)
-    try:
-        response = client.get(BEIR_URL.format(name=name))
-        response.raise_for_status()
-    finally:
-        if own_client:
-            client.close()
-    digest = hashlib.sha256(response.content).hexdigest()
-    dest.mkdir(parents=True, exist_ok=True)
-    with zipfile.ZipFile(io.BytesIO(response.content)) as zf:
-        zf.extractall(dest)  # the archive contains a top-level <name>/ folder
-    marker.write_text(digest)
-    return folder, digest
+        return folder, json.loads(marker.read_text())
+
+    import pyarrow.parquet as pq
+    from huggingface_hub import HfApi, hf_hub_download
+
+    raw = dest / f"{name}-raw"
+    corpus_repo = HF_CORPUS_REPO.format(name=name)
+    files = [f.rfilename for f in HfApi().dataset_info(corpus_repo).siblings]
+    sources: dict[str, str] = {}
+
+    def fetch(repo: str, filename: str) -> Path:
+        path = Path(hf_hub_download(repo, filename, repo_type="dataset", local_dir=str(raw)))
+        sources[f"{repo}/{filename}"] = _sha256(path)
+        return path
+
+    corpus_pq = fetch(corpus_repo, next(f for f in files if f.startswith("corpus/")))
+    queries_pq = fetch(corpus_repo, next(f for f in files if f.startswith("queries/")))
+    qrels_tsv = fetch(HF_QRELS_REPO.format(name=name), f"{split}.tsv")
+
+    (folder / "qrels").mkdir(parents=True, exist_ok=True)
+    with (folder / "corpus.jsonl").open("w", encoding="utf-8") as out:
+        for row in pq.read_table(corpus_pq).to_pylist():
+            out.write(
+                json.dumps(
+                    {
+                        "_id": str(row["_id"]),
+                        "title": row.get("title") or "",
+                        "text": row.get("text") or "",
+                    }
+                )
+                + "\n"
+            )
+    with (folder / "queries.jsonl").open("w", encoding="utf-8") as out:
+        for row in pq.read_table(queries_pq).to_pylist():
+            out.write(json.dumps({"_id": str(row["_id"]), "text": row["text"]}) + "\n")
+    (folder / "qrels" / f"{split}.tsv").write_bytes(qrels_tsv.read_bytes())
+    marker.write_text(json.dumps(sources, indent=2))
+    return folder, sources
 
 
 def load(folder: Path, split: str = "test") -> BeirDataset:

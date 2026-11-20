@@ -392,11 +392,11 @@ def cmd_eval_beir(args: argparse.Namespace) -> int:
 
     settings = get_settings()
     settings.export_hf_token()
-    folder, sha = beir.download(args.dataset, Path("data/beir"))
+    folder, sources = beir.download(args.dataset, Path("data/beir"))
     ds = beir.load(folder)
     _print(
         f"{args.dataset}: {len(ds.corpus)} documents, {len(ds.queries)} test queries "
-        f"(zip sha256 {sha[:12]}…)"
+        f"(source: Hugging Face BeIR/{args.dataset})"
     )
     embeddings = make_embeddings(
         settings.embedding_provider,
@@ -436,7 +436,7 @@ def cmd_eval_beir(args: argparse.Namespace) -> int:
         json.dumps(
             {
                 "dataset": args.dataset,
-                "zip_sha256": sha,
+                "sources_sha256": sources,
                 "documents": len(ds.corpus),
                 "embedding_model": settings.embedding_model,
                 "reranker": settings.reranker_model,

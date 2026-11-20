@@ -27,7 +27,8 @@ def dense_search(index: VersionedIndex, query: str, k: int = 5) -> list[SearchHi
         hits.append(
             SearchHit(
                 rank=rank,
-                chunk_id=str(meta.get("chunk_id", "")),
+                # The vector store's own ID is the chunk ID; metadata may also carry it.
+                chunk_id=str(meta.get("chunk_id") or doc.id or ""),
                 doc_id=str(meta.get("doc_id", "")),
                 title=str(meta.get("title", "")),
                 source=str(meta.get("source", "")),
