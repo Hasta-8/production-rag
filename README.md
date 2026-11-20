@@ -17,8 +17,9 @@ Model files live in a models folder set by `RAG_MODELS_DIR` (default
 `.cache/models`), so several projects can share one copy of each model:
 `llm/` holds the GGUF files and `fastembed/` holds the embedding model cache.
 
-> **Status: early development.** Corpus tooling and ingestion are built and
-> tested. Everything below marked PLANNED is not built yet.
+> **Status: early development.** Ingestion and a baseline question-answering
+> pipeline with citations are built, tested and evaluated. Everything below
+> marked PLANNED is not built yet.
 
 ## Capability status
 
@@ -30,9 +31,10 @@ Model files live in a models folder set by `RAG_MODELS_DIR` (default
 | Page-scoped chunking, cached embeddings, versioned Chroma index | IMPLEMENTED |
 | Dense search from the command line (local bge-small embeddings) | IMPLEMENTED |
 | Known-phrase check of the index (`rag eval phrases`) | IMPLEMENTED |
-| Baseline RAG with citations and abstention | PLANNED |
+| Baseline RAG: cited answers from Qwen3-1.7B, abstention, pipeline trace (`rag ask`) | IMPLEMENTED |
+| Golden question set and evaluation harness (`rag eval golden`) | IMPLEMENTED |
 | Hybrid retrieval (BM25 + dense, RRF) and cross-encoder reranking | PLANNED |
-| Evaluation: golden question set and BEIR SciFact benchmark | PLANNED |
+| BEIR SciFact benchmark | PLANNED |
 | LangGraph correction loop with bounded retries and model fallback | PLANNED |
 | FastAPI service: security, caching, rate limits, streaming, observability | PLANNED |
 | Demo UI: chat, citation viewer, trace panel, compare mode | PLANNED |
@@ -65,6 +67,43 @@ from the index (seed 7), each used as a query.
 
 Dense embeddings capture meaning rather than exact names and titles, so
 reference-list entries do poorly. Hybrid search with BM25 is the planned fix.
+
+## Asking questions
+
+```bash
+uv run rag ask "How does ColBERTv2 reduce the storage cost of late interaction?" --trace
+```
+
+The answer streams from Qwen3-1.7B on the CPU, with a `[S#]` tag after each
+sentence pointing to a paper and page. `--trace` shows each step: retrieved
+chunks and scores, the relevance check, generation timings, and the citation
+check. If nothing relevant is retrieved, or the model finds no answer in the
+sources, it declines instead of guessing.
+
+## Baseline evaluation (dense retrieval)
+
+`eval/golden.yaml` has 30 answerable questions across 24 papers and 5 that must
+be declined. Several of those are traps: the corpus contains a similar-looking
+fact, such as RETRO's dropout rate, that must not be given as the answer. Each
+answerable question's evidence pages are found by searching the paper's text
+for evidence phrases, not by the retriever. Results from
+`eval/results/2026-11-20_baseline-dense-v2.json`:
+
+| Metric | Baseline |
+|---|---|
+| Evidence page in top 3 / top 10 retrieved | 70% / 90% |
+| Right paper ranked first | 87% |
+| Unanswerable questions declined (all traps) | **5 / 5** |
+| Answerable questions answered | 87% |
+| Answers with citations (none invented, none inferred) | 100% |
+| Answers citing an evidence page | 73% |
+| Expected keywords present in answers | 0.75 |
+| Median time per question (4-core laptop CPU) | 36 s |
+
+Most failures are **retrieval misses**: the evidence page wasn't among the 3
+chunks given to the model. In two of those cases the model combined unrelated
+passages into a wrong answer instead of declining. Hybrid search, reranking and
+an evidence-grading step are the planned fixes.
 
 ## Development
 
