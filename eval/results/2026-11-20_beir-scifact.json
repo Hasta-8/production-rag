@@ -1,0 +1,45 @@
+{
+  "dataset": "scifact",
+  "sources_sha256": {
+    "BeIR/scifact/corpus/corpus-00000-of-00001.parquet": "243324b35f03d82bd6d98a5f575966876e86cad7ce16e5333a35b1b793dc4f45",
+    "BeIR/scifact/queries/queries-00000-of-00001.parquet": "1c37956c5dc8b810b60302323c24d1a9e79e26411ba8f5ad9d0888642e2a9034",
+    "BeIR/scifact-qrels/test.tsv": "0864bb985e0ca2367ba217977e72004d549054b2b06666ed9d4825ac7c21284c"
+  },
+  "documents": 5183,
+  "embedding_model": "BAAI/bge-small-en-v1.5",
+  "reranker": "Xenova/ms-marco-MiniLM-L-6-v2",
+  "results": [
+    {
+      "mode": "bm25",
+      "queries": 300,
+      "ndcg@10": 0.6467,
+      "recall@100": 0.8659,
+      "p50_ms": 15.8,
+      "p95_ms": 27.7
+    },
+    {
+      "mode": "dense",
+      "queries": 300,
+      "ndcg@10": 0.7067,
+      "recall@100": 0.9433,
+      "p50_ms": 78.1,
+      "p95_ms": 102.1
+    },
+    {
+      "mode": "hybrid",
+      "queries": 300,
+      "ndcg@10": 0.6877,
+      "recall@100": 0.965,
+      "p50_ms": 23.1,
+      "p95_ms": 33.4
+    },
+    {
+      "mode": "hybrid_rerank",
+      "queries": 300,
+      "ndcg@10": 0.687,
+      "recall@100": 0.965,
+      "p50_ms": 15096.6,
+      "p95_ms": 18658.2
+    }
+  ]
+}
