@@ -24,6 +24,12 @@ class Settings(BaseSettings):
     corpus_manifest: Path = Path("corpus/manifest.yaml")
     pdf_dir: Path = Path("corpus/pdfs")
 
+    # Shared model store. Set RAG_MODELS_DIR in .env to the machine's shared folder
+    # (for example ../ai_models); the default keeps models inside the project.
+    models_dir: Path = Path(".cache/models")
+    llm_model_file: str = "llm/Qwen3-1.7B-Q8_0.gguf"  # relative to models_dir
+    llm_fallback_model_file: str = "llm/Qwen3-0.6B-Q8_0.gguf"
+
     # Indexing
     index_dir: Path = Path("indexes")
     cache_dir: Path = Path(".cache")
@@ -34,6 +40,18 @@ class Settings(BaseSettings):
     embedding_threads: int | None = None  # None lets ONNX Runtime decide
     chunk_size: int = Field(default=1000, gt=100)
     chunk_overlap: int = Field(default=150, ge=0)
+
+    @property
+    def fastembed_dir(self) -> Path:
+        return self.models_dir / "fastembed"
+
+    @property
+    def llm_model_path(self) -> Path:
+        return self.models_dir / self.llm_model_file
+
+    @property
+    def llm_fallback_model_path(self) -> Path:
+        return self.models_dir / self.llm_fallback_model_file
 
     def export_hf_token(self) -> None:
         """Hugging Face's downloader reads HF_TOKEN from the process environment."""

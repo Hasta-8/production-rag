@@ -62,6 +62,7 @@ def _open_index(settings):
         openai_api_key=(
             settings.require_openai_key() if settings.embedding_provider == "openai" else None
         ),
+        model_dir=settings.fastembed_dir,
     )
     index = VersionedIndex.open(
         settings.index_dir,

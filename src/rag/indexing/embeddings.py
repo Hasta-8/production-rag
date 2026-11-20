@@ -119,14 +119,20 @@ def make_embeddings(
     query_prefix: str = "",
     threads: int | None = None,
     openai_api_key: str | None = None,
+    model_dir: Path | None = None,
 ) -> CachedEmbeddings:
     """Build the configured embedding model, wrapped in the persistent cache.
 
+    ``cache_dir`` holds this project's vector cache; ``model_dir`` is where fastembed
+    stores downloaded model files (a shared models folder can serve several projects).
     The cache key includes the query prefix, so changing it never reuses old query vectors.
     """
     if provider == "fastembed":
         underlying: Embeddings = FastEmbedEmbeddings(
-            model, cache_dir / "fastembed", query_prefix=query_prefix, threads=threads
+            model,
+            model_dir or cache_dir / "fastembed",
+            query_prefix=query_prefix,
+            threads=threads,
         )
     elif provider == "openai":
         from langchain_openai import OpenAIEmbeddings

@@ -9,9 +9,13 @@ The pipeline runs behind a FastAPI service with production safeguards, and a
 web UI shows each pipeline step next to the answer.
 
 Everything runs **locally on a laptop CPU with no paid APIs**: embeddings use
-`BAAI/bge-small-en-v1.5` through fastembed (ONNX Runtime, no PyTorch), and
-answers will come from Qwen3-1.7B through llama.cpp, with Qwen3-0.6B as a
-faster fallback.
+`BAAI/bge-small-en-v1.5` (a quantized ONNX export) through fastembed (ONNX
+Runtime, no PyTorch), and answers will come from Qwen3-1.7B (Q8_0 GGUF) through
+llama.cpp, with Qwen3-0.6B as a faster fallback.
+
+Model files live in a models folder set by `RAG_MODELS_DIR` (default
+`.cache/models`), so several projects can share one copy of each model:
+`llm/` holds the GGUF files and `fastembed/` holds the embedding model cache.
 
 > **Status: early development.** Corpus tooling and ingestion are built and
 > tested. Everything below marked PLANNED is not built yet.
