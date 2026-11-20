@@ -1,0 +1,88 @@
+# Candidate papers for the demo corpus. `rag corpus check` looks each one up on arXiv,
+# reads its real licence, and writes corpus/manifest.yaml. Papers are only served by
+# the demo if their licence allows redistribution.
+candidates:
+  # Transformers and language models
+  - {arxiv_id: "1706.03762", topic: transformers}   # Attention Is All You Need
+  - {arxiv_id: "1810.04805", topic: transformers}   # BERT
+  - {arxiv_id: "1907.11692", topic: transformers}   # RoBERTa
+  - {arxiv_id: "1910.10683", topic: transformers}   # T5
+  - {arxiv_id: "1910.01108", topic: transformers}   # DistilBERT
+  - {arxiv_id: "2005.14165", topic: llms}           # GPT-3
+  - {arxiv_id: "2001.08361", topic: llms}           # Scaling laws
+  - {arxiv_id: "2203.15556", topic: llms}           # Chinchilla
+  - {arxiv_id: "2302.13971", topic: llms}           # LLaMA
+  - {arxiv_id: "2307.09288", topic: llms}           # Llama 2
+  - {arxiv_id: "2310.06825", topic: llms}           # Mistral 7B
+  - {arxiv_id: "2401.04088", topic: llms}           # Mixtral
+  - {arxiv_id: "2205.14135", topic: llms}           # FlashAttention
+  - {arxiv_id: "1409.0473", topic: transformers}    # Bahdanau attention
+  - {arxiv_id: "1409.3215", topic: transformers}    # Seq2seq
+  - {arxiv_id: "1301.3781", topic: embeddings}      # word2vec
+  # Fine-tuning, alignment, prompting
+  - {arxiv_id: "2106.09685", topic: fine_tuning}    # LoRA
+  - {arxiv_id: "2305.14314", topic: fine_tuning}    # QLoRA
+  - {arxiv_id: "2203.02155", topic: alignment}      # InstructGPT
+  - {arxiv_id: "1706.03741", topic: alignment}      # RLHF from human preferences
+  - {arxiv_id: "1707.06347", topic: alignment}      # PPO
+  - {arxiv_id: "2305.18290", topic: alignment}      # DPO
+  - {arxiv_id: "2212.08073", topic: alignment}      # Constitutional AI
+  - {arxiv_id: "2201.11903", topic: prompting}      # Chain-of-thought
+  - {arxiv_id: "2203.11171", topic: prompting}      # Self-consistency
+  - {arxiv_id: "2305.10601", topic: prompting}      # Tree of Thoughts
+  - {arxiv_id: "2210.03629", topic: agents}         # ReAct
+  - {arxiv_id: "2302.04761", topic: agents}         # Toolformer
+  # Retrieval and RAG
+  - {arxiv_id: "2005.11401", topic: rag}            # RAG (Lewis et al.)
+  - {arxiv_id: "2002.08909", topic: rag}            # REALM
+  - {arxiv_id: "2007.01282", topic: rag}            # Fusion-in-Decoder
+  - {arxiv_id: "2112.04426", topic: rag}            # RETRO
+  - {arxiv_id: "2310.11511", topic: rag}            # Self-RAG
+  - {arxiv_id: "2401.15884", topic: rag}            # Corrective RAG
+  - {arxiv_id: "2401.18059", topic: rag}            # RAPTOR
+  - {arxiv_id: "2404.16130", topic: rag}            # GraphRAG
+  - {arxiv_id: "2212.10496", topic: rag}            # HyDE
+  - {arxiv_id: "2307.03172", topic: rag}            # Lost in the Middle
+  - {arxiv_id: "2312.10997", topic: rag}            # RAG survey (Gao et al.)
+  - {arxiv_id: "2312.06648", topic: rag}            # Dense X Retrieval (propositions)
+  - {arxiv_id: "2309.15217", topic: evaluation}     # RAGAS
+  - {arxiv_id: "2004.04906", topic: retrieval}      # Dense Passage Retrieval
+  - {arxiv_id: "2004.12832", topic: retrieval}      # ColBERT
+  - {arxiv_id: "2112.01488", topic: retrieval}      # ColBERTv2
+  - {arxiv_id: "2112.09118", topic: retrieval}      # Contriever
+  - {arxiv_id: "1901.04085", topic: retrieval}      # Passage re-ranking with BERT
+  - {arxiv_id: "2104.08663", topic: evaluation}     # BEIR
+  - {arxiv_id: "2004.14974", topic: evaluation}     # SciFact
+  - {arxiv_id: "1611.09268", topic: evaluation}     # MS MARCO
+  - {arxiv_id: "2210.07316", topic: evaluation}     # MTEB
+  - {arxiv_id: "2407.01449", topic: rag}            # ColPali
+  - {arxiv_id: "2409.04701", topic: retrieval}      # Late chunking
+  # Embeddings and vector search
+  - {arxiv_id: "1908.10084", topic: embeddings}     # Sentence-BERT
+  - {arxiv_id: "2212.03533", topic: embeddings}     # E5
+  - {arxiv_id: "2205.13147", topic: embeddings}     # Matryoshka embeddings
+  - {arxiv_id: "2201.10005", topic: embeddings}     # OpenAI contrastive embeddings (cpt)
+  - {arxiv_id: "1603.09320", topic: vector_search}  # HNSW
+  - {arxiv_id: "1702.08734", topic: vector_search}  # FAISS on GPUs
+  - {arxiv_id: "2401.08281", topic: vector_search}  # The Faiss library
+  # Computer vision (models behind ShelfScan and ImgSimiSearch)
+  - {arxiv_id: "2103.00020", topic: vision}         # CLIP
+  - {arxiv_id: "2010.11929", topic: vision}         # ViT
+  - {arxiv_id: "2005.12872", topic: vision}         # DETR
+  - {arxiv_id: "2304.07193", topic: vision}         # DINOv2
+  - {arxiv_id: "2104.14294", topic: vision}         # DINO
+  - {arxiv_id: "2304.02643", topic: vision}         # Segment Anything
+  - {arxiv_id: "1512.03385", topic: vision}         # ResNet
+  - {arxiv_id: "1506.02640", topic: vision}         # YOLO
+  - {arxiv_id: "1506.01497", topic: vision}         # Faster R-CNN
+  - {arxiv_id: "1505.04597", topic: vision}         # U-Net
+  - {arxiv_id: "2006.11239", topic: generative}     # DDPM
+  - {arxiv_id: "2112.10752", topic: generative}     # Latent diffusion
+  - {arxiv_id: "1406.2661", topic: generative}      # GANs
+  - {arxiv_id: "1312.6114", topic: generative}      # VAE
+  # Optimisation and training
+  - {arxiv_id: "1412.6980", topic: training}        # Adam
+  - {arxiv_id: "1711.05101", topic: training}       # AdamW
+  - {arxiv_id: "1502.03167", topic: training}       # Batch normalization
+  - {arxiv_id: "1607.06450", topic: training}       # Layer normalization
+  - {arxiv_id: "1503.02531", topic: training}       # Knowledge distillation
