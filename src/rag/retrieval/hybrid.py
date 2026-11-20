@@ -12,6 +12,7 @@ from dataclasses import dataclass
 from rag.indexing.index import VersionedIndex
 from rag.retrieval.bm25 import BM25Index
 from rag.retrieval.dense import dense_search
+from rag.retrieval.filters import looks_like_references
 from rag.retrieval.rerank import Reranker
 
 MODES = ("dense", "bm25", "hybrid", "dense_rerank", "hybrid_rerank")
@@ -88,6 +89,7 @@ class Retriever:
         candidates: int = 20,
         rrf_k: int = 60,
         weights: Mapping[str, float] | None = None,
+        skip_references: bool = False,
     ) -> None:
         if mode not in MODES:
             raise ValueError(f"unknown retrieval mode {mode!r}; choose from {MODES}")
@@ -100,6 +102,11 @@ class Retriever:
         self.candidates = candidates
         self.rrf_k = rrf_k
         self.weights = dict(weights or {})
+        self.skip_references = skip_references
+        # Chunk IDs never returned: bibliography chunks, when skip_references is on.
+        self.skipped: frozenset[str] = frozenset(
+            c.chunk_id for c in bm25.chunks if skip_references and looks_like_references(c.text)
+        )
 
     @property
     def uses_reranker(self) -> bool:
@@ -119,17 +126,21 @@ class Retriever:
 
     def search(self, query: str, k: int = 10) -> list[Candidate]:
         pool = max(k, self.candidates)
+        # Over-fetch when filtering so the pool is still full afterwards (~12% are skipped).
+        fetch = pool * 2 if self.skipped else pool
         cands: dict[str, Candidate] = {}
         rankings: dict[str, list[str]] = {}
 
         if self.mode in ("dense", "hybrid", "dense_rerank", "hybrid_rerank"):
-            hits = dense_search(self.index, query, k=pool)
+            hits = dense_search(self.index, query, k=fetch)
+            hits = [h for h in hits if h.chunk_id not in self.skipped][:pool]
             rankings["dense"] = [h.chunk_id for h in hits]
-            for h in hits:
+            for rank, h in enumerate(hits, start=1):
                 c = cands.setdefault(h.chunk_id, self._candidate(h.chunk_id))
-                c.dense_rank, c.dense_score = h.rank, h.score
+                c.dense_rank, c.dense_score = rank, h.score
         if self.mode in ("bm25", "hybrid", "hybrid_rerank"):
-            hits = self.bm25.search(query, k=pool)
+            hits = self.bm25.search(query, k=fetch)
+            hits = [(cid, sc) for cid, sc in hits if cid not in self.skipped][:pool]
             rankings["bm25"] = [cid for cid, _ in hits]
             for rank, (cid, score) in enumerate(hits, start=1):
                 c = cands.setdefault(cid, self._candidate(cid))

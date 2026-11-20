@@ -33,8 +33,8 @@ Model files live in a models folder set by `RAG_MODELS_DIR` (default
 | Known-phrase check of the index (`rag eval phrases`) | IMPLEMENTED |
 | Baseline RAG: cited answers from Qwen3-1.7B, abstention, pipeline trace (`rag ask`) | IMPLEMENTED |
 | Golden question set and evaluation harness (`rag eval golden`) | IMPLEMENTED |
-| Hybrid retrieval (BM25 + dense, RRF) and cross-encoder reranking | PLANNED |
-| BEIR SciFact benchmark | PLANNED |
+| Hybrid retrieval (BM25 + dense, RRF) and cross-encoder reranking | IMPLEMENTED |
+| BEIR SciFact benchmark (`rag eval beir`) | IMPLEMENTED |
 | LangGraph correction loop with bounded retries and model fallback | PLANNED |
 | FastAPI service: security, caching, rate limits, streaming, observability | PLANNED |
 | Demo UI: chat, citation viewer, trace panel, compare mode | PLANNED |
@@ -66,7 +66,9 @@ from the index (seed 7), each used as a query.
 | Reference-list entries | 36 | 19% | 39% | 33% |
 
 Dense embeddings capture meaning rather than exact names and titles, so
-reference-list entries do poorly. Hybrid search with BM25 is the planned fix.
+reference-list entries do poorly. With hybrid search and reranking (the default
+since Phase 3) the same check gives 87% / 96% for prose and 72% / 89% for
+reference entries.
 
 ## Asking questions
 
@@ -104,6 +106,58 @@ Most failures are **retrieval misses**: the evidence page wasn't among the 3
 chunks given to the model. In two of those cases the model combined unrelated
 passages into a wrong answer instead of declining. Hybrid search, reranking and
 an evidence-grading step are the planned fixes.
+
+## Retrieval quality (Phase 3)
+
+The default retriever is now **hybrid + rerank**: BM25 and dense search fused
+with Reciprocal Rank Fusion, then the top 20 rescored by a cross-encoder
+(ms-marco-MiniLM-L-6-v2, ONNX on the CPU). Every candidate keeps its rank from
+each stage, so `rag search` and `rag ask --trace` show why a chunk ranks where it
+does. Golden set, v2 evidence labels (every page that states the answer):
+
+| Retrieval mode | Evidence page at rank 1 | in top 3 | MRR | Right paper first |
+|---|---|---|---|---|
+| dense (Phase 2) | 60% | 73% | 0.704 | 87% |
+| BM25 | 67% | 87% | 0.780 | 90% |
+| hybrid (RRF) | 70% | 90% | 0.808 | 97% |
+| dense + rerank | 80% | 97% | 0.890 | 97% |
+| **hybrid + rerank** | **80%** | **100%** | **0.900** | **97%** |
+
+Answers with hybrid + rerank (`eval/results/2026-11-20_p3-hybrid_rerank.json`):
+
+| Metric | Phase 2 dense | Phase 3 hybrid + rerank |
+|---|---|---|
+| Unanswerable questions declined | 5 / 5 | 5 / 5 (3 by the relevance gate, before the LLM) |
+| Answerable questions answered | 87% | 93% |
+| Answers citing an evidence page (v2 labels) | 73% | **96%** |
+| Expected keywords present | 0.75 | 0.90 |
+| Wrong answers built from unrelated passages | 2 | 0 |
+
+The relevance gate now uses the reranker score (threshold 2.0), which reads the
+question and passage together and separates off-topic questions far better than
+cosine similarity. The two remaining failures are refusals with the evidence in
+hand, a generation problem left for the Phase 4 agent loop.
+
+**Public benchmark, BEIR SciFact** (300 queries, 5,183 abstracts):
+
+| Mode | nDCG@10 | Recall@100 | Published (BEIR paper, Table 2) |
+|---|---|---|---|
+| BM25 (no stemming) | 0.647 | 0.866 | BM25 0.665 |
+| dense (bge-small, quantized) | **0.707** | 0.943 | |
+| hybrid | 0.688 | **0.965** | |
+| hybrid + rerank | 0.687 | 0.965 | BM25 + same cross-encoder 0.688 |
+
+On SciFact, dense alone wins and the web-search-trained reranker adds nothing
+(at 15 s/query for 100 candidates). On this project's papers, hybrid + rerank
+wins clearly. The best configuration depends on the data, which is why both
+benchmarks are run.
+
+**Experiments recorded:** relabelled golden set (v1 single-phrase labels
+understated answer quality: 82% vs 96% citing evidence, while the Phase 2
+baseline scores 73% under both); a query-time bibliography filter (accurate,
+but bibliography chunks almost never reach the top 3 once hybrid + rerank is
+used, so it is off by default: `RAG_SKIP_REFERENCES=1`). `rag eval rescore`
+re-scores saved answer runs against either label set without rerunning the LLM.
 
 ## Development
 

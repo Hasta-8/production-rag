@@ -30,7 +30,8 @@ class GoldenQuestion(BaseModel):
     question: str
     answerable: bool = True
     arxiv_id: str | None = None
-    evidence_phrases: list[str] = []
+    evidence_phrases: list[str] = []  # v1 labels
+    evidence_pages: list[int] = []  # v2 labels: every page that states the answer
     keywords: list[str] = []
     reference: str | None = None
     note: str | None = None
@@ -39,6 +40,10 @@ class GoldenQuestion(BaseModel):
 def load_golden(path: Path) -> list[GoldenQuestion]:
     data = yaml.safe_load(path.read_text())
     return [GoldenQuestion(**q) for q in data["questions"]]
+
+
+def golden_version(path: Path) -> str:
+    return str(yaml.safe_load(path.read_text()).get("version", "?"))
 
 
 def page_texts(index: VersionedIndex) -> dict[tuple[str, int], str]:
@@ -51,10 +56,20 @@ def page_texts(index: VersionedIndex) -> dict[tuple[str, int], str]:
     return pages
 
 
+LABELS = ("v2", "v1")
+
+
 def resolve_evidence(
-    questions: list[GoldenQuestion], pages: dict[tuple[str, int], str]
+    questions: list[GoldenQuestion], pages: dict[tuple[str, int], str], labels: str = "v2"
 ) -> dict[str, set[int]]:
-    """Find evidence pages for each answerable question. Raises if a phrase is not found."""
+    """Evidence pages for each answerable question.
+
+    v1: pages containing an evidence phrase. v2: the listed evidence_pages (falling back to
+    v1 for a question without them). Both label sets are checked against the corpus, and a
+    phrase or page that does not exist raises.
+    """
+    if labels not in LABELS:
+        raise ValueError(f"unknown labels {labels!r}; choose from {LABELS}")
     resolved: dict[str, set[int]] = {}
     problems = []
     for q in questions:
@@ -66,6 +81,11 @@ def resolve_evidence(
             if not hits:
                 problems.append(f"{q.id}: phrase {phrase!r} not found in {q.arxiv_id}")
             found |= hits
+        for page in q.evidence_pages:
+            if (q.arxiv_id, page) not in pages:
+                problems.append(f"{q.id}: page {page} not found in {q.arxiv_id}")
+        if labels == "v2" and q.evidence_pages:
+            found = set(q.evidence_pages)
         resolved[q.id] = found
     if problems:
         raise ValueError("golden set does not match the corpus:\n" + "\n".join(problems))
@@ -96,8 +116,9 @@ def evaluate_retrieval(
     questions: list[GoldenQuestion],
     k: int = max(KS),
     thresholds: list[float] | None = None,
+    labels: str = "v2",
 ) -> tuple[list[RetrievalRow], dict]:
-    evidence = resolve_evidence(questions, page_texts(retriever.index))
+    evidence = resolve_evidence(questions, page_texts(retriever.index), labels)
     rows = []
     for q in questions:
         hits = retriever.search(q.question, k=k)
@@ -171,10 +192,11 @@ def evaluate_answers(
     questions: list[GoldenQuestion],
     settings: AnswerSettings,
     on_row: Callable[[AnswerRow], None] = lambda _r: None,
+    labels: str = "v2",
 ) -> tuple[list[AnswerRow], dict]:
     index: VersionedIndex = retriever.index
     pages = page_texts(index)
-    evidence = resolve_evidence(questions, pages)
+    evidence = resolve_evidence(questions, pages, labels)
     data = index.store.get(include=["metadatas"])
     arxiv_by_chunk = {
         cid: str(m.get("arxiv_id", ""))
@@ -211,7 +233,10 @@ def evaluate_answers(
         )
         on_row(row)
         rows.append(row)
+    return rows, summarize_answers(rows)
 
+
+def summarize_answers(rows: list[AnswerRow]) -> dict:
     answerable = [r for r in rows if r.answerable]
     unanswerable = [r for r in rows if not r.answerable]
     answered = [r for r in answerable if not r.abstained]
@@ -232,7 +257,34 @@ def evaluate_answers(
         "citations_inferred": sum(r.citations_inferred for r in answered),
         "median_seconds": sorted(r.seconds for r in rows)[len(rows) // 2] if rows else None,
     }
-    return rows, summary
+    return summary
+
+
+def rescore_answers(
+    rows: list[dict],
+    questions: list[GoldenQuestion],
+    evidence: dict[str, set[int]],
+    arxiv_by_title: dict[str, str],
+) -> tuple[list[AnswerRow], dict]:
+    """Re-score a saved answer run against other evidence labels, without the LLM.
+
+    Saved rows keep each source's title and page and the cited tags, which is all the
+    citation-on-evidence metric needs. Keyword recall is recomputed from the saved text.
+    """
+    by_id = {q.id: q for q in questions}
+    out = []
+    for raw in rows:
+        r = AnswerRow(**raw)
+        q = by_id[r.id]
+        if q.answerable and not r.abstained:
+            cited = [s for s in r.sources if str(s["tag"]) in {str(t) for t in r.cited}]
+            r.citation_on_evidence = any(
+                arxiv_by_title.get(s["title"]) == q.arxiv_id and s["page"] in evidence[q.id]
+                for s in cited
+            )
+            r.keyword_recall = round(keyword_recall(r.answer, q.keywords), 3)
+        out.append(r)
+    return out, summarize_answers(out)
 
 
 def save_results(path: Path, label: str, config: dict, summary: dict, rows: list) -> Path:

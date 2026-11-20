@@ -236,6 +236,48 @@ def test_resolve_evidence_finds_pages_and_rejects_missing_phrases():
         resolve_evidence([bad], pages)
 
 
+def test_v2_labels_use_listed_pages_and_v1_uses_phrases():
+    pages = {("1111.1111", p): "text" for p in (1, 2, 3)} | {("1111.1111", 4): "quokka index"}
+    q = GoldenQuestion(
+        id="q",
+        question="?",
+        arxiv_id="1111.1111",
+        evidence_phrases=["quokka index"],
+        evidence_pages=[1, 4],
+    )
+    assert resolve_evidence([q], pages, "v2") == {"q": {1, 4}}
+    assert resolve_evidence([q], pages, "v1") == {"q": {4}}
+    with pytest.raises(ValueError, match="page 9 not found"):
+        resolve_evidence([q.model_copy(update={"evidence_pages": [9]})], pages)
+
+
+def test_rescore_answers_uses_cited_sources_only():
+    from rag.evaluation.golden import rescore_answers
+
+    q = GoldenQuestion(id="q", question="?", arxiv_id="A", keywords=["quokka"])
+    row = {
+        "id": "q",
+        "answerable": True,
+        "abstained": False,
+        "correct_abstention": True,
+        "keyword_recall": None,
+        "cited": ["S2"],
+        "citation_on_evidence": False,
+        "citations_inferred": False,
+        "seconds": 1.0,
+        "answer": "A quokka. [S2]",
+        "sources": [
+            {"tag": "S1", "title": "Paper A", "page": 1, "score": 1.0},
+            {"tag": "S2", "title": "Paper A", "page": 5, "score": 0.5},
+        ],
+    }
+    titles = {"Paper A": "A"}
+    rows, summary = rescore_answers([row], [q], {"q": {5}}, titles)
+    assert rows[0].citation_on_evidence and rows[0].keyword_recall == 1.0
+    rows, summary = rescore_answers([row], [q], {"q": {1}}, titles)  # page 1 not cited
+    assert not rows[0].citation_on_evidence and summary["citation_on_evidence"] == 0.0
+
+
 def test_threshold_table_counts_kept_and_rejected():
     rows = [
         RetrievalRow("a", True, 0.8),
@@ -255,5 +297,7 @@ def test_golden_file_is_valid():
     for q in qs:
         if q.answerable:
             assert q.arxiv_id and q.evidence_phrases and q.keywords
+            assert q.evidence_pages == sorted(set(q.evidence_pages))  # v2 labels present
+            assert q.evidence_pages and min(q.evidence_pages) >= 1
             assert all(p == p.lower() for p in q.evidence_phrases)
     assert sum(not q.answerable for q in qs) >= 5

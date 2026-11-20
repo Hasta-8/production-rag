@@ -154,6 +154,7 @@ def _make_retriever(settings, index, mode: str | None = None):
         mode=mode,
         candidates=settings.rerank_candidates,
         rrf_k=settings.rrf_k,
+        skip_references=settings.skip_references,
     )
 
 
@@ -325,6 +326,9 @@ def cmd_eval_golden(args: argparse.Namespace) -> int:
         "rerank_candidates": settings.rerank_candidates,
         "reranker": settings.reranker_model if retriever.uses_reranker else None,
         "rrf_k": settings.rrf_k,
+        "skip_references": settings.skip_references,
+        "golden": f"{args.golden} v{golden.golden_version(Path(args.golden))}",
+        "labels": args.labels,
         "retrieve_k": settings.retrieve_k,
         "context_k": settings.context_k,
         "min_relevance": settings.min_relevance,
@@ -333,7 +337,9 @@ def cmd_eval_golden(args: argparse.Namespace) -> int:
     }
 
     thresholds = golden.RERANK_THRESHOLDS if retriever.uses_reranker else golden.DENSE_THRESHOLDS
-    rows, summary = golden.evaluate_retrieval(retriever, questions, thresholds=thresholds)
+    rows, summary = golden.evaluate_retrieval(
+        retriever, questions, thresholds=thresholds, labels=args.labels
+    )
     signal = "reranker logit" if retriever.uses_reranker else "dense cosine"
     _print(f"Retrieval ({len(questions)} questions, {retriever.mode}):")
     for key, value in summary.items():
@@ -372,13 +378,48 @@ def cmd_eval_golden(args: argparse.Namespace) -> int:
         _print(f"  {mark}{r.id} {r.seconds:>6.1f}s {status}")
 
     arows, asummary = golden.evaluate_answers(
-        retriever, llm, questions, _answer_settings(settings), on_row=show
+        retriever, llm, questions, _answer_settings(settings), on_row=show, labels=args.labels
     )
     _print("\nAnswer summary:")
     for key, value in asummary.items():
         _print(f"  {key:<24} {value}")
     out = golden.save_results(out_dir, args.label, config, {**summary, **asummary}, arows)
     _print(f"\nSaved {out}")
+    return 0
+
+
+def cmd_eval_rescore(args: argparse.Namespace) -> int:
+    """Re-score saved answer runs against v1 and v2 evidence labels (no LLM)."""
+    import json
+    from pathlib import Path
+
+    from rag.evaluation import golden
+
+    settings = get_settings()
+    index, _ = _open_index(settings)
+    questions = golden.load_golden(Path(args.golden))
+    pages = golden.page_texts(index)
+    meta = index.store.get(include=["metadatas"])["metadatas"]
+    arxiv_by_title = {str(m.get("title", "")): str(m.get("arxiv_id", "")) for m in meta}
+    evidence = {lab: golden.resolve_evidence(questions, pages, lab) for lab in golden.LABELS}
+    keys = ("answerable_answered", "citation_on_evidence", "keyword_recall_mean")
+    _print(f"{'run':<34} {'labels':<6} {'answered':>8} {'cite_ok':>8} {'kw':>6}  flagged")
+    for name in args.files:
+        data = json.loads(Path(name).read_text())
+        for lab in golden.LABELS:
+            rows, summary = golden.rescore_answers(
+                data["rows"], questions, evidence[lab], arxiv_by_title
+            )
+            answered, cite, kw = (summary[k] for k in keys)
+            flagged = [
+                r.id
+                for r in rows
+                if r.answerable and not r.abstained and not r.citation_on_evidence
+            ]
+            _print(
+                f"{data['label']:<34} {lab:<6} {answered:>8.0%} {cite:>8.0%} {kw:>6.2f}  "
+                f"{' '.join(flagged) or '-'}"
+            )
     return 0
 
 
@@ -515,7 +556,14 @@ def build_parser() -> argparse.ArgumentParser:
         help="Retrieval mode (default: settings): dense, bm25, hybrid, dense_rerank, hybrid_rerank",
     )
     golden_p.add_argument("-v", "--verbose", action="store_true")
+    golden_p.add_argument("--labels", choices=("v2", "v1"), default="v2", help="Evidence labels")
     golden_p.set_defaults(func=cmd_eval_golden)
+    rescore_p = eval_sub.add_parser(
+        "rescore", help="Re-score saved golden answer runs with v1 and v2 labels (no LLM)"
+    )
+    rescore_p.add_argument("files", nargs="+")
+    rescore_p.add_argument("--golden", default="eval/golden.yaml")
+    rescore_p.set_defaults(func=cmd_eval_rescore)
     beir_p = eval_sub.add_parser("beir", help="Public benchmark (BEIR): nDCG@10, Recall@100")
     beir_p.add_argument("--dataset", default="scifact")
     beir_p.add_argument("--modes", default="bm25,dense,hybrid,hybrid_rerank")

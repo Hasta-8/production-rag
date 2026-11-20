@@ -35,6 +35,7 @@ class Settings(BaseSettings):
     # Retrieval (Phase 3)
     retrieval_mode: str = "hybrid_rerank"  # dense | bm25 | hybrid | dense_rerank | hybrid_rerank
     rerank_candidates: int = 20  # pool size fused and reranked before taking the top k
+    skip_references: bool = False  # drop bibliography chunks at query time (Phase 3 experiment)
     rrf_k: int = 60
     reranker_model: str = "Xenova/ms-marco-MiniLM-L-6-v2"
 

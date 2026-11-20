@@ -145,3 +145,38 @@ def test_low_rerank_score_abstains_without_the_llm(index):
     )
     assert ans.abstained and "rerank" in ans.abstain_reason and llm.calls == []
     assert ans.trace.get("grade").data["signal"] == "rerank"
+
+
+# ---------------------------------------------------------------- reference filter
+
+BIBLIOGRAPHY = (
+    "[12] P. Lewis, E. Perez, A. Piktus, and D. Kiela. Retrieval-augmented generation for "
+    "knowledge-intensive NLP tasks. In Advances in NeurIPS, 2020. [13] J. Smith and K. Lee. "
+    "Dense retrieval at scale. arXiv preprint arXiv:2101.00001, 2021. [14] M. Chen. Sparse "
+    "retrieval revisited. In Proceedings of SIGIR, 2019. [15] T. Brown. Language models. 2020."
+)
+CITING_PROSE = (
+    "Retrieval-augmented generation (Lewis et al., 2020) combines a retriever with a "
+    "generator. Later work (Izacard and Grave, 2021; Borgeaud et al., 2022) scaled the "
+    "retrieval database, and Asai et al. (2023) added self-reflection to decide when to "
+    "retrieve."
+)
+
+
+def test_reference_detector_separates_bibliography_from_citing_prose():
+    from rag.retrieval.filters import looks_like_references
+
+    assert looks_like_references(BIBLIOGRAPHY)
+    assert not looks_like_references(CITING_PROSE)
+
+
+def test_skip_references_drops_bibliography_chunks():
+    # BM25's IDF is zero for a term in half the chunks, so add unrelated filler chunks.
+    filler = [f"unrelated filler text number {i}" for i in range(4)]
+    bm25 = BM25Index(_chunks(BIBLIOGRAPHY, CITING_PROSE, *filler))
+    query = "retrieval-augmented generation retrieval"
+    plain = Retriever(None, bm25, mode="bm25").search(query, k=5)
+    filtered = Retriever(None, bm25, mode="bm25", skip_references=True).search(query, k=5)
+    assert {c.chunk_id for c in plain} == {"d:00000", "d:00001"}
+    assert [c.chunk_id for c in filtered] == ["d:00001"]
+    assert filtered[0].rank == 1 and filtered[0].bm25_rank == 1
