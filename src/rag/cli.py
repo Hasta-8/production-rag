@@ -182,10 +182,45 @@ def cmd_search(args: argparse.Namespace) -> int:
 
 
 def _make_llm(settings, fallback: bool = False):
-    from rag.generation.llm import LlamaCppClient
+    """The main model behind the fallback gateway, or (``--small``) the fallback model alone."""
+    from rag.generation.llm import FallbackLLM, LlamaCppClient
 
-    path = settings.llm_fallback_model_path if fallback else settings.llm_model_path
-    return LlamaCppClient(path, n_ctx=settings.llm_n_ctx, n_threads=settings.llm_threads)
+    def client(path, timeout=None):
+        return LlamaCppClient(
+            path,
+            n_ctx=settings.llm_n_ctx,
+            n_threads=settings.llm_threads,
+            first_token_timeout_s=timeout,
+        )
+
+    if fallback:
+        return client(settings.llm_fallback_model_path)
+    if not settings.llm_fallback:
+        return client(settings.llm_model_path)
+    return FallbackLLM(
+        client(settings.llm_model_path, settings.llm_first_token_timeout_s),
+        client(settings.llm_fallback_model_path),  # loaded only if it is ever needed
+    )
+
+
+def _make_answer_fn(settings, retriever, llm, pipeline: str | None = None):
+    """question -> Answer, for the chosen pipeline ("single" pass or the "agent" loop)."""
+    from rag.generation.answer import answer_question
+
+    pipeline = pipeline or settings.pipeline
+    answer_settings = _answer_settings(settings)
+    if pipeline == "agent":
+        from rag.agent import RAGAgent
+
+        agent = RAGAgent(retriever, llm, answer_settings)
+        return agent.answer
+    if pipeline != "single":
+        raise ValueError(f"unknown pipeline {pipeline!r}; choose single or agent")
+
+    def single(question, on_token=None):
+        return answer_question(question, retriever, llm, answer_settings, on_token=on_token)
+
+    return single
 
 
 def _answer_settings(settings):
@@ -197,18 +232,21 @@ def _answer_settings(settings):
         min_relevance=settings.min_relevance,
         min_rerank_score=settings.min_rerank_score,
         max_tokens=settings.answer_max_tokens,
+        max_retries=settings.max_retries,
+        focus_retry=settings.focus_retry,
+        focus_sentences=settings.focus_sentences,
+        focus_gate=settings.focus_gate,
     )
 
 
 def cmd_ask(args: argparse.Namespace) -> int:
     import json
 
-    from rag.generation.answer import answer_question
-
     settings = get_settings()
     index, _ = _open_index(settings)
     retriever = _make_retriever(settings, index, args.mode)
     llm = _make_llm(settings, fallback=args.small)
+    answer_fn = _make_answer_fn(settings, retriever, llm, args.pipeline)
     streamed = []
 
     def show(token: str) -> None:
@@ -218,9 +256,7 @@ def cmd_ask(args: argparse.Namespace) -> int:
 
     if not args.json:
         _print(f"Q: {args.question}\n(retrieving, then generating with {llm.name}…)\n")
-    answer = answer_question(
-        args.question, retriever, llm, _answer_settings(settings), on_token=show
-    )
+    answer = answer_fn(args.question, on_token=show)
 
     if args.json:
         from dataclasses import asdict
@@ -234,6 +270,11 @@ def cmd_ask(args: argparse.Namespace) -> int:
     _print(answer.text)
     if answer.abstained:
         _print(f"\n[abstained: {answer.abstain_reason}]")
+    if answer.retries:
+        _print(f"[{answer.pipeline}: {answer.retries} corrective step(s); see --trace]")
+    gen = answer.trace.steps and [s for s in answer.trace.steps if s.name == "generate"]
+    if gen and gen[-1].data.get("fallback_from"):
+        _print(f"[fallback model {answer.model}: {gen[-1].data['fallback_reason']}]")
     for s in answer.cited_sources:
         _print(f"  [{s.tag}] {s.title} — p. {s.page} (score {s.score:.3f})")
     if answer.citations_inferred:
@@ -364,9 +405,20 @@ def cmd_eval_golden(args: argparse.Namespace) -> int:
         return 0
 
     llm = _make_llm(settings, fallback=args.small)
+    pipeline = args.pipeline or settings.pipeline
     config["llm"] = llm.name
     config["max_tokens"] = settings.answer_max_tokens
-    _print(f"\nAnswers with {llm.name} (about a minute each)…")
+    config["pipeline"] = pipeline
+    if pipeline == "agent":
+        config["max_retries"] = settings.max_retries
+        config["focus_retry"] = settings.focus_retry
+        config["focus_sentences"] = settings.focus_sentences
+        config["focus_gate"] = settings.focus_gate
+    if settings.llm_fallback and not args.small:
+        config["fallback_llm"] = settings.llm_fallback_model_file
+        config["first_token_timeout_s"] = settings.llm_first_token_timeout_s
+    answer_fn = _make_answer_fn(settings, retriever, llm, pipeline)
+    _print(f"\nAnswers with {llm.name}, {pipeline} pipeline (about a minute each)…")
 
     def show(r):
         status = (
@@ -375,10 +427,17 @@ def cmd_eval_golden(args: argparse.Namespace) -> int:
         mark = (
             "ok " if (r.correct_abstention and (r.abstained or r.citation_on_evidence)) else "!! "
         )
-        _print(f"  {mark}{r.id} {r.seconds:>6.1f}s {status}")
+        extra = f" retries={r.retries}" if r.retries else ""
+        _print(f"  {mark}{r.id} {r.seconds:>6.1f}s {status}{extra}")
 
     arows, asummary = golden.evaluate_answers(
-        retriever, llm, questions, _answer_settings(settings), on_row=show, labels=args.labels
+        retriever,
+        llm,
+        questions,
+        _answer_settings(settings),
+        on_row=show,
+        labels=args.labels,
+        answer_fn=answer_fn,
     )
     _print("\nAnswer summary:")
     for key, value in asummary.items():
@@ -522,6 +581,9 @@ def build_parser() -> argparse.ArgumentParser:
     ask_p.add_argument("--json", action="store_true", help="Print the full answer as JSON")
     ask_p.add_argument("--small", action="store_true", help="Use the fallback model (0.6B)")
     ask_p.add_argument(
+        "--pipeline", choices=("single", "agent"), help="Single pass or the agent loop"
+    )
+    ask_p.add_argument(
         "--mode",
         help="Retrieval mode (default: settings): dense, bm25, hybrid, dense_rerank, hybrid_rerank",
     )
@@ -551,6 +613,7 @@ def build_parser() -> argparse.ArgumentParser:
     golden_p.add_argument("--retrieval-only", action="store_true", help="Skip the LLM (fast)")
     golden_p.add_argument("--limit", type=int, default=0)
     golden_p.add_argument("--small", action="store_true", help="Use the fallback model")
+    golden_p.add_argument("--pipeline", choices=("single", "agent"), help="Answer pipeline")
     golden_p.add_argument(
         "--mode",
         help="Retrieval mode (default: settings): dense, bm25, hybrid, dense_rerank, hybrid_rerank",

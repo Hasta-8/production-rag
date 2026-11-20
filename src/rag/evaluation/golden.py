@@ -184,6 +184,9 @@ class AnswerRow:
     seconds: float
     answer: str
     sources: list[dict] = field(default_factory=list)
+    model: str | None = None
+    retries: int = 0  # agent corrective steps
+    steps: list[str] = field(default_factory=list)  # trace step names, in order
 
 
 def evaluate_answers(
@@ -193,7 +196,14 @@ def evaluate_answers(
     settings: AnswerSettings,
     on_row: Callable[[AnswerRow], None] = lambda _r: None,
     labels: str = "v2",
+    answer_fn: Callable[[str], Answer] | None = None,
 ) -> tuple[list[AnswerRow], dict]:
+    """``answer_fn`` answers one question (default: the single-pass pipeline)."""
+    if answer_fn is None:
+
+        def answer_fn(question: str) -> Answer:
+            return answer_question(question, retriever, llm, settings)
+
     index: VersionedIndex = retriever.index
     pages = page_texts(index)
     evidence = resolve_evidence(questions, pages, labels)
@@ -205,7 +215,7 @@ def evaluate_answers(
     rows = []
     for q in questions:
         start = time.perf_counter()
-        ans: Answer = answer_question(q.question, retriever, llm, settings)
+        ans: Answer = answer_fn(q.question)
         secs = round(time.perf_counter() - start, 1)
         on_evidence = None
         kw = None
@@ -230,6 +240,9 @@ def evaluate_answers(
                 {"tag": s.tag, "title": s.title, "page": s.page, "score": s.score}
                 for s in ans.sources
             ],
+            model=ans.model,
+            retries=ans.retries,
+            steps=[s.name for s in ans.trace.steps],
         )
         on_row(row)
         rows.append(row)
@@ -255,6 +268,8 @@ def summarize_answers(rows: list[AnswerRow]) -> dict:
             sum(bool(r.cited) for r in answered) / len(answered) if answered else None
         ),
         "citations_inferred": sum(r.citations_inferred for r in answered),
+        "questions_with_retries": sum(r.retries > 0 for r in rows),
+        "max_retries_used": max((r.retries for r in rows), default=0),
         "median_seconds": sorted(r.seconds for r in rows)[len(rows) // 2] if rows else None,
     }
     return summary

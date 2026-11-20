@@ -184,7 +184,7 @@ def test_answer_with_valid_citation(retriever):
     assert not ans.abstained
     assert ans.cited == ["S1"] and not ans.citations_inferred
     assert ans.cited_sources[0].page == 2
-    assert [s.name for s in ans.trace.steps] == ["retrieve", "grade", "generate", "citations"]
+    assert [s.name for s in ans.trace.steps] == ["retrieve", "grade", "generate", "check"]
     assert "[S1]" in llm.calls[0][1]["content"]  # sources were in the prompt
 
 

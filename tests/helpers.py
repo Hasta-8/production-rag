@@ -58,3 +58,19 @@ class FakeLLM:
         if on_token:
             on_token(self.text)
         return Generation(self.text, self.name, 100, self.completion_tokens, 5.0, 1.0)
+
+
+class ScriptedLLM:
+    """Returns the given replies in order (one per call) and records every prompt."""
+
+    def __init__(self, *replies: str, name: str = "scripted-llm") -> None:
+        self.name = name
+        self.replies = list(replies)
+        self.calls: list = []
+
+    def generate(self, messages, max_tokens, on_token=None):
+        self.calls.append(messages)
+        if not self.replies:
+            raise AssertionError("the LLM was called more often than the test expected")
+        text = self.replies.pop(0)
+        return Generation(text, self.name, 100, 20, 5.0, 1.0)

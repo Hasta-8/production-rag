@@ -16,6 +16,12 @@ def test_normalize_expands_pdf_ligatures():
     assert normalize_text("eﬃcient ﬁle") == "efficient file"
 
 
+def test_normalize_repairs_small_caps_glyph_names():
+    raw = "Transformer (R/e.sc /t.sc /r.sc/o.sc) obtains. Our R/e.sc /t.sc /r.sc/o.sc model"
+    assert normalize_text(raw) == "Transformer (RETRO) obtains. Our RETRO model"
+    assert normalize_text("see https://arxiv.org/abs/1") == "see https://arxiv.org/abs/1"
+
+
 def test_normalize_collapses_spaces_but_keeps_paragraphs():
     text = "a   b\t c\n\n\n\nnext   paragraph"
     assert normalize_text(text) == "a b c\n\nnext paragraph"

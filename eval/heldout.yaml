@@ -1,0 +1,62 @@
+# Held-out questions (written 2026-11-21, before experiment E12b was run).
+#
+# Purpose: the E12b change (the focus retry must pass the reranker gate) was chosen after
+# seeing E12's results on the golden set, so the golden set can't confirm it. These
+# questions were written and labelled without running any pipeline on them.
+#
+# Same schema and labelling rule as eval/golden.yaml (v2 evidence_pages: every page with a
+# passage that states the answer; results tables, figures and passing mentions don't
+# count). Traps follow the u01 pattern: the corpus holds a similar fact about a nearby
+# model, and the asked-for fact was checked to be absent from the 28 indexed papers.
+version: 1
+questions:
+  - id: h01
+    question: What context size was Mixtral trained with?
+    arxiv_id: "2401.04088"
+    evidence_pages: [1, 2]
+    keywords: ["32k|32,000|32768"]
+    reference: 32k tokens.
+  - id: h02
+    question: How many reasoning paths did self-consistency sample in its main experiments?
+    arxiv_id: "2203.11171"
+    evidence_pages: [5]
+    keywords: ["40"]
+    reference: 40 sampled outputs per run, averaged over 10 runs.
+  - id: h03
+    question: Which vision-language model is ColPali built on?
+    arxiv_id: "2407.01449"
+    evidence_pages: [6]
+    keywords: ["paligemma"]
+    reference: PaliGemma-3B.
+  - id: h04
+    question: What is the default pooling strategy of Sentence-BERT?
+    arxiv_id: "1908.10084"
+    evidence_pages: [3, 4]
+    keywords: ["mean"]
+    reference: MEAN pooling of the output vectors.
+  - id: h05
+    question: What sliding window size does Mistral 7B use?
+    arxiv_id: "2310.06825"
+    evidence_pages: [2]
+    keywords: ["4096|4,096"]
+    reference: W = 4096 tokens.
+  - id: t01
+    question: What batch size was DINOv2 trained with?
+    answerable: false
+    note: Trap. DINOv2 appears only in a bibliography entry; the DINO (v1) paper states its own batch size.
+  - id: t02
+    question: How many GPUs were used to train Llama 2?
+    answerable: false
+    note: Trap. Llama 2 is only a benchmark comparison (Mistral, Mixtral); the LLaMA (v1) paper states its own GPU count.
+  - id: t03
+    question: What is the context window of Mixtral 8x22B?
+    answerable: false
+    note: Trap. The corpus has Mixtral 8x7B only (32k); "8x22" never appears.
+  - id: t04
+    question: What is the embedding dimension of OpenAI's text-embedding-3-large?
+    answerable: false
+    note: Trap. The corpus has OpenAI's earlier cpt-text embeddings; "text-embedding-3" never appears.
+  - id: t05
+    question: How many parameters does Claude 2.1 have?
+    answerable: false
+    note: Trap. Claude 2.1 is named in Mixtral's comparisons, and Constitutional AI states its own model sizes.

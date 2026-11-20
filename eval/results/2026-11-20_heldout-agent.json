@@ -1,0 +1,599 @@
+{
+  "label": "heldout-agent",
+  "date": "2026-11-20",
+  "config": {
+    "index_version": "v-aba093cd3121",
+    "embedding_model": "BAAI/bge-small-en-v1.5",
+    "retrieval": "hybrid_rerank",
+    "rerank_candidates": 20,
+    "reranker": "Xenova/ms-marco-MiniLM-L-6-v2",
+    "rrf_k": 60,
+    "skip_references": false,
+    "golden": "eval/heldout.yaml v1",
+    "labels": "v2",
+    "retrieve_k": 10,
+    "context_k": 3,
+    "min_relevance": 0.6,
+    "min_rerank_score": 2.0,
+    "questions": 10,
+    "llm": "Qwen3-1.7B-Q8_0",
+    "max_tokens": 150,
+    "pipeline": "agent",
+    "max_retries": 2,
+    "focus_sentences": 6,
+    "focus_gate": true,
+    "fallback_llm": "llm/Qwen3-0.6B-Q8_0.gguf",
+    "first_token_timeout_s": 90.0
+  },
+  "summary": {
+    "page_recall@1": 0.8,
+    "page_recall@3": 0.8,
+    "page_recall@5": 0.8,
+    "page_recall@10": 0.8,
+    "page_mrr": 0.8,
+    "paper_at_1": 1.0,
+    "calibration": [
+      {
+        "threshold": -8.0,
+        "answerable_kept": 1.0,
+        "unanswerable_rejected": 0.0
+      },
+      {
+        "threshold": -7.0,
+        "answerable_kept": 1.0,
+        "unanswerable_rejected": 0.0
+      },
+      {
+        "threshold": -6.0,
+        "answerable_kept": 1.0,
+        "unanswerable_rejected": 0.0
+      },
+      {
+        "threshold": -5.0,
+        "answerable_kept": 1.0,
+        "unanswerable_rejected": 0.0
+      },
+      {
+        "threshold": -4.0,
+        "answerable_kept": 1.0,
+        "unanswerable_rejected": 0.0
+      },
+      {
+        "threshold": -3.0,
+        "answerable_kept": 1.0,
+        "unanswerable_rejected": 0.0
+      },
+      {
+        "threshold": -2.0,
+        "answerable_kept": 1.0,
+        "unanswerable_rejected": 0.0
+      },
+      {
+        "threshold": -1.0,
+        "answerable_kept": 1.0,
+        "unanswerable_rejected": 0.0
+      },
+      {
+        "threshold": 0.0,
+        "answerable_kept": 1.0,
+        "unanswerable_rejected": 0.0
+      },
+      {
+        "threshold": 1.0,
+        "answerable_kept": 1.0,
+        "unanswerable_rejected": 0.0
+      },
+      {
+        "threshold": 2.0,
+        "answerable_kept": 1.0,
+        "unanswerable_rejected": 0.0
+      },
+      {
+        "threshold": 3.0,
+        "answerable_kept": 1.0,
+        "unanswerable_rejected": 0.0
+      },
+      {
+        "threshold": 4.0,
+        "answerable_kept": 1.0,
+        "unanswerable_rejected": 0.4
+      },
+      {
+        "threshold": 5.0,
+        "answerable_kept": 0.8,
+        "unanswerable_rejected": 0.8
+      },
+      {
+        "threshold": 6.0,
+        "answerable_kept": 0.4,
+        "unanswerable_rejected": 1.0
+      },
+      {
+        "threshold": 7.0,
+        "answerable_kept": 0.2,
+        "unanswerable_rejected": 1.0
+      },
+      {
+        "threshold": 8.0,
+        "answerable_kept": 0.2,
+        "unanswerable_rejected": 1.0
+      }
+    ],
+    "answerable_answered": 1.0,
+    "unanswerable_declined": 0.8,
+    "keyword_recall_mean": 1.0,
+    "citation_on_evidence": 0.8,
+    "answers_with_citations": 1.0,
+    "citations_inferred": 0,
+    "questions_with_retries": 5,
+    "max_retries_used": 1,
+    "median_seconds": 47.0
+  },
+  "rows": [
+    {
+      "id": "h01",
+      "answerable": true,
+      "abstained": false,
+      "correct_abstention": true,
+      "keyword_recall": 1.0,
+      "cited": [
+        "S2"
+      ],
+      "citation_on_evidence": true,
+      "citations_inferred": false,
+      "seconds": 47.0,
+      "answer": "Mixtral was trained with a context size of 32k tokens [S2].",
+      "sources": [
+        {
+          "tag": "S1",
+          "title": "Mixtral of Experts",
+          "page": 1,
+          "score": 8.2423
+        },
+        {
+          "tag": "S2",
+          "title": "Mixtral of Experts",
+          "page": 1,
+          "score": 4.8497
+        },
+        {
+          "tag": "S3",
+          "title": "Mixtral of Experts",
+          "page": 2,
+          "score": 4.1421
+        }
+      ],
+      "model": "Qwen3-1.7B-Q8_0",
+      "retries": 0,
+      "steps": [
+        "retrieve",
+        "grade",
+        "generate",
+        "check"
+      ]
+    },
+    {
+      "id": "h02",
+      "answerable": true,
+      "abstained": false,
+      "correct_abstention": true,
+      "keyword_recall": 1.0,
+      "cited": [
+        "S2"
+      ],
+      "citation_on_evidence": false,
+      "citations_inferred": false,
+      "seconds": 50.6,
+      "answer": "The main experiments sampled 40 reasoning paths [S2]. The results show that sampling a higher number of reasoning paths leads to consistently better performance [S2]. Table 4 shows that self-consistency yields a richer set of reasoning paths compared to greedy decoding with a few example questions [S2].",
+      "sources": [
+        {
+          "tag": "S1",
+          "title": "Self-Consistency Improves Chain of Thought Reasoning in Language Models",
+          "page": 17,
+          "score": 6.1229
+        },
+        {
+          "tag": "S2",
+          "title": "Self-Consistency Improves Chain of Thought Reasoning in Language Models",
+          "page": 6,
+          "score": 5.786
+        },
+        {
+          "tag": "S3",
+          "title": "Self-Consistency Improves Chain of Thought Reasoning in Language Models",
+          "page": 16,
+          "score": 5.6319
+        }
+      ],
+      "model": "Qwen3-1.7B-Q8_0",
+      "retries": 0,
+      "steps": [
+        "retrieve",
+        "grade",
+        "generate",
+        "check"
+      ]
+    },
+    {
+      "id": "h03",
+      "answerable": true,
+      "abstained": false,
+      "correct_abstention": true,
+      "keyword_recall": 1.0,
+      "cited": [
+        "S1"
+      ],
+      "citation_on_evidence": true,
+      "citations_inferred": false,
+      "seconds": 32.7,
+      "answer": "The vision-language model used by ColPali is based on the PaliGemma-3B model [S1].",
+      "sources": [
+        {
+          "tag": "S1",
+          "title": "ColPali: Efficient Document Retrieval with Vision Language Models",
+          "page": 6,
+          "score": 4.7499
+        },
+        {
+          "tag": "S2",
+          "title": "ColPali: Efficient Document Retrieval with Vision Language Models",
+          "page": 10,
+          "score": 4.7111
+        },
+        {
+          "tag": "S3",
+          "title": "ColPali: Efficient Document Retrieval with Vision Language Models",
+          "page": 2,
+          "score": 4.2434
+        }
+      ],
+      "model": "Qwen3-1.7B-Q8_0",
+      "retries": 0,
+      "steps": [
+        "retrieve",
+        "grade",
+        "generate",
+        "check"
+      ]
+    },
+    {
+      "id": "h04",
+      "answerable": true,
+      "abstained": false,
+      "correct_abstention": true,
+      "keyword_recall": 1.0,
+      "cited": [
+        "S1"
+      ],
+      "citation_on_evidence": true,
+      "citations_inferred": false,
+      "seconds": 34.0,
+      "answer": "The default pooling strategy of Sentence-BERT is MEAN [S1].",
+      "sources": [
+        {
+          "tag": "S1",
+          "title": "Sentence-BERT: Sentence Embeddings using Siamese BERT-Networks",
+          "page": 3,
+          "score": 5.5016
+        },
+        {
+          "tag": "S2",
+          "title": "Sentence-BERT: Sentence Embeddings using Siamese BERT-Networks",
+          "page": 3,
+          "score": 1.9194
+        },
+        {
+          "tag": "S3",
+          "title": "Sentence-BERT: Sentence Embeddings using Siamese BERT-Networks",
+          "page": 4,
+          "score": 1.1592
+        }
+      ],
+      "model": "Qwen3-1.7B-Q8_0",
+      "retries": 0,
+      "steps": [
+        "retrieve",
+        "grade",
+        "generate",
+        "check"
+      ]
+    },
+    {
+      "id": "h05",
+      "answerable": true,
+      "abstained": false,
+      "correct_abstention": true,
+      "keyword_recall": 1.0,
+      "cited": [
+        "S1"
+      ],
+      "citation_on_evidence": true,
+      "citations_inferred": false,
+      "seconds": 38.0,
+      "answer": "The sliding window size used by Mistral 7B is 4096 [S1].",
+      "sources": [
+        {
+          "tag": "S1",
+          "title": "Mistral 7B",
+          "page": 2,
+          "score": 5.9759
+        },
+        {
+          "tag": "S2",
+          "title": "Mistral 7B",
+          "page": 1,
+          "score": 3.9086
+        },
+        {
+          "tag": "S3",
+          "title": "Mistral 7B",
+          "page": 1,
+          "score": 2.6867
+        }
+      ],
+      "model": "Qwen3-1.7B-Q8_0",
+      "retries": 0,
+      "steps": [
+        "retrieve",
+        "grade",
+        "generate",
+        "check"
+      ]
+    },
+    {
+      "id": "t01",
+      "answerable": false,
+      "abstained": true,
+      "correct_abstention": true,
+      "keyword_recall": null,
+      "cited": [],
+      "citation_on_evidence": null,
+      "citations_inferred": false,
+      "seconds": 40.4,
+      "answer": "I don't have enough information in the indexed documents to answer that.",
+      "sources": [
+        {
+          "tag": "S1",
+          "title": "Emerging Properties in Self-Supervised Vision Transformers",
+          "page": 10,
+          "score": 5.1961
+        },
+        {
+          "tag": "S2",
+          "title": "Emerging Properties in Self-Supervised Vision Transformers",
+          "page": 10,
+          "score": 3.3861
+        },
+        {
+          "tag": "S3",
+          "title": "Emerging Properties in Self-Supervised Vision Transformers",
+          "page": 15,
+          "score": 1.6646
+        }
+      ],
+      "model": "Qwen3-1.7B-Q8_0",
+      "retries": 1,
+      "steps": [
+        "retrieve",
+        "grade",
+        "generate",
+        "check",
+        "focus"
+      ]
+    },
+    {
+      "id": "t02",
+      "answerable": false,
+      "abstained": false,
+      "correct_abstention": false,
+      "keyword_recall": null,
+      "cited": [
+        "S1"
+      ],
+      "citation_on_evidence": null,
+      "citations_inferred": false,
+      "seconds": 87.6,
+      "answer": "The training of LLaMA 2 involves 2048 A100 GPUs [S1].",
+      "sources": [
+        {
+          "tag": "S1",
+          "title": "LLaMA: Open and Efficient Foundation Language Models",
+          "page": 4,
+          "score": 5.3182
+        },
+        {
+          "tag": "S2",
+          "title": "Mixtral of Experts",
+          "page": 5,
+          "score": 3.2565
+        },
+        {
+          "tag": "S3",
+          "title": "Mixtral of Experts",
+          "page": 4,
+          "score": 2.9217
+        },
+        {
+          "tag": "S4",
+          "title": "Mixtral of Experts",
+          "page": 4,
+          "score": 2.4354
+        },
+        {
+          "tag": "S5",
+          "title": "LLaMA: Open and Efficient Foundation Language Models",
+          "page": 11,
+          "score": 2.0635
+        }
+      ],
+      "model": "Qwen3-1.7B-Q8_0",
+      "retries": 1,
+      "steps": [
+        "retrieve",
+        "grade",
+        "generate",
+        "check",
+        "focus",
+        "generate",
+        "check"
+      ]
+    },
+    {
+      "id": "t03",
+      "answerable": false,
+      "abstained": true,
+      "correct_abstention": true,
+      "keyword_recall": null,
+      "cited": [],
+      "citation_on_evidence": null,
+      "citations_inferred": false,
+      "seconds": 54.9,
+      "answer": "I don't have enough information in the indexed documents to answer that.",
+      "sources": [
+        {
+          "tag": "S1",
+          "title": "Mixtral of Experts",
+          "page": 2,
+          "score": 4.799
+        },
+        {
+          "tag": "S2",
+          "title": "Mixtral of Experts",
+          "page": 1,
+          "score": 2.9313
+        },
+        {
+          "tag": "S3",
+          "title": "Mixtral of Experts",
+          "page": 1,
+          "score": 2.9221
+        },
+        {
+          "tag": "S4",
+          "title": "Mixtral of Experts",
+          "page": 2,
+          "score": 1.9843
+        },
+        {
+          "tag": "S5",
+          "title": "Mixtral of Experts",
+          "page": 5,
+          "score": 1.1816
+        }
+      ],
+      "model": "Qwen3-1.7B-Q8_0",
+      "retries": 1,
+      "steps": [
+        "retrieve",
+        "grade",
+        "generate",
+        "check",
+        "focus",
+        "generate",
+        "check"
+      ]
+    },
+    {
+      "id": "t04",
+      "answerable": false,
+      "abstained": true,
+      "correct_abstention": true,
+      "keyword_recall": null,
+      "cited": [],
+      "citation_on_evidence": null,
+      "citations_inferred": false,
+      "seconds": 50.2,
+      "answer": "I don't have enough information in the indexed documents to answer that.",
+      "sources": [
+        {
+          "tag": "S1",
+          "title": "Text Embeddings by Weakly-Supervised Contrastive Pre-training",
+          "page": 2,
+          "score": 5.3174
+        },
+        {
+          "tag": "S2",
+          "title": "Text Embeddings by Weakly-Supervised Contrastive Pre-training",
+          "page": 2,
+          "score": 2.158
+        },
+        {
+          "tag": "S3",
+          "title": "Text and Code Embeddings by Contrastive Pre-Training",
+          "page": 2,
+          "score": 1.611
+        },
+        {
+          "tag": "S4",
+          "title": "Text and Code Embeddings by Contrastive Pre-Training",
+          "page": 1,
+          "score": 1.0669
+        },
+        {
+          "tag": "S5",
+          "title": "The Faiss library",
+          "page": 3,
+          "score": 1.0578
+        },
+        {
+          "tag": "S6",
+          "title": "Text Embeddings by Weakly-Supervised Contrastive Pre-training",
+          "page": 1,
+          "score": 0.2704
+        }
+      ],
+      "model": "Qwen3-1.7B-Q8_0",
+      "retries": 1,
+      "steps": [
+        "retrieve",
+        "grade",
+        "generate",
+        "check",
+        "focus",
+        "generate",
+        "check"
+      ]
+    },
+    {
+      "id": "t05",
+      "answerable": false,
+      "abstained": true,
+      "correct_abstention": true,
+      "keyword_recall": null,
+      "cited": [],
+      "citation_on_evidence": null,
+      "citations_inferred": false,
+      "seconds": 40.4,
+      "answer": "I don't have enough information in the indexed documents to answer that.",
+      "sources": [
+        {
+          "tag": "S1",
+          "title": "Mixtral of Experts",
+          "page": 1,
+          "score": 4.1675
+        },
+        {
+          "tag": "S2",
+          "title": "Mixtral of Experts",
+          "page": 4,
+          "score": -3.9596
+        },
+        {
+          "tag": "S3",
+          "title": "Constitutional AI: Harmlessness from AI Feedback",
+          "page": 10,
+          "score": -4.7416
+        }
+      ],
+      "model": "Qwen3-1.7B-Q8_0",
+      "retries": 1,
+      "steps": [
+        "retrieve",
+        "grade",
+        "generate",
+        "check",
+        "focus"
+      ]
+    }
+  ]
+}

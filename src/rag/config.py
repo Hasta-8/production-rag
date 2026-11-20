@@ -29,6 +29,8 @@ class Settings(BaseSettings):
     models_dir: Path = Path(".cache/models")
     llm_model_file: str = "llm/Qwen3-1.7B-Q8_0.gguf"  # relative to models_dir
     llm_fallback_model_file: str = "llm/Qwen3-0.6B-Q8_0.gguf"
+    llm_first_token_timeout_s: float = 90.0  # then the fallback model answers (D10)
+    llm_fallback: bool = True  # wrap the main model in the fallback gateway
     llm_threads: int = 8  # measured faster than 4 on the 4-core/8-thread laptop CPU
     llm_n_ctx: int = 4096
 
@@ -45,6 +47,11 @@ class Settings(BaseSettings):
     min_relevance: float = 0.60  # dense cosine threshold; see eval/results calibration
     min_rerank_score: float = 2.0  # cross-encoder logit; golden calibration keeps 100% answerable
     answer_max_tokens: int = 150
+    pipeline: str = "agent"  # "agent" (Phase 4 loop; default) or "single" pass (compare mode)
+    max_retries: int = 2  # agent: corrective steps per question
+    focus_retry: bool = False  # agent: retry refusals on focused sentences (E12/E12b: unsafe)
+    focus_sentences: int = 6  # agent: sentences kept by the focus retry
+    focus_gate: bool = True  # agent: focused sentences must pass the reranker gate (E12b)
 
     # Indexing
     index_dir: Path = Path("indexes")

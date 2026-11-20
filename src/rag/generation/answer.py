@@ -1,7 +1,8 @@
-"""Baseline RAG (Phase 2): retrieve, check relevance, generate a cited answer, check citations.
+"""Answering steps: retrieve, grade the evidence, generate a cited answer, check it.
 
-Phase 3 adds hybrid retrieval and reranking; Phase 4 turns this into a LangGraph agent
-with a rewrite loop and model fallback. The answer and trace shapes stay the same.
+``answer_question`` runs them once (the Phase 2–3 pipeline, kept for compare mode).
+The Phase 4 agent (``rag.agent``) reuses the same steps inside a bounded correction loop,
+so both produce the same ``Answer`` and trace shapes.
 """
 
 from __future__ import annotations
@@ -23,6 +24,15 @@ class AnswerSettings:
     min_relevance: float = 0.60  # dense cosine threshold (modes without a reranker)
     min_rerank_score: float = 2.0  # cross-encoder logit threshold (reranked modes)
     max_tokens: int = 150  # D3: short answers
+    # Agent loop (Phase 4)
+    max_retries: int = 2  # corrective steps per question (query rewrites + focus retry)
+    # Focus retry: off by default. It answered trap questions in E12 (u01) and in E12b's
+    # held-out check (t02): the reranker scores near-miss facts about a similar model as
+    # relevant, so neither the model's refusal nor the gate can be overridden safely.
+    focus_retry: bool = False
+    focus_sentences: int = 6  # sentences kept by the focus retry
+    focus_gate: bool = True  # focused sentences must pass min_rerank_score (E12b)
+    rewrite_max_tokens: int = 40
 
 
 @dataclass
@@ -48,6 +58,8 @@ class Answer:
     model: str | None
     prompt_version: str = PROMPT_VERSION
     trace: Trace = field(default_factory=Trace)
+    pipeline: str = "single"  # "single" (one pass) or "agent" (Phase 4 loop)
+    retries: int = 0  # corrective steps the agent took
 
     @property
     def cited_sources(self) -> list[Source]:
@@ -86,21 +98,31 @@ def relevance_signal(cands: list[Candidate], reranked: bool) -> tuple[str, float
     return ("dense", max(dense)) if dense else ("none", None)
 
 
-def answer_question(
-    question: str,
-    retriever: Retriever,
-    llm: LLMClient,
-    settings: AnswerSettings = AnswerSettings(),
-    on_token: TokenCallback | None = None,
-) -> Answer:
-    trace = Trace()
-    question = question.strip()
+def make_sources(hits: list[Candidate], k: int) -> list[Source]:
+    return [
+        Source(f"S{i}", h.chunk_id, h.doc_id, h.title, h.page, round(h.score, 4), h.text)
+        for i, h in enumerate(hits[:k], start=1)
+    ]
 
-    with trace.step("retrieve", mode=retriever.mode, k=settings.retrieve_k) as rec:
-        hits = retriever.search(question, k=settings.retrieve_k)
-        rec["hits"] = [h.summary() for h in hits]
 
-    signal, best = relevance_signal(hits, retriever.uses_reranker)
+@dataclass
+class Grade:
+    relevant: bool
+    signal: str
+    best: float | None
+    threshold: float
+
+    @property
+    def reason(self) -> str:
+        shown = "none" if self.best is None else f"{self.best:.2f}"
+        return f"best {self.signal} score {shown} is below the threshold {self.threshold:.2f}"
+
+
+def grade_evidence(
+    trace: Trace, hits: list[Candidate], reranked: bool, settings: AnswerSettings
+) -> Grade:
+    """Is the best retrieved evidence strong enough to try answering? (No LLM call, D7.)"""
+    signal, best = relevance_signal(hits, reranked)
     threshold = settings.min_rerank_score if signal == "rerank" else settings.min_relevance
     with trace.step("grade", signal=signal, threshold=threshold) as rec:
         relevant = bool(hits) and (best is None or best >= threshold)
@@ -108,68 +130,93 @@ def answer_question(
             best_score=None if best is None else round(best, 4),
             verdict="relevant" if relevant else "too weak",
         )
+    return Grade(relevant, signal, best, threshold)
 
-    sources = [
-        Source(f"S{i}", h.chunk_id, h.doc_id, h.title, h.page, round(h.score, 4), h.text)
-        for i, h in enumerate(hits[: settings.context_k], start=1)
-    ]
 
-    if not relevant:
-        shown = "none" if best is None else f"{best:.2f}"
-        reason = f"best {signal} score {shown} is below the threshold {threshold:.2f}"
-        return Answer(question, REFUSAL, True, reason, sources, [], False, None, trace=trace)
+@dataclass
+class Attempt:
+    """One generation and its check."""
 
+    text: str
+    refused: bool
+    cited: list[str]
+    inferred: bool
+    model: str
+
+
+def generate_and_check(
+    trace: Trace,
+    question: str,
+    sources: list[Source],
+    llm: LLMClient,
+    settings: AnswerSettings,
+    on_token: TokenCallback | None = None,
+) -> Attempt:
+    """Generate from the given sources, clean the output, then check refusal and citations."""
     prompt_sources = [PromptSource(s.tag, s.title, s.page, s.text) for s in sources]
     with trace.step("generate", model=llm.name, max_tokens=settings.max_tokens) as rec:
         gen = llm.generate(build_messages(question, prompt_sources), settings.max_tokens, on_token)
         rec.update(
+            model=gen.model,
             prompt_tokens=gen.prompt_tokens,
             completion_tokens=gen.completion_tokens,
             first_token_ms=gen.first_token_ms,
             sources=[s.tag for s in sources],
         )
+        if gen.fallback_from:
+            rec.update(fallback_from=gen.fallback_from, fallback_reason=gen.fallback_reason)
+    gen_step = trace.steps[-1].data
 
     text, removed = clean_answer(gen.text)
     if removed:
-        trace.steps[-1].data["cleaned"] = removed
+        gen_step["cleaned"] = removed
 
     if is_refusal(text):
-        with trace.step("citations") as rec:
+        with trace.step("check") as rec:
             rec["result"] = "model declined to answer"
-        return Answer(
-            question,
-            REFUSAL,
-            True,
-            "the model found no answer in the sources",
-            sources,
-            [],
-            False,
-            gen.model,
-            trace=trace,
-        )
+        return Attempt(REFUSAL, True, [], False, gen.model)
 
     if gen.completion_tokens >= settings.max_tokens:
         # Hit the token cap: drop a half-finished last sentence rather than show it.
         text, cut = trim_incomplete_sentence(text)
-        trace.steps[-1].data["truncated"] = cut
+        gen_step["truncated"] = cut
 
-    with trace.step("citations") as rec:
+    with trace.step("check") as rec:
         check = check_citations(text, prompt_sources)
         rec.update(
+            result="answered",
             cited=check.cited,
             invalid=check.invalid,
             inferred=check.inferred,
             uncited_sentences=check.uncited_sentences,
         )
+    return Attempt(check.text, False, check.cited, check.inferred, gen.model)
 
+
+def answer_question(
+    question: str,
+    retriever: Retriever,
+    llm: LLMClient,
+    settings: AnswerSettings = AnswerSettings(),
+    on_token: TokenCallback | None = None,
+) -> Answer:
+    """Single pass (Phases 2–3): retrieve, grade, generate, check. No retries."""
+    trace = Trace()
+    question = question.strip()
+
+    with trace.step("retrieve", mode=retriever.mode, k=settings.retrieve_k) as rec:
+        hits = retriever.search(question, k=settings.retrieve_k)
+        rec["hits"] = [h.summary() for h in hits]
+
+    grade = grade_evidence(trace, hits, retriever.uses_reranker, settings)
+    sources = make_sources(hits, settings.context_k)
+    if not grade.relevant:
+        return Answer(question, REFUSAL, True, grade.reason, sources, [], False, None, trace=trace)
+
+    att = generate_and_check(trace, question, sources, llm, settings, on_token)
+    if att.refused:
+        reason = "the model found no answer in the sources"
+        return Answer(question, REFUSAL, True, reason, sources, [], False, att.model, trace=trace)
     return Answer(
-        question,
-        check.text,
-        False,
-        None,
-        sources,
-        check.cited,
-        check.inferred,
-        gen.model,
-        trace=trace,
+        question, att.text, False, None, sources, att.cited, att.inferred, att.model, trace=trace
     )

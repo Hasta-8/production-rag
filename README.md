@@ -17,8 +17,8 @@ Model files live in a models folder set by `RAG_MODELS_DIR` (default
 `.cache/models`), so several projects can share one copy of each model:
 `llm/` holds the GGUF files and `fastembed/` holds the embedding model cache.
 
-> **Status: early development.** Ingestion and a baseline question-answering
-> pipeline with citations are built, tested and evaluated. Everything below
+> **Status: in development.** Ingestion, hybrid retrieval with reranking, cited
+> answers and the agent loop are built, tested and evaluated. Everything below
 > marked PLANNED is not built yet.
 
 ## Capability status
@@ -35,7 +35,8 @@ Model files live in a models folder set by `RAG_MODELS_DIR` (default
 | Golden question set and evaluation harness (`rag eval golden`) | IMPLEMENTED |
 | Hybrid retrieval (BM25 + dense, RRF) and cross-encoder reranking | IMPLEMENTED |
 | BEIR SciFact benchmark (`rag eval beir`) | IMPLEMENTED |
-| LangGraph correction loop with bounded retries and model fallback | PLANNED |
+| LangGraph correction loop with bounded retries and model fallback | IMPLEMENTED |
+| Held-out question set for changes chosen after seeing results | IMPLEMENTED |
 | FastAPI service: security, caching, rate limits, streaming, observability | PLANNED |
 | Demo UI: chat, citation viewer, trace panel, compare mode | PLANNED |
 | Local demo: Docker, start script, Cloudflare tunnel | PLANNED |
@@ -158,6 +159,70 @@ baseline scores 73% under both); a query-time bibliography filter (accurate,
 but bibliography chunks almost never reach the top 3 once hybrid + rerank is
 used, so it is off by default: `RAG_SKIP_REFERENCES=1`). `rag eval rescore`
 re-scores saved answer runs against either label set without rerunning the LLM.
+
+## Agent loop (Phase 4)
+
+`rag ask` runs a LangGraph agent (`--pipeline single` runs the one-pass
+pipeline, kept for comparison):
+
+```
+retrieve -> grade --relevant--> generate -> check -> answer or decline
+              |
+              +--too weak--> rewrite the query (LLM) -> retrieve again
+```
+
+- **Grade** uses the reranker score (threshold 2.0), not an LLM call: a 1.7B
+  grader on a CPU would be slow and unreliable.
+- **Rewrite**: when the evidence is weak, a short LLM call turns the question
+  into a search query and retrieval runs again. At most 2 corrective steps per
+  question; each one is a trace step with its budget.
+- **Fallback**: if Qwen3-1.7B produces no first token within 90 s (normally
+  35–47 s on this laptop) or fails, Qwen3-0.6B answers and the trace says why.
+  The timeout really interrupts llama.cpp mid-prompt, through its abort callback.
+
+**What didn't work, and is off by default.** A "focus" retry, for when the model
+declines although good evidence was retrieved, gives it the best sentences of
+the top 10 passages instead of 3 whole chunks. It recovered one over-refusal but
+made the model answer two trap questions with a fact about a *similar* model:
+
+| Trap question | Wrong answer after the retry | Where the fact came from |
+|---|---|---|
+| What dropout rate did the original Transformer base model use? | 0.1 | DETR's transformer |
+| How many GPUs were used to train Llama 2? | 2048 A100s | the first LLaMA paper |
+
+Requiring the focused sentences to pass the reranker gate fixed the first case,
+but that rule was chosen after seeing the result. On held-out questions written
+beforehand it failed: the reranker scored those near-miss sentences 4–5, far
+above the gate. A relevance score measures topic, not identity. The retry
+stays available (`RAG_FOCUS_RETRY=true`) to reproduce the experiments.
+
+**Current results** (agent, re-indexed corpus):
+
+| | Golden set (30 + 5 traps) | Held-out set (5 + 5 traps) |
+|---|---|---|
+| Answerable questions answered | 28 / 30 | 5 / 5 |
+| Trap questions declined | 4 / 5 | 5 / 5 |
+| Answers citing an evidence page | 96% | 80% (one answer cites a page that only says "e.g., 40") |
+| Median seconds per question | 35.7 | 37.8 |
+
+The golden-set trap now missed (u01) appeared after a text-extraction fix: the
+RETRO paper's small-caps name ("R/e.sc /t.sc /r.sc/o.sc") is now repaired, which
+made its hyperparameter table readable, and the model attributes RETRO's dropout
+rate to the original Transformer. The fix stays: it is correct, and the earlier
+5/5 relied partly on garbled text. Attributing facts to the wrong model is the
+main open weakness; an entity check before answering is the planned experiment.
+
+## Tracing
+
+Every answer carries a trace of its steps (retrieve, grade, rewrite, focus,
+generate, check), with timings, scores, retries and any switch to the fallback
+model. `rag ask --trace` prints it, and `--json` includes it. The trace stays on
+the machine.
+
+LangSmith is supported but **off by default**, because it would send
+questions, passages and answers to an outside service. To turn it on, set
+`LANGCHAIN_TRACING_V2=true` and `LANGCHAIN_API_KEY` in `.env`. LangGraph then
+traces the agent's nodes automatically.
 
 ## Development
 

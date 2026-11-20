@@ -1,0 +1,187 @@
+{
+  "label": "heldout-single_retrieval",
+  "date": "2026-11-20",
+  "config": {
+    "index_version": "v-aba093cd3121",
+    "embedding_model": "BAAI/bge-small-en-v1.5",
+    "retrieval": "hybrid_rerank",
+    "rerank_candidates": 20,
+    "reranker": "Xenova/ms-marco-MiniLM-L-6-v2",
+    "rrf_k": 60,
+    "skip_references": false,
+    "golden": "eval/heldout.yaml v1",
+    "labels": "v2",
+    "retrieve_k": 10,
+    "context_k": 3,
+    "min_relevance": 0.6,
+    "min_rerank_score": 2.0,
+    "questions": 10
+  },
+  "summary": {
+    "page_recall@1": 0.8,
+    "page_recall@3": 0.8,
+    "page_recall@5": 0.8,
+    "page_recall@10": 0.8,
+    "page_mrr": 0.8,
+    "paper_at_1": 1.0,
+    "calibration": [
+      {
+        "threshold": -8.0,
+        "answerable_kept": 1.0,
+        "unanswerable_rejected": 0.0
+      },
+      {
+        "threshold": -7.0,
+        "answerable_kept": 1.0,
+        "unanswerable_rejected": 0.0
+      },
+      {
+        "threshold": -6.0,
+        "answerable_kept": 1.0,
+        "unanswerable_rejected": 0.0
+      },
+      {
+        "threshold": -5.0,
+        "answerable_kept": 1.0,
+        "unanswerable_rejected": 0.0
+      },
+      {
+        "threshold": -4.0,
+        "answerable_kept": 1.0,
+        "unanswerable_rejected": 0.0
+      },
+      {
+        "threshold": -3.0,
+        "answerable_kept": 1.0,
+        "unanswerable_rejected": 0.0
+      },
+      {
+        "threshold": -2.0,
+        "answerable_kept": 1.0,
+        "unanswerable_rejected": 0.0
+      },
+      {
+        "threshold": -1.0,
+        "answerable_kept": 1.0,
+        "unanswerable_rejected": 0.0
+      },
+      {
+        "threshold": 0.0,
+        "answerable_kept": 1.0,
+        "unanswerable_rejected": 0.0
+      },
+      {
+        "threshold": 1.0,
+        "answerable_kept": 1.0,
+        "unanswerable_rejected": 0.0
+      },
+      {
+        "threshold": 2.0,
+        "answerable_kept": 1.0,
+        "unanswerable_rejected": 0.0
+      },
+      {
+        "threshold": 3.0,
+        "answerable_kept": 1.0,
+        "unanswerable_rejected": 0.0
+      },
+      {
+        "threshold": 4.0,
+        "answerable_kept": 1.0,
+        "unanswerable_rejected": 0.4
+      },
+      {
+        "threshold": 5.0,
+        "answerable_kept": 0.8,
+        "unanswerable_rejected": 0.8
+      },
+      {
+        "threshold": 6.0,
+        "answerable_kept": 0.4,
+        "unanswerable_rejected": 1.0
+      },
+      {
+        "threshold": 7.0,
+        "answerable_kept": 0.2,
+        "unanswerable_rejected": 1.0
+      },
+      {
+        "threshold": 8.0,
+        "answerable_kept": 0.2,
+        "unanswerable_rejected": 1.0
+      }
+    ]
+  },
+  "rows": [
+    {
+      "id": "h01",
+      "answerable": true,
+      "best_score": 8.2423,
+      "first_hit_rank": 1,
+      "paper_rank": 1
+    },
+    {
+      "id": "h02",
+      "answerable": true,
+      "best_score": 6.1229,
+      "first_hit_rank": null,
+      "paper_rank": 1
+    },
+    {
+      "id": "h03",
+      "answerable": true,
+      "best_score": 4.7499,
+      "first_hit_rank": 1,
+      "paper_rank": 1
+    },
+    {
+      "id": "h04",
+      "answerable": true,
+      "best_score": 5.5016,
+      "first_hit_rank": 1,
+      "paper_rank": 1
+    },
+    {
+      "id": "h05",
+      "answerable": true,
+      "best_score": 5.9759,
+      "first_hit_rank": 1,
+      "paper_rank": 1
+    },
+    {
+      "id": "t01",
+      "answerable": false,
+      "best_score": 5.1961,
+      "first_hit_rank": null,
+      "paper_rank": null
+    },
+    {
+      "id": "t02",
+      "answerable": false,
+      "best_score": 3.4902,
+      "first_hit_rank": null,
+      "paper_rank": null
+    },
+    {
+      "id": "t03",
+      "answerable": false,
+      "best_score": 4.5415,
+      "first_hit_rank": null,
+      "paper_rank": null
+    },
+    {
+      "id": "t04",
+      "answerable": false,
+      "best_score": 3.1461,
+      "first_hit_rank": null,
+      "paper_rank": null
+    },
+    {
+      "id": "t05",
+      "answerable": false,
+      "best_score": 4.1675,
+      "first_hit_rank": null,
+      "paper_rank": null
+    }
+  ]
+}
