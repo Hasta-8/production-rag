@@ -49,11 +49,19 @@ EMBED_PRICE_PER_M_TOKENS = {"text-embedding-3-small": 0.02, "text-embedding-3-la
 
 
 def _open_index(settings):
-    from rag.indexing.embeddings import openai_embeddings
+    from rag.indexing.embeddings import make_embeddings
     from rag.indexing.index import VersionedIndex
 
-    embeddings = openai_embeddings(
-        settings.embedding_model, settings.require_openai_key(), settings.cache_dir
+    settings.export_hf_token()
+    embeddings = make_embeddings(
+        settings.embedding_provider,
+        settings.embedding_model,
+        settings.cache_dir,
+        query_prefix=settings.embedding_query_prefix,
+        threads=settings.embedding_threads,
+        openai_api_key=(
+            settings.require_openai_key() if settings.embedding_provider == "openai" else None
+        ),
     )
     index = VersionedIndex.open(
         settings.index_dir,
@@ -154,6 +162,45 @@ def cmd_index_info(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_eval_phrases(args: argparse.Namespace) -> int:
+    from rag.evaluation.known_phrases import run_known_phrase_check, summarize
+
+    settings = get_settings()
+    index, _ = _open_index(settings)
+    if not index.info.documents:
+        _print("The index is empty. Run `rag ingest` first.")
+        return 1
+    results = run_known_phrase_check(index, samples=args.samples, k=args.k, seed=args.seed)
+    if args.verbose:
+        for r in results:
+            if r.rank_of_page != 1:
+                got = f"rank {r.rank_of_page}" if r.rank_of_page else f"not in top {args.k}"
+                kind = "ref" if r.is_reference else "prose"
+                _print(
+                    f"MISS [{kind}] ({got}) expected {r.title[:40]} p. {r.expected_page}; top "
+                    f"was {r.top_title[:40]} p. {r.top_page}\n   phrase: {r.phrase[:150]}"
+                )
+    groups = {
+        "all": results,
+        "prose": [r for r in results if not r.is_reference],
+        "references": [r for r in results if r.is_reference],
+    }
+    _print(
+        f"\n{'group':<11} {'n':>4} {'page@1':>7} {f'page@{args.k}':>7} {'MRR':>6} "
+        f"{'page|verbatim@1':>16} {'paper@1':>8}"
+    )
+    for name, group in groups.items():
+        if not group:
+            continue
+        s = summarize(group, args.k)
+        _print(
+            f"{name:<11} {s['samples']:>4} {s['page_at_1']:>7.0%} "
+            f"{s[f'page_at_{args.k}']:>7.0%} {s['mrr']:>6.3f} "
+            f"{s['page_or_verbatim_at_1']:>16.0%} {s['paper_at_1']:>8.0%}"
+        )
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="rag", description="Production RAG command line")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -179,6 +226,17 @@ def build_parser() -> argparse.ArgumentParser:
     index_p = sub.add_parser("index", help="Index information")
     index_sub = index_p.add_subparsers(dest="index_command", required=True)
     index_sub.add_parser("info", help="Show the active index").set_defaults(func=cmd_index_info)
+
+    eval_p = sub.add_parser("eval", help="Evaluation checks")
+    eval_sub = eval_p.add_subparsers(dest="eval_command", required=True)
+    phrases_p = eval_sub.add_parser(
+        "phrases", help="Known-phrase check: verbatim sentences should return their own page"
+    )
+    phrases_p.add_argument("--samples", type=int, default=50)
+    phrases_p.add_argument("-k", type=int, default=5)
+    phrases_p.add_argument("--seed", type=int, default=7)
+    phrases_p.add_argument("-v", "--verbose", action="store_true", help="List every miss")
+    phrases_p.set_defaults(func=cmd_eval_phrases)
     return parser
 
 

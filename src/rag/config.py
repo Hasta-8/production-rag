@@ -17,6 +17,7 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", env_prefix="RAG_", extra="ignore")
 
     openai_api_key: SecretStr | None = Field(default=None, validation_alias="OPENAI_API_KEY")
+    hf_token: SecretStr | None = Field(default=None, validation_alias="HF_TOKEN")
 
     # Corpus
     corpus_candidates: Path = Path("corpus/candidates.yaml")
@@ -26,9 +27,20 @@ class Settings(BaseSettings):
     # Indexing
     index_dir: Path = Path("indexes")
     cache_dir: Path = Path(".cache")
-    embedding_model: str = "text-embedding-3-small"
+    embedding_provider: str = "fastembed"  # "fastembed" (local, default) or "openai"
+    embedding_model: str = "BAAI/bge-small-en-v1.5"
+    # BGE's recommended instruction for retrieval queries (documents get no prefix).
+    embedding_query_prefix: str = "Represent this sentence for searching relevant passages: "
+    embedding_threads: int | None = None  # None lets ONNX Runtime decide
     chunk_size: int = Field(default=1000, gt=100)
     chunk_overlap: int = Field(default=150, ge=0)
+
+    def export_hf_token(self) -> None:
+        """Hugging Face's downloader reads HF_TOKEN from the process environment."""
+        import os
+
+        if self.hf_token is not None and self.hf_token.get_secret_value().strip():
+            os.environ.setdefault("HF_TOKEN", self.hf_token.get_secret_value().strip())
 
     def require_openai_key(self) -> str:
         if self.openai_api_key is None or not self.openai_api_key.get_secret_value().strip():

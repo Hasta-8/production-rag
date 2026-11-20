@@ -35,6 +35,20 @@ def test_embedding_cache_avoids_repeat_calls(tmp_path):
     assert (cached.hits, cached.misses) == (2, 3)
 
 
+class PrefixedQueries(HashingEmbeddings):
+    def embed_query(self, text):
+        return super().embed_query("query instruction " + text)
+
+
+def test_embedding_cache_keeps_documents_and_queries_apart(tmp_path):
+    inner = PrefixedQueries()
+    cached = CachedEmbeddings(inner, MODEL, tmp_path / "cache.sqlite")
+    doc_vec = cached.embed_documents(["same text"])[0]
+    query_vec = cached.embed_query("same text")
+    assert inner.calls == 2  # the query was not served from the document entry
+    assert query_vec != pytest.approx(doc_vec, abs=1e-6)
+
+
 def test_embedding_cache_persists_and_is_keyed_by_model(tmp_path):
     path = tmp_path / "cache.sqlite"
     CachedEmbeddings(HashingEmbeddings(), MODEL, path).embed_query("hello")

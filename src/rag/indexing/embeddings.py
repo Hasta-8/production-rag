@@ -28,8 +28,10 @@ class CachedEmbeddings(Embeddings):
         self.hits = 0
         self.misses = 0
 
-    def _key(self, text: str) -> str:
-        return hashlib.sha256(f"{self.model_name}\x00{text}".encode()).hexdigest()
+    def _key(self, text: str, kind: str = "doc") -> str:
+        # Documents and queries are separate: models like BGE embed queries with an
+        # instruction prefix, so the same text has a different vector in each role.
+        return hashlib.sha256(f"{self.model_name}\x00{kind}\x00{text}".encode()).hexdigest()
 
     def _get(self, keys: list[str]) -> dict[str, list[float]]:
         found: dict[str, list[float]] = {}
@@ -63,7 +65,7 @@ class CachedEmbeddings(Embeddings):
         return [cached[k] for k in keys]
 
     def embed_query(self, text: str) -> list[float]:
-        key = self._key(text)
+        key = self._key(text, "query")
         with self._lock:
             cached = self._get([key])
             if key in cached:
@@ -78,8 +80,62 @@ class CachedEmbeddings(Embeddings):
         self._db.close()
 
 
-def openai_embeddings(model: str, api_key: str, cache_dir: Path) -> CachedEmbeddings:
-    from langchain_openai import OpenAIEmbeddings
+class FastEmbedEmbeddings(Embeddings):
+    """Local embeddings through fastembed (ONNX Runtime, CPU, no PyTorch).
 
-    underlying = OpenAIEmbeddings(model=model, api_key=api_key)
-    return CachedEmbeddings(underlying, model, cache_dir / "embeddings.sqlite")
+    ``query_prefix`` is prepended to queries only. BGE models recommend an instruction
+    for short-query-to-passage retrieval; documents are embedded as they are.
+    """
+
+    def __init__(
+        self,
+        model_name: str,
+        cache_dir: Path,
+        query_prefix: str = "",
+        threads: int | None = None,
+        batch_size: int = 32,
+    ) -> None:
+        from fastembed import TextEmbedding
+
+        self.model_name = model_name
+        self.query_prefix = query_prefix
+        self.batch_size = batch_size
+        self._model = TextEmbedding(
+            model_name=model_name, cache_dir=str(cache_dir), threads=threads
+        )
+
+    def embed_documents(self, texts: list[str]) -> list[list[float]]:
+        vectors = self._model.passage_embed(texts, batch_size=self.batch_size)
+        return [v.tolist() for v in vectors]
+
+    def embed_query(self, text: str) -> list[float]:
+        return next(iter(self._model.query_embed(self.query_prefix + text))).tolist()
+
+
+def make_embeddings(
+    provider: str,
+    model: str,
+    cache_dir: Path,
+    query_prefix: str = "",
+    threads: int | None = None,
+    openai_api_key: str | None = None,
+) -> CachedEmbeddings:
+    """Build the configured embedding model, wrapped in the persistent cache.
+
+    The cache key includes the query prefix, so changing it never reuses old query vectors.
+    """
+    if provider == "fastembed":
+        underlying: Embeddings = FastEmbedEmbeddings(
+            model, cache_dir / "fastembed", query_prefix=query_prefix, threads=threads
+        )
+    elif provider == "openai":
+        from langchain_openai import OpenAIEmbeddings
+
+        if not openai_api_key:
+            raise RuntimeError("OPENAI_API_KEY is required for the openai embedding provider")
+        underlying = OpenAIEmbeddings(model=model, api_key=openai_api_key)
+        query_prefix = ""
+    else:
+        raise ValueError(f"unknown embedding provider {provider!r}")
+    cache_name = f"{provider}:{model}|q={query_prefix}"
+    return CachedEmbeddings(underlying, cache_name, cache_dir / "embeddings.sqlite")
