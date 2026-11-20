@@ -5,6 +5,8 @@ from helpers import HashingEmbeddings, word_count
 from rag.evaluation.known_phrases import pick_phrase, run_known_phrase_check, summarize
 from rag.indexing.index import VersionedIndex
 from rag.ingestion.pipeline import ingest_file
+from rag.retrieval.bm25 import BM25Index
+from rag.retrieval.hybrid import Retriever
 
 
 def test_pick_phrase_prefers_prose_over_numbers():
@@ -22,7 +24,8 @@ def test_pick_phrase_returns_empty_when_nothing_fits():
 def test_known_phrase_check_on_fixture(tmp_path, fixtures_dir):
     index = VersionedIndex.open(tmp_path / "idx", HashingEmbeddings(), "hashing-test", 300, 50)
     ingest_file(fixtures_dir / "sample_paper.pdf", index, token_counter=word_count)
-    results = run_known_phrase_check(index, samples=10, k=3)
+    retriever = Retriever(index, BM25Index.from_store(index.store), mode="dense")
+    results = run_known_phrase_check(retriever, samples=10, k=3)
     assert results  # at least one prose sentence was found
     summary = summarize(results, 3)
     assert summary["page_at_1"] == 1.0

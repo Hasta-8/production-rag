@@ -6,6 +6,8 @@ import re
 
 from langchain_core.embeddings import Embeddings
 
+from rag.generation.llm import Generation
+
 _WORD = re.compile(r"[a-z0-9]+(?:\.[0-9]+)?")
 
 
@@ -40,3 +42,19 @@ class HashingEmbeddings(Embeddings):
 def word_count(text: str) -> int:
     """Stand-in token counter, so unit tests do not need tiktoken's download."""
     return len(text.split())
+
+
+class FakeLLM:
+    """Returns canned text and records what it was asked."""
+
+    def __init__(self, text: str, completion_tokens: int = 20) -> None:
+        self.name = "fake-llm"
+        self.text = text
+        self.completion_tokens = completion_tokens
+        self.calls: list = []
+
+    def generate(self, messages, max_tokens, on_token=None):
+        self.calls.append(messages)
+        if on_token:
+            on_token(self.text)
+        return Generation(self.text, self.name, 100, self.completion_tokens, 5.0, 1.0)

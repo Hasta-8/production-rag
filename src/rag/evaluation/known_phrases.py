@@ -12,8 +12,7 @@ import random
 import re
 from dataclasses import dataclass
 
-from rag.indexing.index import VersionedIndex
-from rag.retrieval.dense import dense_search
+from rag.retrieval.hybrid import Retriever
 
 _SENTENCE_SPLIT = re.compile(r"(?<=[.!?])\s+")
 _WORD = re.compile(r"[A-Za-z]{3,}")
@@ -60,9 +59,9 @@ def pick_phrase(text: str, rng: random.Random, min_words: int = 8, max_words: in
 
 
 def run_known_phrase_check(
-    index: VersionedIndex, samples: int = 50, k: int = 5, seed: int = 7
+    retriever: Retriever, samples: int = 50, k: int = 5, seed: int = 7
 ) -> list[PhraseResult]:
-    data = index.store.get(include=["documents", "metadatas"])
+    data = retriever.index.store.get(include=["documents", "metadatas"])
     chunks = list(zip(data["ids"], data["documents"], data["metadatas"], strict=True))
     chunks.sort(key=lambda c: c[0])  # stable order, so the seed gives the same sample
     rng = random.Random(seed)
@@ -75,7 +74,7 @@ def run_known_phrase_check(
         phrase = pick_phrase(text, rng)
         if not phrase:
             continue
-        hits = dense_search(index, phrase, k=k)
+        hits = retriever.search(phrase, k=k)
         rank = next(
             (h.rank for h in hits if h.doc_id == meta["doc_id"] and h.page == meta["page"]),
             None,

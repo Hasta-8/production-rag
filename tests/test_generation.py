@@ -1,7 +1,7 @@
 from pathlib import Path
 
 import pytest
-from helpers import HashingEmbeddings, word_count
+from helpers import FakeLLM, HashingEmbeddings, word_count
 
 from rag.evaluation.golden import (
     GoldenQuestion,
@@ -18,27 +18,12 @@ from rag.generation.citations import (
     is_refusal,
     remove_tags,
 )
-from rag.generation.llm import Generation, LlamaCppClient, LLMError, _ThinkFilter, strip_reasoning
+from rag.generation.llm import LlamaCppClient, LLMError, _ThinkFilter, strip_reasoning
 from rag.generation.prompts import REFUSAL, PromptSource, build_messages
 from rag.indexing.index import VersionedIndex
 from rag.ingestion.pipeline import ingest_file
-
-
-class FakeLLM:
-    """Returns canned text and records what it was asked."""
-
-    def __init__(self, text: str, completion_tokens: int = 20) -> None:
-        self.name = "fake-llm"
-        self.text = text
-        self.completion_tokens = completion_tokens
-        self.calls: list = []
-
-    def generate(self, messages, max_tokens, on_token=None):
-        self.calls.append(messages)
-        if on_token:
-            on_token(self.text)
-        return Generation(self.text, self.name, 100, self.completion_tokens, 5.0, 1.0)
-
+from rag.retrieval.bm25 import BM25Index
+from rag.retrieval.hybrid import Retriever
 
 SOURCES = [
     PromptSource("S1", "Quokka paper", 2, "The quokka index stores dense vectors in a graph."),
@@ -131,9 +116,9 @@ def test_clean_answer_removes_echoed_sources_and_stray_tags():
     assert clean_answer("Ends normally [S1].") == ("Ends normally [S1].", [])
 
 
-def test_echoed_sources_are_removed_in_the_pipeline(index):
+def test_echoed_sources_are_removed_in_the_pipeline(retriever):
     llm = FakeLLM("The quokka index stores dense vectors [S1].\n[S1] (Quokka Retrieval, p. 2) The")
-    ans = answer_question(QUESTION, index, llm, AnswerSettings(min_relevance=0.0))
+    ans = answer_question(QUESTION, retriever, llm, AnswerSettings(min_relevance=0.0))
     assert ans.text == "The quokka index stores dense vectors [S1]."
     assert ans.trace.get("generate").data["cleaned"] == ["echoed source list"]
 
@@ -184,18 +169,18 @@ def test_missing_model_file_raises_llm_error(tmp_path):
 
 
 @pytest.fixture
-def index(tmp_path, fixtures_dir):
+def retriever(tmp_path, fixtures_dir):
     idx = VersionedIndex.open(tmp_path / "idx", HashingEmbeddings(), "hashing-test", 300, 50)
     ingest_file(fixtures_dir / "sample_paper.pdf", idx, token_counter=word_count)
-    return idx
+    return Retriever(idx, BM25Index.from_store(idx.store), mode="dense")
 
 
 QUESTION = "What does the quokka index store in a hierarchical graph?"
 
 
-def test_answer_with_valid_citation(index):
+def test_answer_with_valid_citation(retriever):
     llm = FakeLLM("The quokka index stores dense vectors in a hierarchical graph [S1].")
-    ans = answer_question(QUESTION, index, llm, AnswerSettings(min_relevance=0.0))
+    ans = answer_question(QUESTION, retriever, llm, AnswerSettings(min_relevance=0.0))
     assert not ans.abstained
     assert ans.cited == ["S1"] and not ans.citations_inferred
     assert ans.cited_sources[0].page == 2
@@ -203,30 +188,32 @@ def test_answer_with_valid_citation(index):
     assert "[S1]" in llm.calls[0][1]["content"]  # sources were in the prompt
 
 
-def test_low_relevance_abstains_without_calling_the_llm(index):
+def test_low_relevance_abstains_without_calling_the_llm(retriever):
     llm = FakeLLM("should not be used")
-    ans = answer_question(QUESTION, index, llm, AnswerSettings(min_relevance=0.999))
+    ans = answer_question(QUESTION, retriever, llm, AnswerSettings(min_relevance=0.999))
     assert ans.abstained and "below the threshold" in ans.abstain_reason
     assert ans.text == REFUSAL and llm.calls == []
     assert [s.name for s in ans.trace.steps] == ["retrieve", "grade"]
 
 
-def test_model_refusal_is_an_abstention(index):
+def test_model_refusal_is_an_abstention(retriever):
     llm = FakeLLM(REFUSAL)
-    ans = answer_question(QUESTION, index, llm, AnswerSettings(min_relevance=0.0))
+    ans = answer_question(QUESTION, retriever, llm, AnswerSettings(min_relevance=0.0))
     assert ans.abstained and ans.cited == [] and ans.model == "fake-llm"
 
 
-def test_answer_hitting_token_cap_is_trimmed(index):
+def test_answer_hitting_token_cap_is_trimmed(retriever):
     llm = FakeLLM("It stores vectors [S1]. It also keeps sixteen neigh", completion_tokens=150)
-    ans = answer_question(QUESTION, index, llm, AnswerSettings(min_relevance=0.0, max_tokens=150))
+    ans = answer_question(
+        QUESTION, retriever, llm, AnswerSettings(min_relevance=0.0, max_tokens=150)
+    )
     assert ans.text == "It stores vectors [S1]."
     assert ans.trace.get("generate").data["truncated"] is True
 
 
-def test_context_k_limits_sources(index):
+def test_context_k_limits_sources(retriever):
     llm = FakeLLM("Answer [S1].")
-    ans = answer_question(QUESTION, index, llm, AnswerSettings(min_relevance=0.0, context_k=2))
+    ans = answer_question(QUESTION, retriever, llm, AnswerSettings(min_relevance=0.0, context_k=2))
     assert [s.tag for s in ans.sources] == ["S1", "S2"]
 
 

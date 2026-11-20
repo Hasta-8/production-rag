@@ -137,17 +137,46 @@ def cmd_ingest(args: argparse.Namespace) -> int:
     return 1 if errors else 0
 
 
-def cmd_search(args: argparse.Namespace) -> int:
-    from rag.retrieval.dense import dense_search
+def _make_retriever(settings, index, mode: str | None = None):
+    from rag.retrieval.bm25 import BM25Index
+    from rag.retrieval.hybrid import Retriever
 
+    mode = mode or settings.retrieval_mode
+    reranker = None
+    if mode.endswith("_rerank"):
+        from rag.retrieval.rerank import CrossEncoderReranker
+
+        reranker = CrossEncoderReranker(settings.reranker_model, cache_dir=settings.fastembed_dir)
+    return Retriever(
+        index,
+        BM25Index.from_store(index.store),
+        reranker=reranker,
+        mode=mode,
+        candidates=settings.rerank_candidates,
+        rrf_k=settings.rrf_k,
+    )
+
+
+def _fmt(x, spec=".3f"):
+    return "-" if x is None else format(x, spec)
+
+
+def cmd_search(args: argparse.Namespace) -> int:
     settings = get_settings()
     index, _ = _open_index(settings)
     if not index.info.documents:
         _print("The index is empty. Run `rag ingest` first.")
         return 1
-    for hit in dense_search(index, args.query, k=args.k):
-        snippet = " ".join(hit.text.split())[:160]
-        _print(f"{hit.rank}. [{hit.score:.3f}] {hit.title} — p. {hit.page}\n   {snippet}…")
+    retriever = _make_retriever(settings, index, args.mode)
+    _print(f"mode: {retriever.mode}")
+    for c in retriever.search(args.query, k=args.k):
+        snippet = " ".join(c.text.split())[:150]
+        _print(
+            f"{c.rank}. {c.title[:60]} — p. {c.page}\n"
+            f"   dense #{_fmt(c.dense_rank, 'd')} ({_fmt(c.dense_score)}) | bm25 "
+            f"#{_fmt(c.bm25_rank, 'd')} ({_fmt(c.bm25_score, '.1f')}) | fused "
+            f"#{_fmt(c.fused_rank, 'd')} | rerank {_fmt(c.rerank_score, '.2f')}\n   {snippet}…"
+        )
     return 0
 
 
@@ -165,6 +194,7 @@ def _answer_settings(settings):
         retrieve_k=settings.retrieve_k,
         context_k=settings.context_k,
         min_relevance=settings.min_relevance,
+        min_rerank_score=settings.min_rerank_score,
         max_tokens=settings.answer_max_tokens,
     )
 
@@ -176,6 +206,7 @@ def cmd_ask(args: argparse.Namespace) -> int:
 
     settings = get_settings()
     index, _ = _open_index(settings)
+    retriever = _make_retriever(settings, index, args.mode)
     llm = _make_llm(settings, fallback=args.small)
     streamed = []
 
@@ -186,7 +217,9 @@ def cmd_ask(args: argparse.Namespace) -> int:
 
     if not args.json:
         _print(f"Q: {args.question}\n(retrieving, then generating with {llm.name}…)\n")
-    answer = answer_question(args.question, index, llm, _answer_settings(settings), on_token=show)
+    answer = answer_question(
+        args.question, retriever, llm, _answer_settings(settings), on_token=show
+    )
 
     if args.json:
         from dataclasses import asdict
@@ -211,7 +244,12 @@ def cmd_ask(args: argparse.Namespace) -> int:
             _print(f"{step.name:<10} {step.ms:>9.1f} ms  {data}")
             if step.name == "retrieve":
                 for h in step.data["hits"]:
-                    _print(f"           {h['score']:.3f}  {h['title'][:50]} p. {h['page']}")
+                    _print(
+                        f"           #{h['rank']:<2} {h['title'][:44]} p. {h['page']:<3} "
+                        f"dense #{_fmt(h['dense_rank'], 'd')} bm25 #{_fmt(h['bm25_rank'], 'd')} "
+                        f"fused #{_fmt(h['fused_rank'], 'd')} "
+                        f"rerank {_fmt(h['rerank_score'], '.2f')}"
+                    )
         _print(f"total      {answer.trace.total_ms:>9.1f} ms")
     return 0
 
@@ -236,7 +274,9 @@ def cmd_eval_phrases(args: argparse.Namespace) -> int:
     if not index.info.documents:
         _print("The index is empty. Run `rag ingest` first.")
         return 1
-    results = run_known_phrase_check(index, samples=args.samples, k=args.k, seed=args.seed)
+    retriever = _make_retriever(settings, index, args.mode)
+    _print(f"mode: {retriever.mode}")
+    results = run_known_phrase_check(retriever, samples=args.samples, k=args.k, seed=args.seed)
     if args.verbose:
         for r in results:
             if r.rank_of_page != 1:
@@ -277,22 +317,29 @@ def cmd_eval_golden(args: argparse.Namespace) -> int:
     questions = golden.load_golden(Path(args.golden))
     if args.limit:
         questions = questions[: args.limit]
+    retriever = _make_retriever(settings, index, args.mode)
     config = {
         "index_version": index.info.version,
         "embedding_model": settings.embedding_model,
-        "retrieval": "dense",
+        "retrieval": retriever.mode,
+        "rerank_candidates": settings.rerank_candidates,
+        "reranker": settings.reranker_model if retriever.uses_reranker else None,
+        "rrf_k": settings.rrf_k,
         "retrieve_k": settings.retrieve_k,
         "context_k": settings.context_k,
         "min_relevance": settings.min_relevance,
+        "min_rerank_score": settings.min_rerank_score,
         "questions": len(questions),
     }
 
-    rows, summary = golden.evaluate_retrieval(index, questions)
-    _print(f"Retrieval ({len(questions)} questions, dense):")
+    thresholds = golden.RERANK_THRESHOLDS if retriever.uses_reranker else golden.DENSE_THRESHOLDS
+    rows, summary = golden.evaluate_retrieval(retriever, questions, thresholds=thresholds)
+    signal = "reranker logit" if retriever.uses_reranker else "dense cosine"
+    _print(f"Retrieval ({len(questions)} questions, {retriever.mode}):")
     for key, value in summary.items():
         if key != "calibration":
             _print(f"  {key:<16} {value:.3f}")
-    _print("  Abstention threshold calibration (best dense score):")
+    _print(f"  Abstention threshold calibration (best {signal} score):")
     _print("    threshold  answerable kept  unanswerable rejected")
     for row in summary["calibration"]:
         _print(
@@ -325,13 +372,80 @@ def cmd_eval_golden(args: argparse.Namespace) -> int:
         _print(f"  {mark}{r.id} {r.seconds:>6.1f}s {status}")
 
     arows, asummary = golden.evaluate_answers(
-        index, llm, questions, _answer_settings(settings), on_row=show
+        retriever, llm, questions, _answer_settings(settings), on_row=show
     )
     _print("\nAnswer summary:")
     for key, value in asummary.items():
         _print(f"  {key:<24} {value}")
     out = golden.save_results(out_dir, args.label, config, {**summary, **asummary}, arows)
     _print(f"\nSaved {out}")
+    return 0
+
+
+def cmd_eval_beir(args: argparse.Namespace) -> int:
+    import json
+    from datetime import UTC, datetime
+    from pathlib import Path
+
+    from rag.evaluation import beir
+    from rag.indexing.embeddings import make_embeddings
+
+    settings = get_settings()
+    settings.export_hf_token()
+    folder, sha = beir.download(args.dataset, Path("data/beir"))
+    ds = beir.load(folder)
+    _print(
+        f"{args.dataset}: {len(ds.corpus)} documents, {len(ds.queries)} test queries "
+        f"(zip sha256 {sha[:12]}…)"
+    )
+    embeddings = make_embeddings(
+        settings.embedding_provider,
+        settings.embedding_model,
+        settings.cache_dir,
+        query_prefix=settings.embedding_query_prefix,
+        threads=settings.embedding_threads,
+        model_dir=settings.fastembed_dir,
+    )
+    persist = (
+        settings.index_dir / f"beir-{args.dataset}" / settings.embedding_model.replace("/", "_")
+    )
+
+    def progress(done, total):
+        _print(f"  embedded {done}/{total}")
+
+    index, bm25 = beir.build_index(ds, persist, embeddings, on_progress=progress)
+    queries = sorted(ds.queries)[: args.limit] if args.limit else None
+    results = []
+    for mode in args.modes.split(","):
+        reranker = None
+        if mode.endswith("_rerank"):
+            from rag.retrieval.rerank import CrossEncoderReranker
+
+            reranker = CrossEncoderReranker(
+                settings.reranker_model, cache_dir=settings.fastembed_dir
+            )
+        res = beir.evaluate_mode(ds, index, bm25, mode, reranker, queries=queries)
+        results.append(res)
+        _print(
+            f"  {mode:<14} nDCG@10 {res['ndcg@10']:.4f}  Recall@100 {res['recall@100']:.4f}  "
+            f"p50 {res['p50_ms']:.0f} ms  p95 {res['p95_ms']:.0f} ms"
+        )
+    out = Path("eval/results") / f"{datetime.now(UTC):%Y-%m-%d}_beir-{args.dataset}.json"
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(
+        json.dumps(
+            {
+                "dataset": args.dataset,
+                "zip_sha256": sha,
+                "documents": len(ds.corpus),
+                "embedding_model": settings.embedding_model,
+                "reranker": settings.reranker_model,
+                "results": results,
+            },
+            indent=2,
+        )
+    )
+    _print(f"Saved {out}")
     return 0
 
 
@@ -355,6 +469,10 @@ def build_parser() -> argparse.ArgumentParser:
     search_p = sub.add_parser("search", help="Dense search over the index")
     search_p.add_argument("query")
     search_p.add_argument("-k", type=int, default=5)
+    search_p.add_argument(
+        "--mode",
+        help="Retrieval mode (default: settings): dense, bm25, hybrid, dense_rerank, hybrid_rerank",
+    )
     search_p.set_defaults(func=cmd_search)
 
     ask_p = sub.add_parser("ask", help="Answer a question with citations (local LLM)")
@@ -362,6 +480,10 @@ def build_parser() -> argparse.ArgumentParser:
     ask_p.add_argument("--trace", action="store_true", help="Show every pipeline step")
     ask_p.add_argument("--json", action="store_true", help="Print the full answer as JSON")
     ask_p.add_argument("--small", action="store_true", help="Use the fallback model (0.6B)")
+    ask_p.add_argument(
+        "--mode",
+        help="Retrieval mode (default: settings): dense, bm25, hybrid, dense_rerank, hybrid_rerank",
+    )
     ask_p.set_defaults(func=cmd_ask)
 
     index_p = sub.add_parser("index", help="Index information")
@@ -377,6 +499,10 @@ def build_parser() -> argparse.ArgumentParser:
     phrases_p.add_argument("-k", type=int, default=5)
     phrases_p.add_argument("--seed", type=int, default=7)
     phrases_p.add_argument("-v", "--verbose", action="store_true", help="List every miss")
+    phrases_p.add_argument(
+        "--mode",
+        help="Retrieval mode (default: settings): dense, bm25, hybrid, dense_rerank, hybrid_rerank",
+    )
     phrases_p.set_defaults(func=cmd_eval_phrases)
     golden_p = eval_sub.add_parser("golden", help="Golden question set: retrieval and answers")
     golden_p.add_argument("--golden", default="eval/golden.yaml")
@@ -384,8 +510,17 @@ def build_parser() -> argparse.ArgumentParser:
     golden_p.add_argument("--retrieval-only", action="store_true", help="Skip the LLM (fast)")
     golden_p.add_argument("--limit", type=int, default=0)
     golden_p.add_argument("--small", action="store_true", help="Use the fallback model")
+    golden_p.add_argument(
+        "--mode",
+        help="Retrieval mode (default: settings): dense, bm25, hybrid, dense_rerank, hybrid_rerank",
+    )
     golden_p.add_argument("-v", "--verbose", action="store_true")
     golden_p.set_defaults(func=cmd_eval_golden)
+    beir_p = eval_sub.add_parser("beir", help="Public benchmark (BEIR): nDCG@10, Recall@100")
+    beir_p.add_argument("--dataset", default="scifact")
+    beir_p.add_argument("--modes", default="bm25,dense,hybrid,hybrid_rerank")
+    beir_p.add_argument("--limit", type=int, default=0, help="Evaluate only the first N queries")
+    beir_p.set_defaults(func=cmd_eval_beir)
     return parser
 
 

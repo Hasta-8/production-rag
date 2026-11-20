@@ -17,10 +17,10 @@ from pathlib import Path
 import yaml
 from pydantic import BaseModel
 
-from rag.generation.answer import Answer, AnswerSettings, answer_question
+from rag.generation.answer import Answer, AnswerSettings, answer_question, relevance_signal
 from rag.generation.llm import LLMClient
 from rag.indexing.index import VersionedIndex
-from rag.retrieval.dense import dense_search
+from rag.retrieval.hybrid import Retriever
 
 KS = (1, 3, 5, 10)
 
@@ -92,22 +92,20 @@ class RetrievalRow:
 
 
 def evaluate_retrieval(
-    index: VersionedIndex, questions: list[GoldenQuestion], k: int = max(KS)
+    retriever: Retriever,
+    questions: list[GoldenQuestion],
+    k: int = max(KS),
+    thresholds: list[float] | None = None,
 ) -> tuple[list[RetrievalRow], dict]:
-    evidence = resolve_evidence(questions, page_texts(index))
+    evidence = resolve_evidence(questions, page_texts(retriever.index))
     rows = []
     for q in questions:
-        hits = dense_search(index, q.question, k=k)
-        row = RetrievalRow(q.id, q.answerable, round(hits[0].score, 4) if hits else 0.0)
+        hits = retriever.search(q.question, k=k)
+        _, best = relevance_signal(hits, retriever.uses_reranker)
+        row = RetrievalRow(q.id, q.answerable, round(best, 4) if best is not None else 0.0)
         if q.answerable:
-            # Retrieval hits carry doc_id; match through the arxiv_id stored in chunk metadata.
-            meta = index.store.get(ids=[h.chunk_id for h in hits], include=["metadatas"])
-            arxiv_by_chunk = {
-                cid: str(m.get("arxiv_id", ""))
-                for cid, m in zip(meta["ids"], meta["metadatas"], strict=True)
-            }
             for h in hits:
-                same_paper = arxiv_by_chunk.get(h.chunk_id) == q.arxiv_id
+                same_paper = str(h.meta.get("arxiv_id", "")) == q.arxiv_id
                 if same_paper and row.paper_rank is None:
                     row.paper_rank = h.rank
                 if same_paper and h.page in evidence[q.id] and row.first_hit_rank is None:
@@ -125,16 +123,20 @@ def evaluate_retrieval(
     }
     summary["page_mrr"] = sum(1 / r.first_hit_rank for r in ans if r.first_hit_rank) / n
     summary["paper_at_1"] = sum(r.paper_rank == 1 for r in ans) / n
-    summary["calibration"] = threshold_table(rows)
+    summary["calibration"] = threshold_table(rows, thresholds)
     return rows, summary
 
 
-def threshold_table(rows: list[RetrievalRow]) -> list[dict]:
+DENSE_THRESHOLDS = [x / 100 for x in range(50, 86, 5)]
+RERANK_THRESHOLDS = [float(x) for x in range(-8, 9)]
+
+
+def threshold_table(rows: list[RetrievalRow], thresholds: list[float] | None = None) -> list[dict]:
     """For each relevance threshold: share of answerable kept and unanswerable rejected."""
     ans = [r.best_score for r in rows if r.answerable]
     una = [r.best_score for r in rows if not r.answerable]
     table = []
-    for t in [x / 100 for x in range(50, 86, 5)]:
+    for t in thresholds or DENSE_THRESHOLDS:
         table.append(
             {
                 "threshold": t,
@@ -164,12 +166,13 @@ class AnswerRow:
 
 
 def evaluate_answers(
-    index: VersionedIndex,
+    retriever: Retriever,
     llm: LLMClient,
     questions: list[GoldenQuestion],
     settings: AnswerSettings,
     on_row: Callable[[AnswerRow], None] = lambda _r: None,
 ) -> tuple[list[AnswerRow], dict]:
+    index: VersionedIndex = retriever.index
     pages = page_texts(index)
     evidence = resolve_evidence(questions, pages)
     data = index.store.get(include=["metadatas"])
@@ -180,7 +183,7 @@ def evaluate_answers(
     rows = []
     for q in questions:
         start = time.perf_counter()
-        ans: Answer = answer_question(q.question, index, llm, settings)
+        ans: Answer = answer_question(q.question, retriever, llm, settings)
         secs = round(time.perf_counter() - start, 1)
         on_evidence = None
         kw = None

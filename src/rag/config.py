@@ -32,10 +32,17 @@ class Settings(BaseSettings):
     llm_threads: int = 8  # measured faster than 4 on the 4-core/8-thread laptop CPU
     llm_n_ctx: int = 4096
 
-    # Answering (Phase 2 baseline)
+    # Retrieval (Phase 3)
+    retrieval_mode: str = "hybrid_rerank"  # dense | bm25 | hybrid | dense_rerank | hybrid_rerank
+    rerank_candidates: int = 20  # pool size fused and reranked before taking the top k
+    rrf_k: int = 60
+    reranker_model: str = "Xenova/ms-marco-MiniLM-L-6-v2"
+
+    # Answering
     retrieve_k: int = 10
     context_k: int = 3
-    min_relevance: float = 0.60  # see eval/results calibration table
+    min_relevance: float = 0.60  # dense cosine threshold; see eval/results calibration
+    min_rerank_score: float = 2.0  # cross-encoder logit; golden calibration keeps 100% answerable
     answer_max_tokens: int = 150
 
     # Indexing

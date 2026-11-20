@@ -12,8 +12,7 @@ from dataclasses import dataclass, field
 from rag.generation.citations import check_citations, clean_answer, is_refusal
 from rag.generation.llm import LLMClient, TokenCallback
 from rag.generation.prompts import PROMPT_VERSION, REFUSAL, PromptSource, build_messages
-from rag.indexing.index import VersionedIndex
-from rag.retrieval.dense import SearchHit, dense_search
+from rag.retrieval.hybrid import Candidate, Retriever
 from rag.tracing import Trace
 
 
@@ -21,7 +20,8 @@ from rag.tracing import Trace
 class AnswerSettings:
     retrieve_k: int = 10  # candidates retrieved (shown in the trace)
     context_k: int = 3  # sources passed to the LLM (D2: small prompts on a CPU)
-    min_relevance: float = 0.60  # calibrated on the golden set: rejects off-topic only
+    min_relevance: float = 0.60  # dense cosine threshold (modes without a reranker)
+    min_rerank_score: float = 2.0  # cross-encoder logit threshold (reranked modes)
     max_tokens: int = 150  # D3: short answers
 
 
@@ -71,13 +71,24 @@ def trim_incomplete_sentence(text: str) -> tuple[str, bool]:
     return stripped[: ends[-1].end()].rstrip(), True
 
 
-def _hit_summary(h: SearchHit) -> dict:
-    return {"chunk_id": h.chunk_id, "title": h.title, "page": h.page, "score": round(h.score, 4)}
+def relevance_signal(cands: list[Candidate], reranked: bool) -> tuple[str, float | None]:
+    """The score used to decide whether the evidence is good enough.
+
+    With a reranker: the best cross-encoder score. Otherwise: the best dense cosine score
+    among the candidates (BM25 scores are not comparable across queries). BM25-only
+    retrieval has no usable signal, so it returns None and is not gated.
+    """
+    if not cands:
+        return ("none", 0.0)
+    if reranked:
+        return ("rerank", max(c.rerank_score for c in cands))
+    dense = [c.dense_score for c in cands if c.dense_score is not None]
+    return ("dense", max(dense)) if dense else ("none", None)
 
 
 def answer_question(
     question: str,
-    index: VersionedIndex,
+    retriever: Retriever,
     llm: LLMClient,
     settings: AnswerSettings = AnswerSettings(),
     on_token: TokenCallback | None = None,
@@ -85,14 +96,18 @@ def answer_question(
     trace = Trace()
     question = question.strip()
 
-    with trace.step("retrieve", method="dense", k=settings.retrieve_k) as rec:
-        hits = dense_search(index, question, k=settings.retrieve_k)
-        rec["hits"] = [_hit_summary(h) for h in hits]
+    with trace.step("retrieve", mode=retriever.mode, k=settings.retrieve_k) as rec:
+        hits = retriever.search(question, k=settings.retrieve_k)
+        rec["hits"] = [h.summary() for h in hits]
 
-    best = hits[0].score if hits else 0.0
-    with trace.step("grade", min_relevance=settings.min_relevance) as rec:
-        relevant = best >= settings.min_relevance
-        rec.update(best_score=round(best, 4), verdict="relevant" if relevant else "too weak")
+    signal, best = relevance_signal(hits, retriever.uses_reranker)
+    threshold = settings.min_rerank_score if signal == "rerank" else settings.min_relevance
+    with trace.step("grade", signal=signal, threshold=threshold) as rec:
+        relevant = bool(hits) and (best is None or best >= threshold)
+        rec.update(
+            best_score=None if best is None else round(best, 4),
+            verdict="relevant" if relevant else "too weak",
+        )
 
     sources = [
         Source(f"S{i}", h.chunk_id, h.doc_id, h.title, h.page, round(h.score, 4), h.text)
@@ -100,7 +115,8 @@ def answer_question(
     ]
 
     if not relevant:
-        reason = f"best relevance {best:.2f} is below the threshold {settings.min_relevance:.2f}"
+        shown = "none" if best is None else f"{best:.2f}"
+        reason = f"best {signal} score {shown} is below the threshold {threshold:.2f}"
         return Answer(question, REFUSAL, True, reason, sources, [], False, None, trace=trace)
 
     prompt_sources = [PromptSource(s.tag, s.title, s.page, s.text) for s in sources]
