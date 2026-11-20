@@ -11,7 +11,13 @@ from rag.evaluation.golden import (
     threshold_table,
 )
 from rag.generation.answer import AnswerSettings, answer_question, trim_incomplete_sentence
-from rag.generation.citations import check_citations, find_tags, is_refusal, remove_tags
+from rag.generation.citations import (
+    check_citations,
+    clean_answer,
+    find_tags,
+    is_refusal,
+    remove_tags,
+)
 from rag.generation.llm import Generation, LlamaCppClient, LLMError, _ThinkFilter, strip_reasoning
 from rag.generation.prompts import REFUSAL, PromptSource, build_messages
 from rag.indexing.index import VersionedIndex
@@ -96,6 +102,40 @@ def test_refusal_detection():
     assert is_refusal(REFUSAL)
     assert is_refusal("Sorry, I don’t have enough information in the indexed documents.")
     assert not is_refusal("The index stores vectors [S1].")
+
+
+def test_short_soft_refusal_counts_but_a_real_answer_with_a_gap_does_not():
+    soft = (
+        "The benchmark includes many datasets, but the exact number is not specified in the "
+        "provided sources [S1][S2]."
+    )
+    assert is_refusal(soft)
+    partial = (
+        "The index stores dense vectors [S1]. Its build time is not specified in the provided "
+        "sources [S1]."
+    )
+    assert not is_refusal(partial)
+
+
+def test_clean_answer_removes_echoed_sources_and_stray_tags():
+    echoed = "RAPTOR clusters and summarizes chunks [S1].\n\n[S1] (RAPTOR: Recursive Abstractive"
+    assert clean_answer(echoed) == (
+        "RAPTOR clusters and summarizes chunks [S1].",
+        ["echoed source list"],
+    )
+    stray = "It picks the most consistent answer [S2]. [S2]"
+    assert clean_answer(stray) == (
+        "It picks the most consistent answer [S2].",
+        ["stray trailing tags"],
+    )
+    assert clean_answer("Ends normally [S1].") == ("Ends normally [S1].", [])
+
+
+def test_echoed_sources_are_removed_in_the_pipeline(index):
+    llm = FakeLLM("The quokka index stores dense vectors [S1].\n[S1] (Quokka Retrieval, p. 2) The")
+    ans = answer_question(QUESTION, index, llm, AnswerSettings(min_relevance=0.0))
+    assert ans.text == "The quokka index stores dense vectors [S1]."
+    assert ans.trace.get("generate").data["cleaned"] == ["echoed source list"]
 
 
 @pytest.mark.parametrize(

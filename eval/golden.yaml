@@ -11,7 +11,7 @@
 # unanswerable questions (answerable: false) must be declined. Several are traps: the
 # corpus contains a similar-looking fact (for example RETRO's dropout rate, or "Canberra"
 # as a distance metric in the Faiss paper) that must not be used as the answer.
-version: 1
+version: 1.1  # 1.1 (2026-11-20): q07 evidence phrases made specific to the data-mixture page
 questions:
   - id: q01
     question: What new data type does QLoRA introduce for 4-bit quantization?
@@ -52,7 +52,8 @@ questions:
   - id: q07
     question: Which data sources were used to pre-train LLaMA?
     arxiv_id: "2302.13971"
-    evidence_phrases: ["commoncrawl"]
+    # v1.1: was "commoncrawl", which also matched related work on p. 11
+    evidence_phrases: ["english commoncrawl", "stack exchange"]
     keywords: ["commoncrawl|common crawl", "c4", "github", "wikipedia"]
     reference: Publicly available data including English CommonCrawl, C4, GitHub, Wikipedia, books, ArXiv and Stack Exchange.
   - id: q08

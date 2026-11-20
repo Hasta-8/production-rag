@@ -18,10 +18,40 @@ _STOP = set(
     "could may might not no do does did has have had their they them we our you your".split()
 )
 REFUSAL_MARKER = "don't have enough information"
+# Softer ways the model says "not in the sources". Only a short reply made of such a
+# statement counts as a refusal; a real answer that mentions a gap does not.
+_SOFT_REFUSALS = (
+    "not specified in the provided sources",
+    "not mentioned in the provided sources",
+    "not stated in the provided sources",
+    "the sources do not",
+    "the provided sources do not",
+    "no information about",
+)
+# The model sometimes starts re-listing the sources after its answer: "[S1] (Title, p. 3) ...".
+_SOURCE_ECHO = re.compile(r"\n\s*\[S\d+\]\s*\(")
+_TRAILING_TAGS = re.compile(r"(?<=[.!?])(\s*\[S\d+(?:\s*[,;]\s*S\d+)*\])+\s*$", re.IGNORECASE)
 
 
 def is_refusal(text: str) -> bool:
-    return REFUSAL_MARKER in text.lower().replace("’", "'") or text.strip() == REFUSAL
+    low = text.lower().replace("’", "'")
+    if REFUSAL_MARKER in low or text.strip() == REFUSAL:
+        return True
+    sentences = [s for s in _SENTENCE_END.split(text.strip()) if s.strip()]
+    return len(sentences) <= 1 and any(marker in low for marker in _SOFT_REFUSALS)
+
+
+def clean_answer(text: str) -> tuple[str, list[str]]:
+    """Remove output artefacts. Returns the cleaned text and what was removed."""
+    removed = []
+    echo = _SOURCE_ECHO.search(text)
+    if echo:
+        text = text[: echo.start()]
+        removed.append("echoed source list")
+    stripped = _TRAILING_TAGS.sub("", text.rstrip())
+    if stripped != text.rstrip():
+        removed.append("stray trailing tags")
+    return stripped.strip(), removed
 
 
 def find_tags(text: str) -> list[str]:

@@ -9,7 +9,7 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass, field
 
-from rag.generation.citations import check_citations, is_refusal
+from rag.generation.citations import check_citations, clean_answer, is_refusal
 from rag.generation.llm import LLMClient, TokenCallback
 from rag.generation.prompts import PROMPT_VERSION, REFUSAL, PromptSource, build_messages
 from rag.indexing.index import VersionedIndex
@@ -113,7 +113,11 @@ def answer_question(
             sources=[s.tag for s in sources],
         )
 
-    if is_refusal(gen.text):
+    text, removed = clean_answer(gen.text)
+    if removed:
+        trace.steps[-1].data["cleaned"] = removed
+
+    if is_refusal(text):
         with trace.step("citations") as rec:
             rec["result"] = "model declined to answer"
         return Answer(
@@ -128,7 +132,6 @@ def answer_question(
             trace=trace,
         )
 
-    text = gen.text
     if gen.completion_tokens >= settings.max_tokens:
         # Hit the token cap: drop a half-finished last sentence rather than show it.
         text, cut = trim_incomplete_sentence(text)
