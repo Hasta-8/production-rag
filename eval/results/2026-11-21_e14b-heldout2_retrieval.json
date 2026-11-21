@@ -1,0 +1,215 @@
+{
+  "label": "e14b-heldout2_retrieval",
+  "date": "2026-11-21",
+  "config": {
+    "index_version": "v-3358110700c6",
+    "embedding_model": "BAAI/bge-small-en-v1.5",
+    "retrieval": "hybrid_rerank",
+    "rerank_candidates": 20,
+    "reranker": "Xenova/ms-marco-MiniLM-L-6-v2",
+    "rrf_k": 60,
+    "skip_references": false,
+    "golden": "eval/heldout2.yaml v1",
+    "labels": "v2",
+    "retrieve_k": 10,
+    "context_k": 3,
+    "min_relevance": 0.6,
+    "min_rerank_score": 2.0,
+    "questions": 14
+  },
+  "summary": {
+    "page_recall@1": 0.7142857142857143,
+    "page_recall@3": 0.7142857142857143,
+    "page_recall@5": 0.7142857142857143,
+    "page_recall@10": 0.7142857142857143,
+    "page_mrr": 0.7142857142857143,
+    "paper_at_1": 1.0,
+    "calibration": [
+      {
+        "threshold": -8.0,
+        "answerable_kept": 1.0,
+        "unanswerable_rejected": 0.0
+      },
+      {
+        "threshold": -7.0,
+        "answerable_kept": 1.0,
+        "unanswerable_rejected": 0.0
+      },
+      {
+        "threshold": -6.0,
+        "answerable_kept": 1.0,
+        "unanswerable_rejected": 0.0
+      },
+      {
+        "threshold": -5.0,
+        "answerable_kept": 1.0,
+        "unanswerable_rejected": 0.0
+      },
+      {
+        "threshold": -4.0,
+        "answerable_kept": 1.0,
+        "unanswerable_rejected": 0.0
+      },
+      {
+        "threshold": -3.0,
+        "answerable_kept": 1.0,
+        "unanswerable_rejected": 0.0
+      },
+      {
+        "threshold": -2.0,
+        "answerable_kept": 1.0,
+        "unanswerable_rejected": 0.0
+      },
+      {
+        "threshold": -1.0,
+        "answerable_kept": 1.0,
+        "unanswerable_rejected": 0.2857142857142857
+      },
+      {
+        "threshold": 0.0,
+        "answerable_kept": 1.0,
+        "unanswerable_rejected": 0.2857142857142857
+      },
+      {
+        "threshold": 1.0,
+        "answerable_kept": 1.0,
+        "unanswerable_rejected": 0.42857142857142855
+      },
+      {
+        "threshold": 2.0,
+        "answerable_kept": 1.0,
+        "unanswerable_rejected": 0.42857142857142855
+      },
+      {
+        "threshold": 3.0,
+        "answerable_kept": 1.0,
+        "unanswerable_rejected": 0.7142857142857143
+      },
+      {
+        "threshold": 4.0,
+        "answerable_kept": 1.0,
+        "unanswerable_rejected": 0.8571428571428571
+      },
+      {
+        "threshold": 5.0,
+        "answerable_kept": 0.8571428571428571,
+        "unanswerable_rejected": 0.8571428571428571
+      },
+      {
+        "threshold": 6.0,
+        "answerable_kept": 0.7142857142857143,
+        "unanswerable_rejected": 1.0
+      },
+      {
+        "threshold": 7.0,
+        "answerable_kept": 0.2857142857142857,
+        "unanswerable_rejected": 1.0
+      },
+      {
+        "threshold": 8.0,
+        "answerable_kept": 0.0,
+        "unanswerable_rejected": 1.0
+      }
+    ]
+  },
+  "rows": [
+    {
+      "id": "a01",
+      "answerable": true,
+      "best_score": 6.1269,
+      "first_hit_rank": 1,
+      "paper_rank": 1
+    },
+    {
+      "id": "a02",
+      "answerable": true,
+      "best_score": 4.4256,
+      "first_hit_rank": null,
+      "paper_rank": 1
+    },
+    {
+      "id": "a03",
+      "answerable": true,
+      "best_score": 5.5697,
+      "first_hit_rank": 1,
+      "paper_rank": 1
+    },
+    {
+      "id": "a04",
+      "answerable": true,
+      "best_score": 7.1778,
+      "first_hit_rank": 1,
+      "paper_rank": 1
+    },
+    {
+      "id": "a05",
+      "answerable": true,
+      "best_score": 6.5306,
+      "first_hit_rank": null,
+      "paper_rank": 1
+    },
+    {
+      "id": "a06",
+      "answerable": true,
+      "best_score": 6.0478,
+      "first_hit_rank": 1,
+      "paper_rank": 1
+    },
+    {
+      "id": "a07",
+      "answerable": true,
+      "best_score": 7.2017,
+      "first_hit_rank": 1,
+      "paper_rank": 1
+    },
+    {
+      "id": "n01",
+      "answerable": false,
+      "best_score": 5.3928,
+      "first_hit_rank": null,
+      "paper_rank": null
+    },
+    {
+      "id": "n02",
+      "answerable": false,
+      "best_score": 2.2136,
+      "first_hit_rank": null,
+      "paper_rank": null
+    },
+    {
+      "id": "n03",
+      "answerable": false,
+      "best_score": -1.7986,
+      "first_hit_rank": null,
+      "paper_rank": null
+    },
+    {
+      "id": "n04",
+      "answerable": false,
+      "best_score": -1.9983,
+      "first_hit_rank": null,
+      "paper_rank": null
+    },
+    {
+      "id": "n05",
+      "answerable": false,
+      "best_score": 3.7326,
+      "first_hit_rank": null,
+      "paper_rank": null
+    },
+    {
+      "id": "n06",
+      "answerable": false,
+      "best_score": 2.0538,
+      "first_hit_rank": null,
+      "paper_rank": null
+    },
+    {
+      "id": "n07",
+      "answerable": false,
+      "best_score": 0.6932,
+      "first_hit_rank": null,
+      "paper_rank": null
+    }
+  ]
+}

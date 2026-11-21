@@ -1,0 +1,86 @@
+# Held-out set 2 (written 2026-11-21, before experiment E14 was implemented or run).
+#
+# Purpose: the E14 entity check was designed after seeing u01 (golden) and t02
+# (eval/heldout.yaml), so neither set can confirm it. These questions were written and
+# labelled by searching the page text only; no pipeline has been run on them.
+#
+# Same schema and labelling rule as eval/golden.yaml (v2 evidence_pages: every page with a
+# passage that states the answer). Every question names a model or paper, because that is
+# what the entity check acts on:
+# * answerable questions test over-refusal. Some name the entity differently from the text
+#   (a05: the DINO paper's title never says "DINO"; a06: "LLaMA-65B" against "a
+#   65B-parameter model").
+# * traps follow the u01 pattern: the corpus states a similar fact about a nearby model,
+#   and the asked-for fact was checked to be absent from the 28 indexed papers.
+version: 1
+questions:
+  - id: a01
+    question: How many experts does Mixtral route each token to?
+    arxiv_id: "2401.04088"
+    evidence_pages: [1, 2, 3]
+    keywords: ["two|2"]
+    reference: Two of the 8 experts per layer (top-2 routing).
+  - id: a02
+    question: Which pretrained language model does Self-RAG use as its generator?
+    arxiv_id: "2310.11511"
+    evidence_pages: [5, 7]
+    keywords: ["llama"]
+    reference: Llama 2 (7B and 13B).
+  - id: a03
+    question: What new quantization data type does QLoRA introduce?
+    arxiv_id: "2305.14314"
+    evidence_pages: [1, 2, 4, 5]
+    keywords: ["normalfloat|nf4"]
+    reference: 4-bit NormalFloat (NF4).
+  - id: a04
+    question: Which clustering algorithm does RAPTOR use?
+    arxiv_id: "2401.18059"
+    evidence_pages: [3, 4]
+    keywords: ["gaussian mixture|gmm"]
+    reference: Gaussian Mixture Models.
+  - id: a05
+    question: What batch size was DINO trained with?
+    arxiv_id: "2104.14294"
+    evidence_pages: [5]
+    keywords: ["1024|1,024"]
+    reference: 1024 (AdamW, distributed over 16 GPUs for ViT-S/16).
+  - id: a06
+    question: How many GPUs were used to train LLaMA-65B?
+    arxiv_id: "2302.13971"
+    evidence_pages: [4, 10]
+    keywords: ["2048|2,048"]
+    reference: 2048 A100 80GB GPUs.
+  - id: a07
+    question: What attention mechanism does Mistral 7B use for faster inference?
+    arxiv_id: "2310.06825"
+    evidence_pages: [1]
+    keywords: ["grouped|gqa"]
+    reference: Grouped-query attention (GQA), with sliding window attention for long sequences.
+  - id: n01
+    question: How many GPUs were used to train Mixtral?
+    answerable: false
+    note: Trap. Mixtral mentions GPUs only in general terms; LLaMA states its own 2048 A100s.
+  - id: n02
+    question: What batch size was CLIP trained with?
+    answerable: false
+    note: Trap. CLIP is only cited (E5, ColPali); DINO, Contriever and others state their own batch sizes.
+  - id: n03
+    question: How many tokens of text was RoBERTa pretrained on?
+    answerable: false
+    note: Trap. RoBERTa is used as an encoder by other papers; LLaMA states its own 1.4T tokens.
+  - id: n04
+    question: What is the embedding dimension of E5-mistral?
+    answerable: false
+    note: Trap. "e5-mistral" never appears; the E5 paper states e5-small/base/large sizes (384/768/1024).
+  - id: n05
+    question: What peak learning rate was used to pretrain Llama 2 70B?
+    answerable: false
+    note: Trap. Llama 2 70B appears only in comparisons; LLaMA (v1) states its own learning rates.
+  - id: n06
+    question: What context window does Mistral Large support?
+    answerable: false
+    note: Trap. "Mistral Large" never appears; Mistral 7B and Mixtral state their own context lengths.
+  - id: n07
+    question: What dropout rate was used to train BERT-base?
+    answerable: false
+    note: Trap. Only DETR (0.1) and RETRO (0.25) state dropout rates.

@@ -36,6 +36,7 @@ Model files live in a models folder set by `RAG_MODELS_DIR` (default
 | Hybrid retrieval (BM25 + dense, RRF) and cross-encoder reranking | IMPLEMENTED |
 | BEIR SciFact benchmark (`rag eval beir`) | IMPLEMENTED |
 | LangGraph correction loop with bounded retries and model fallback | IMPLEMENTED |
+| Entity check: names in the question must appear in a cited source | IMPLEMENTED |
 | Held-out question set for changes chosen after seeing results | IMPLEMENTED |
 | FastAPI service: security, caching, rate limits, streaming, observability | PLANNED |
 | Demo UI: chat, citation viewer, trace panel, compare mode | PLANNED |
@@ -196,26 +197,57 @@ beforehand it failed: the reranker scored those near-miss sentences 4–5, far
 above the gate. A relevance score measures topic, not identity. The retry
 stays available (`RAG_FOCUS_RETRY=true`) to reproduce the experiments.
 
-**Current results** (agent, re-indexed corpus):
+**Entity check (on by default).** After the model answers, every name in the
+question ("Llama 2", "Mixtral 8x22B", "Sentence-BERT") must appear in the text or
+paper title of at least one cited source, or the answer is withdrawn and the
+system declines. Matching is whole-word, so "LLaMA, 2048 A100 GPUs" does not count
+as "Llama 2". No LLM call; the trace keeps the withdrawn answer.
 
-| | Golden set (30 + 5 traps) | Held-out set (5 + 5 traps) |
-|---|---|---|
-| Answerable questions answered | 28 / 30 | 5 / 5 |
-| Trap questions declined | 4 / 5 | 5 / 5 |
-| Answers citing an evidence page | 96% | 80% (one answer cites a page that only says "e.g., 40") |
-| Median seconds per question | 35.7 | 37.8 |
+It was tested on a second held-out set written before the code (7 answerable
+questions that each name a model, 7 traps):
+
+- With the focus retry on, it **caught the Llama 2 answer above**: the retry
+  produced "LLaMA 2 involves 2048 A100 GPUs" again, and the check withdrew it.
+- In the default pipeline it **withdrew no wrong answer** across the three
+  question sets (the model declined the traps by itself) and **withdrew one
+  correct answer**: the cited E5 passage never says "E5", and neither does the
+  paper's title. Short-name aliases per paper would fix that.
+- It can't catch generic names. "The original Transformer" is satisfied by any
+  passage that says "transformer", so the golden trap u01 is still answered.
+
+With the check on, the focus retry passed the criteria set for it, but it stays
+off. Its only correct new answer was on a question seen during development. On
+the new held-out set, its two new answers didn't answer the question ("…is
+initialized with a pre-trained LM"). For a portfolio demo, declining beats a
+non-answer.
+
+**Current results** (default: agent with rewrites, fallback and entity check;
+focus off):
+
+| | Golden set (30 + 5 traps) | Held-out 1 (5 + 5) | Held-out 2 (7 + 7) |
+|---|---|---|---|
+| Answerable questions answered | 27 / 30 | 5 / 5 | 5 / 7 |
+| Trap questions declined | 4 / 5 | 5 / 5 | 7 / 7 |
+| Answers citing an evidence page | 100% | 80% | 80% |
+| Median seconds per question | 35.8 | 38.0 | 46.5 |
+
+Held-out 2's two declines are a retrieval miss (Self-RAG's generator is named on
+pages that weren't retrieved) and an over-refusal (LLaMA's "2048 A100 GPU"
+sentence was the first source). One held-out 2 answer is wrong although its
+keyword matched: DINO's batch size is given as 128, an ablation setting, instead
+of the default 1024.
 
 The golden-set trap now missed (u01) appeared after a text-extraction fix: the
 RETRO paper's small-caps name ("R/e.sc /t.sc /r.sc/o.sc") is now repaired, which
 made its hyperparameter table readable, and the model attributes RETRO's dropout
 rate to the original Transformer. The fix stays: it is correct, and the earlier
 5/5 relied partly on garbled text. Attributing facts to the wrong model is the
-main open weakness; an entity check before answering is the planned experiment.
+main open weakness; the entity check above catches only the cases with a specific name.
 
 ## Tracing
 
 Every answer carries a trace of its steps (retrieve, grade, rewrite, focus,
-generate, check), with timings, scores, retries and any switch to the fallback
+generate, check, entities), with timings, scores, retries and any switch to the fallback
 model. `rag ask --trace` prints it, and `--json` includes it. The trace stays on
 the machine.
 

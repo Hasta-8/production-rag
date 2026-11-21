@@ -16,6 +16,9 @@
   answer two trap questions with a fact about a similar model (E12 u01; E12b held-out
   t02, where "LLaMA used 2048 A100 GPUs" became the answer for Llama 2). The reranker
   scores such near-misses as relevant, so a score gate can't catch them.
+* **entity check** (E14, on; inside the check step): every name in the question must
+  appear in a cited source, or the answer is withdrawn without a retry. With focus on,
+  it withdrew the Llama 2 answer above; it can't catch generic names ("Transformer").
 * Every corrective step costs one unit of a fixed budget (``max_retries``, default 2), and
   focus runs at most once, so a question makes at most three answer-or-rewrite LLM calls.
   A LangGraph recursion limit backs this up.
@@ -266,6 +269,18 @@ class RAGAgent:
                 REFUSAL,
                 True,
                 reason,
+                st["sources"],
+                [],
+                False,
+                att.model,
+                **common,
+            )
+        if att.rejected:  # E14: the answer named the wrong entity; no retry
+            return Answer(
+                st["question"],
+                REFUSAL,
+                True,
+                att.rejected,
                 st["sources"],
                 [],
                 False,

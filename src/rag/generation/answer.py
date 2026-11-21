@@ -11,6 +11,7 @@ import re
 from dataclasses import dataclass, field
 
 from rag.generation.citations import check_citations, clean_answer, is_refusal
+from rag.generation.entities import check_entities, question_entities
 from rag.generation.llm import LLMClient, TokenCallback
 from rag.generation.prompts import PROMPT_VERSION, REFUSAL, PromptSource, build_messages
 from rag.retrieval.hybrid import Candidate, Retriever
@@ -33,6 +34,8 @@ class AnswerSettings:
     focus_sentences: int = 6  # sentences kept by the focus retry
     focus_gate: bool = True  # focused sentences must pass min_rerank_score (E12b)
     rewrite_max_tokens: int = 40
+    # E14: every name in the question must appear in a cited source (P35)
+    entity_check: bool = True
 
 
 @dataclass
@@ -142,6 +145,7 @@ class Attempt:
     cited: list[str]
     inferred: bool
     model: str
+    rejected: str | None = None  # why a check withdrew the answer (E14 entity check)
 
 
 def generate_and_check(
@@ -190,6 +194,20 @@ def generate_and_check(
             inferred=check.inferred,
             uncited_sentences=check.uncited_sentences,
         )
+    if settings.entity_check and question_entities(question):
+        by_tag = {s.tag: s for s in sources}
+        cited = [by_tag[t] for t in check.cited if t in by_tag] or sources
+        with trace.step("entities") as rec:
+            verdict = check_entities(question, [(s.tag, s.title, s.text) for s in cited])
+            rec.update(
+                entities=verdict.entities,
+                supported=verdict.supported,
+                verdict="passed" if verdict.passed else "rejected",
+            )
+            if not verdict.passed:
+                rec["withdrawn_answer"] = check.text
+        if not verdict.passed:
+            return Attempt(REFUSAL, False, [], False, gen.model, rejected=verdict.reason)
     return Attempt(check.text, False, check.cited, check.inferred, gen.model)
 
 
@@ -217,6 +235,10 @@ def answer_question(
     if att.refused:
         reason = "the model found no answer in the sources"
         return Answer(question, REFUSAL, True, reason, sources, [], False, att.model, trace=trace)
+    if att.rejected:
+        return Answer(
+            question, REFUSAL, True, att.rejected, sources, [], False, att.model, trace=trace
+        )
     return Answer(
         question, att.text, False, None, sources, att.cited, att.inferred, att.model, trace=trace
     )

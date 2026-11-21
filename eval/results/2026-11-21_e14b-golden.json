@@ -1,0 +1,2013 @@
+{
+  "label": "e14b-golden",
+  "date": "2026-11-21",
+  "config": {
+    "index_version": "v-3358110700c6",
+    "embedding_model": "BAAI/bge-small-en-v1.5",
+    "retrieval": "hybrid_rerank",
+    "rerank_candidates": 20,
+    "reranker": "Xenova/ms-marco-MiniLM-L-6-v2",
+    "rrf_k": 60,
+    "skip_references": false,
+    "golden": "eval/golden.yaml v2",
+    "labels": "v2",
+    "retrieve_k": 10,
+    "context_k": 3,
+    "min_relevance": 0.6,
+    "min_rerank_score": 2.0,
+    "questions": 35,
+    "llm": "Qwen3-1.7B-Q8_0",
+    "max_tokens": 150,
+    "pipeline": "agent",
+    "entity_check": true,
+    "max_retries": 2,
+    "focus_retry": true,
+    "focus_sentences": 6,
+    "focus_gate": true,
+    "fallback_llm": "llm/Qwen3-0.6B-Q8_0.gguf",
+    "first_token_timeout_s": 90.0
+  },
+  "summary": {
+    "page_recall@1": 0.8,
+    "page_recall@3": 0.9666666666666667,
+    "page_recall@5": 1.0,
+    "page_recall@10": 1.0,
+    "page_mrr": 0.89,
+    "paper_at_1": 0.9666666666666667,
+    "calibration": [
+      {
+        "threshold": -8.0,
+        "answerable_kept": 1.0,
+        "unanswerable_rejected": 0.0
+      },
+      {
+        "threshold": -7.0,
+        "answerable_kept": 1.0,
+        "unanswerable_rejected": 0.2
+      },
+      {
+        "threshold": -6.0,
+        "answerable_kept": 1.0,
+        "unanswerable_rejected": 0.2
+      },
+      {
+        "threshold": -5.0,
+        "answerable_kept": 1.0,
+        "unanswerable_rejected": 0.2
+      },
+      {
+        "threshold": -4.0,
+        "answerable_kept": 1.0,
+        "unanswerable_rejected": 0.4
+      },
+      {
+        "threshold": -3.0,
+        "answerable_kept": 1.0,
+        "unanswerable_rejected": 0.4
+      },
+      {
+        "threshold": -2.0,
+        "answerable_kept": 1.0,
+        "unanswerable_rejected": 0.4
+      },
+      {
+        "threshold": -1.0,
+        "answerable_kept": 1.0,
+        "unanswerable_rejected": 0.4
+      },
+      {
+        "threshold": 0.0,
+        "answerable_kept": 1.0,
+        "unanswerable_rejected": 0.4
+      },
+      {
+        "threshold": 1.0,
+        "answerable_kept": 1.0,
+        "unanswerable_rejected": 0.4
+      },
+      {
+        "threshold": 2.0,
+        "answerable_kept": 1.0,
+        "unanswerable_rejected": 0.6
+      },
+      {
+        "threshold": 3.0,
+        "answerable_kept": 0.9666666666666667,
+        "unanswerable_rejected": 0.8
+      },
+      {
+        "threshold": 4.0,
+        "answerable_kept": 0.9666666666666667,
+        "unanswerable_rejected": 1.0
+      },
+      {
+        "threshold": 5.0,
+        "answerable_kept": 0.8,
+        "unanswerable_rejected": 1.0
+      },
+      {
+        "threshold": 6.0,
+        "answerable_kept": 0.6666666666666666,
+        "unanswerable_rejected": 1.0
+      },
+      {
+        "threshold": 7.0,
+        "answerable_kept": 0.3333333333333333,
+        "unanswerable_rejected": 1.0
+      },
+      {
+        "threshold": 8.0,
+        "answerable_kept": 0.03333333333333333,
+        "unanswerable_rejected": 1.0
+      }
+    ],
+    "answerable_answered": 0.9333333333333333,
+    "unanswerable_declined": 0.8,
+    "keyword_recall_mean": 0.9017857142857143,
+    "citation_on_evidence": 1.0,
+    "answers_with_citations": 1.0,
+    "citations_inferred": 0,
+    "questions_with_retries": 6,
+    "max_retries_used": 2,
+    "entity_check_withdrawn": 1,
+    "median_seconds": 37.7
+  },
+  "rows": [
+    {
+      "id": "q01",
+      "answerable": true,
+      "abstained": false,
+      "correct_abstention": true,
+      "keyword_recall": 1.0,
+      "cited": [
+        "S2"
+      ],
+      "citation_on_evidence": true,
+      "citations_inferred": false,
+      "seconds": 42.6,
+      "answer": "QLoRA introduces the 4-bit NormalFloat (NF4) quantization data type [S2].",
+      "sources": [
+        {
+          "tag": "S1",
+          "title": "QLoRA: Efficient Finetuning of Quantized LLMs",
+          "page": 4,
+          "score": 7.0449
+        },
+        {
+          "tag": "S2",
+          "title": "QLoRA: Efficient Finetuning of Quantized LLMs",
+          "page": 4,
+          "score": 5.8308
+        },
+        {
+          "tag": "S3",
+          "title": "QLoRA: Efficient Finetuning of Quantized LLMs",
+          "page": 3,
+          "score": 5.5128
+        }
+      ],
+      "model": "Qwen3-1.7B-Q8_0",
+      "retries": 0,
+      "steps": [
+        "retrieve",
+        "grade",
+        "generate",
+        "check",
+        "entities"
+      ],
+      "entities": {
+        "entities": [
+          "QLoRA",
+          "4-bit"
+        ],
+        "supported": {
+          "QLoRA": [
+            "S2"
+          ],
+          "4-bit": [
+            "S2"
+          ]
+        },
+        "verdict": "passed"
+      }
+    },
+    {
+      "id": "q02",
+      "answerable": true,
+      "abstained": false,
+      "correct_abstention": true,
+      "keyword_recall": 1.0,
+      "cited": [
+        "S1",
+        "S2"
+      ],
+      "citation_on_evidence": true,
+      "citations_inferred": false,
+      "seconds": 35.2,
+      "answer": "Double Quantization in QLoRA is a method that quantizes the quantization constants, saving an average of about 0.37 bits per parameter [S1]. This technique helps reduce the memory footprint while maintaining performance [S2].",
+      "sources": [
+        {
+          "tag": "S1",
+          "title": "QLoRA: Efficient Finetuning of Quantized LLMs",
+          "page": 2,
+          "score": 7.0197
+        },
+        {
+          "tag": "S2",
+          "title": "QLoRA: Efficient Finetuning of Quantized LLMs",
+          "page": 7,
+          "score": 5.879
+        },
+        {
+          "tag": "S3",
+          "title": "QLoRA: Efficient Finetuning of Quantized LLMs",
+          "page": 4,
+          "score": 5.4163
+        }
+      ],
+      "model": "Qwen3-1.7B-Q8_0",
+      "retries": 0,
+      "steps": [
+        "retrieve",
+        "grade",
+        "generate",
+        "check",
+        "entities"
+      ],
+      "entities": {
+        "entities": [
+          "QLoRA"
+        ],
+        "supported": {
+          "QLoRA": [
+            "S1",
+            "S2"
+          ]
+        },
+        "verdict": "passed"
+      }
+    },
+    {
+      "id": "q03",
+      "answerable": true,
+      "abstained": false,
+      "correct_abstention": true,
+      "keyword_recall": 1.0,
+      "cited": [
+        "S2"
+      ],
+      "citation_on_evidence": true,
+      "citations_inferred": false,
+      "seconds": 40.8,
+      "answer": "Paged Optimizers solve the problem of memory spikes during gradient checkpointing, which can cause out-of-memory errors when training large models on a single machine [S2]. \n\nThe answer is: Paged Optimizers solve the problem of memory spikes during gradient checkpointing, which can cause out-of-memory errors when training large models on a single machine [S2].",
+      "sources": [
+        {
+          "tag": "S1",
+          "title": "QLoRA: Efficient Finetuning of Quantized LLMs",
+          "page": 4,
+          "score": 4.8076
+        },
+        {
+          "tag": "S2",
+          "title": "QLoRA: Efficient Finetuning of Quantized LLMs",
+          "page": 2,
+          "score": 4.0695
+        },
+        {
+          "tag": "S3",
+          "title": "QLoRA: Efficient Finetuning of Quantized LLMs",
+          "page": 5,
+          "score": 3.791
+        }
+      ],
+      "model": "Qwen3-1.7B-Q8_0",
+      "retries": 0,
+      "steps": [
+        "retrieve",
+        "grade",
+        "generate",
+        "check",
+        "entities"
+      ],
+      "entities": {
+        "entities": [
+          "QLoRA"
+        ],
+        "supported": {
+          "QLoRA": [
+            "S2"
+          ]
+        },
+        "verdict": "passed"
+      }
+    },
+    {
+      "id": "q04",
+      "answerable": true,
+      "abstained": false,
+      "correct_abstention": true,
+      "keyword_recall": 1.0,
+      "cited": [
+        "S2"
+      ],
+      "citation_on_evidence": true,
+      "citations_inferred": false,
+      "seconds": 29.3,
+      "answer": "DPO uses a simple binary cross-entropy loss instead of reinforcement learning [S2].",
+      "sources": [
+        {
+          "tag": "S1",
+          "title": "Direct Preference Optimization: Your Language Model is Secretly a Reward Model",
+          "page": 10,
+          "score": 4.718
+        },
+        {
+          "tag": "S2",
+          "title": "Direct Preference Optimization: Your Language Model is Secretly a Reward Model",
+          "page": 1,
+          "score": 3.745
+        },
+        {
+          "tag": "S3",
+          "title": "Direct Preference Optimization: Your Language Model is Secretly a Reward Model",
+          "page": 2,
+          "score": 3.0142
+        }
+      ],
+      "model": "Qwen3-1.7B-Q8_0",
+      "retries": 0,
+      "steps": [
+        "retrieve",
+        "grade",
+        "generate",
+        "check",
+        "entities"
+      ],
+      "entities": {
+        "entities": [
+          "DPO"
+        ],
+        "supported": {
+          "DPO": [
+            "S2"
+          ]
+        },
+        "verdict": "passed"
+      }
+    },
+    {
+      "id": "q05",
+      "answerable": true,
+      "abstained": false,
+      "correct_abstention": true,
+      "keyword_recall": 1.0,
+      "cited": [
+        "S1",
+        "S2"
+      ],
+      "citation_on_evidence": true,
+      "citations_inferred": false,
+      "seconds": 40.1,
+      "answer": "Mistral 7B uses grouped-query attention (GQA) for faster inference, coupled with sliding window attention (SWA) to effectively handle sequences of arbitrary length with a reduced inference cost [S1][S2].",
+      "sources": [
+        {
+          "tag": "S1",
+          "title": "Mistral 7B",
+          "page": 1,
+          "score": 7.3625
+        },
+        {
+          "tag": "S2",
+          "title": "Mistral 7B",
+          "page": 1,
+          "score": 4.8664
+        },
+        {
+          "tag": "S3",
+          "title": "Mistral 7B",
+          "page": 1,
+          "score": 2.718
+        }
+      ],
+      "model": "Qwen3-1.7B-Q8_0",
+      "retries": 0,
+      "steps": [
+        "retrieve",
+        "grade",
+        "generate",
+        "check",
+        "entities"
+      ],
+      "entities": {
+        "entities": [
+          "Mistral 7B"
+        ],
+        "supported": {
+          "Mistral 7B": [
+            "S1",
+            "S2"
+          ]
+        },
+        "verdict": "passed"
+      }
+    },
+    {
+      "id": "q06",
+      "answerable": true,
+      "abstained": false,
+      "correct_abstention": true,
+      "keyword_recall": 1.0,
+      "cited": [
+        "S3"
+      ],
+      "citation_on_evidence": true,
+      "citations_inferred": false,
+      "seconds": 36.2,
+      "answer": "Each Mixtral layer has 8 experts [S3]. For each token, two experts are used [S3].",
+      "sources": [
+        {
+          "tag": "S1",
+          "title": "Mixtral of Experts",
+          "page": 2,
+          "score": 5.369
+        },
+        {
+          "tag": "S2",
+          "title": "Mixtral of Experts",
+          "page": 8,
+          "score": 4.9777
+        },
+        {
+          "tag": "S3",
+          "title": "Mixtral of Experts",
+          "page": 1,
+          "score": 4.8683
+        }
+      ],
+      "model": "Qwen3-1.7B-Q8_0",
+      "retries": 0,
+      "steps": [
+        "retrieve",
+        "grade",
+        "generate",
+        "check",
+        "entities"
+      ],
+      "entities": {
+        "entities": [
+          "Mixtral"
+        ],
+        "supported": {
+          "Mixtral": [
+            "S3"
+          ]
+        },
+        "verdict": "passed"
+      }
+    },
+    {
+      "id": "q07",
+      "answerable": true,
+      "abstained": false,
+      "correct_abstention": true,
+      "keyword_recall": 0.25,
+      "cited": [
+        "S1",
+        "S2"
+      ],
+      "citation_on_evidence": true,
+      "citations_inferred": false,
+      "seconds": 47.6,
+      "answer": "The data sources used to pre-train LLaMA include English CommonCrawl, which constitutes 67% of the training set [S1]. The specific data sources are reported in Table 1, which details the mixture of data and their percentages in the training set [S1]. [S2] provides additional context about the training approach and model performance but does not specify the exact data sources.",
+      "sources": [
+        {
+          "tag": "S1",
+          "title": "LLaMA: Open and Efficient Foundation Language Models",
+          "page": 2,
+          "score": 2.908
+        },
+        {
+          "tag": "S2",
+          "title": "LLaMA: Open and Efficient Foundation Language Models",
+          "page": 1,
+          "score": 1.9715
+        },
+        {
+          "tag": "S3",
+          "title": "LLaMA: Open and Efficient Foundation Language Models",
+          "page": 6,
+          "score": 1.3126
+        }
+      ],
+      "model": "Qwen3-1.7B-Q8_0",
+      "retries": 0,
+      "steps": [
+        "retrieve",
+        "grade",
+        "generate",
+        "check",
+        "entities"
+      ],
+      "entities": {
+        "entities": [
+          "LLaMA"
+        ],
+        "supported": {
+          "LLaMA": [
+            "S1",
+            "S2"
+          ]
+        },
+        "verdict": "passed"
+      }
+    },
+    {
+      "id": "q08",
+      "answerable": true,
+      "abstained": false,
+      "correct_abstention": true,
+      "keyword_recall": 1.0,
+      "cited": [
+        "S1"
+      ],
+      "citation_on_evidence": true,
+      "citations_inferred": false,
+      "seconds": 51.7,
+      "answer": "LLaMA-33B and LLaMA-65B were trained on 1.4T tokens [S1].",
+      "sources": [
+        {
+          "tag": "S1",
+          "title": "LLaMA: Open and Efficient Foundation Language Models",
+          "page": 3,
+          "score": 7.301
+        },
+        {
+          "tag": "S2",
+          "title": "LLaMA: Open and Efficient Foundation Language Models",
+          "page": 6,
+          "score": 5.5913
+        },
+        {
+          "tag": "S3",
+          "title": "LLaMA: Open and Efficient Foundation Language Models",
+          "page": 6,
+          "score": 4.4436
+        }
+      ],
+      "model": "Qwen3-1.7B-Q8_0",
+      "retries": 0,
+      "steps": [
+        "retrieve",
+        "grade",
+        "generate",
+        "check",
+        "entities"
+      ],
+      "entities": {
+        "entities": [
+          "LLaMA-33B",
+          "LLaMA-65B"
+        ],
+        "supported": {
+          "LLaMA-33B": [
+            "S1"
+          ],
+          "LLaMA-65B": [
+            "S1"
+          ]
+        },
+        "verdict": "passed"
+      }
+    },
+    {
+      "id": "q09",
+      "answerable": true,
+      "abstained": false,
+      "correct_abstention": true,
+      "keyword_recall": 1.0,
+      "cited": [
+        "S1",
+        "S2",
+        "S3"
+      ],
+      "citation_on_evidence": true,
+      "citations_inferred": false,
+      "seconds": 43.8,
+      "answer": "Chain-of-thought prompting is a method where a model is prompted with a triple consisting of an input, a chain of reasoning steps, and an output. This approach encourages the model to generate a series of intermediate reasoning steps that lead to the final output [S1]. It is inspired by various prior directions such as prompting, natural language explanations, and program synthesis/execution [S2]. Experiments show that this method improves the model's ability to perform complex reasoning tasks [S3].",
+      "sources": [
+        {
+          "tag": "S1",
+          "title": "Chain-of-Thought Prompting Elicits Reasoning in Large Language Models",
+          "page": 2,
+          "score": 8.7377
+        },
+        {
+          "tag": "S2",
+          "title": "Chain-of-Thought Prompting Elicits Reasoning in Large Language Models",
+          "page": 24,
+          "score": 7.874
+        },
+        {
+          "tag": "S3",
+          "title": "Chain-of-Thought Prompting Elicits Reasoning in Large Language Models",
+          "page": 1,
+          "score": 7.8422
+        }
+      ],
+      "model": "Qwen3-1.7B-Q8_0",
+      "retries": 0,
+      "steps": [
+        "retrieve",
+        "grade",
+        "generate",
+        "check"
+      ],
+      "entities": null
+    },
+    {
+      "id": "q10",
+      "answerable": true,
+      "abstained": false,
+      "correct_abstention": true,
+      "keyword_recall": 1.0,
+      "cited": [
+        "S1",
+        "S2"
+      ],
+      "citation_on_evidence": true,
+      "citations_inferred": false,
+      "seconds": 37.7,
+      "answer": "Self-consistency chooses the final answer by marginalizing out reasoning paths and aggregating the most consistent answer from the final answer set [S1]. It involves prompting a language model with chain-of-thought (CoT) examples, then sampling diverse reasoning paths and selecting the answer that is most consistent [S1]. This approach avoids the repetitiveness and local-optimality of greedy decoding while mitigating stochasticity [S2]. \n\nThe answer is: Self-consistency chooses the final answer by marginalizing out reasoning paths and aggregating the most consistent answer from the final answer set [S1].",
+      "sources": [
+        {
+          "tag": "S1",
+          "title": "Self-Consistency Improves Chain of Thought Reasoning in Language Models",
+          "page": 2,
+          "score": 6.495
+        },
+        {
+          "tag": "S2",
+          "title": "Self-Consistency Improves Chain of Thought Reasoning in Language Models",
+          "page": 1,
+          "score": 6.0093
+        },
+        {
+          "tag": "S3",
+          "title": "Self-Consistency Improves Chain of Thought Reasoning in Language Models",
+          "page": 2,
+          "score": 5.6821
+        }
+      ],
+      "model": "Qwen3-1.7B-Q8_0",
+      "retries": 0,
+      "steps": [
+        "retrieve",
+        "grade",
+        "generate",
+        "check"
+      ],
+      "entities": null
+    },
+    {
+      "id": "q11",
+      "answerable": true,
+      "abstained": false,
+      "correct_abstention": true,
+      "keyword_recall": 1.0,
+      "cited": [
+        "S2"
+      ],
+      "citation_on_evidence": true,
+      "citations_inferred": false,
+      "seconds": 31.1,
+      "answer": "The tasks used to evaluate Tree of Thoughts are Game of 24, Creative Writing, and Crosswords [S2].",
+      "sources": [
+        {
+          "tag": "S1",
+          "title": "Tree of Thoughts: Deliberate Problem Solving with Large Language Models",
+          "page": 2,
+          "score": 4.7459
+        },
+        {
+          "tag": "S2",
+          "title": "Tree of Thoughts: Deliberate Problem Solving with Large Language Models",
+          "page": 1,
+          "score": 4.6164
+        },
+        {
+          "tag": "S3",
+          "title": "Tree of Thoughts: Deliberate Problem Solving with Large Language Models",
+          "page": 9,
+          "score": 3.9401
+        }
+      ],
+      "model": "Qwen3-1.7B-Q8_0",
+      "retries": 0,
+      "steps": [
+        "retrieve",
+        "grade",
+        "generate",
+        "check",
+        "entities"
+      ],
+      "entities": {
+        "entities": [
+          "Tree",
+          "Thoughts"
+        ],
+        "supported": {
+          "Tree": [
+            "S2"
+          ],
+          "Thoughts": [
+            "S2"
+          ]
+        },
+        "verdict": "passed"
+      }
+    },
+    {
+      "id": "q12",
+      "answerable": true,
+      "abstained": false,
+      "correct_abstention": true,
+      "keyword_recall": 1.0,
+      "cited": [
+        "S1"
+      ],
+      "citation_on_evidence": true,
+      "citations_inferred": false,
+      "seconds": 30.8,
+      "answer": "ReAct interleaves verbal reasoning traces and actions pertaining to a task [S1].",
+      "sources": [
+        {
+          "tag": "S1",
+          "title": "ReAct: Synergizing Reasoning and Acting in Language Models",
+          "page": 2,
+          "score": 6.0912
+        },
+        {
+          "tag": "S2",
+          "title": "ReAct: Synergizing Reasoning and Acting in Language Models",
+          "page": 4,
+          "score": 4.0977
+        },
+        {
+          "tag": "S3",
+          "title": "ReAct: Synergizing Reasoning and Acting in Language Models",
+          "page": 10,
+          "score": 3.6446
+        }
+      ],
+      "model": "Qwen3-1.7B-Q8_0",
+      "retries": 0,
+      "steps": [
+        "retrieve",
+        "grade",
+        "generate",
+        "check",
+        "entities"
+      ],
+      "entities": {
+        "entities": [
+          "ReAct"
+        ],
+        "supported": {
+          "ReAct": [
+            "S1"
+          ]
+        },
+        "verdict": "passed"
+      }
+    },
+    {
+      "id": "q13",
+      "answerable": true,
+      "abstained": true,
+      "correct_abstention": false,
+      "keyword_recall": null,
+      "cited": [],
+      "citation_on_evidence": null,
+      "citations_inferred": false,
+      "seconds": 58.4,
+      "answer": "I don't have enough information in the indexed documents to answer that.",
+      "sources": [
+        {
+          "tag": "S1",
+          "title": "Improving language models by retrieving from trillions of tokens",
+          "page": 2,
+          "score": 3.3494
+        },
+        {
+          "tag": "S2",
+          "title": "Improving language models by retrieving from trillions of tokens",
+          "page": 13,
+          "score": 2.9337
+        },
+        {
+          "tag": "S3",
+          "title": "Improving language models by retrieving from trillions of tokens",
+          "page": 2,
+          "score": 1.5408
+        },
+        {
+          "tag": "S4",
+          "title": "Improving language models by retrieving from trillions of tokens",
+          "page": 12,
+          "score": 1.4165
+        },
+        {
+          "tag": "S5",
+          "title": "Improving language models by retrieving from trillions of tokens",
+          "page": 1,
+          "score": 0.9282
+        }
+      ],
+      "model": "Qwen3-1.7B-Q8_0",
+      "retries": 1,
+      "steps": [
+        "retrieve",
+        "grade",
+        "generate",
+        "check",
+        "focus",
+        "generate",
+        "check"
+      ],
+      "entities": null
+    },
+    {
+      "id": "q14",
+      "answerable": true,
+      "abstained": false,
+      "correct_abstention": true,
+      "keyword_recall": 1.0,
+      "cited": [
+        "S2"
+      ],
+      "citation_on_evidence": true,
+      "citations_inferred": false,
+      "seconds": 35.8,
+      "answer": "Reflection tokens in Self-RAG are special tokens used to indicate the need for retrieval and the generation quality of retrieved information. They are categorized into retrieval tokens and critique tokens [S2]. The retrieval tokens signal whether retrieval is necessary, while the critique tokens assess the quality of the retrieved information [S2].",
+      "sources": [
+        {
+          "tag": "S1",
+          "title": "Self-RAG: Learning to Retrieve, Generate, and Critique through Self-Reflection",
+          "page": 17,
+          "score": 7.1908
+        },
+        {
+          "tag": "S2",
+          "title": "Self-RAG: Learning to Retrieve, Generate, and Critique through Self-Reflection",
+          "page": 1,
+          "score": 7.1872
+        },
+        {
+          "tag": "S3",
+          "title": "Self-RAG: Learning to Retrieve, Generate, and Critique through Self-Reflection",
+          "page": 10,
+          "score": 7.0383
+        }
+      ],
+      "model": "Qwen3-1.7B-Q8_0",
+      "retries": 0,
+      "steps": [
+        "retrieve",
+        "grade",
+        "generate",
+        "check",
+        "entities"
+      ],
+      "entities": {
+        "entities": [
+          "Self-RAG"
+        ],
+        "supported": {
+          "Self-RAG": [
+            "S2"
+          ]
+        },
+        "verdict": "passed"
+      }
+    },
+    {
+      "id": "q15",
+      "answerable": true,
+      "abstained": false,
+      "correct_abstention": true,
+      "keyword_recall": 0.5,
+      "cited": [
+        "S1"
+      ],
+      "citation_on_evidence": true,
+      "citations_inferred": false,
+      "seconds": 35.1,
+      "answer": "RAPTOR builds its retrieval tree by segmenting the retrieval corpus into short, contiguous texts of length 100 [S1]. These texts are then embedded using SBERT, a BERT-based encoder [S1]. The chunks and their corresponding SBERT embeddings form the leaf nodes of the tree structure. To group similar text chunks, RAPTOR employs a clustering algorithm [S1].",
+      "sources": [
+        {
+          "tag": "S1",
+          "title": "RAPTOR: Recursive Abstractive Processing for Tree-Organized Retrieval",
+          "page": 3,
+          "score": 7.6978
+        },
+        {
+          "tag": "S2",
+          "title": "RAPTOR: Recursive Abstractive Processing for Tree-Organized Retrieval",
+          "page": 9,
+          "score": 7.2509
+        },
+        {
+          "tag": "S3",
+          "title": "RAPTOR: Recursive Abstractive Processing for Tree-Organized Retrieval",
+          "page": 9,
+          "score": 5.2994
+        }
+      ],
+      "model": "Qwen3-1.7B-Q8_0",
+      "retries": 0,
+      "steps": [
+        "retrieve",
+        "grade",
+        "generate",
+        "check",
+        "entities"
+      ],
+      "entities": {
+        "entities": [
+          "RAPTOR"
+        ],
+        "supported": {
+          "RAPTOR": [
+            "S1"
+          ]
+        },
+        "verdict": "passed"
+      }
+    },
+    {
+      "id": "q16",
+      "answerable": true,
+      "abstained": false,
+      "correct_abstention": true,
+      "keyword_recall": 1.0,
+      "cited": [
+        "S1"
+      ],
+      "citation_on_evidence": true,
+      "citations_inferred": false,
+      "seconds": 42.5,
+      "answer": "GraphRAG answers global questions about a whole corpus by using map-reduce processing of community summaries [S1]. These summaries are generated in a bottom-up manner following the hierarchical structure of extracted communities, with higher-level summaries recursively incorporating lower-level summaries [S1]. Finally, the partial answers from the map step are combined in the reduce step to generate a global answer [S1].",
+      "sources": [
+        {
+          "tag": "S1",
+          "title": "From Local to Global: A Graph RAG Approach to Query-Focused Summarization",
+          "page": 2,
+          "score": 6.5271
+        },
+        {
+          "tag": "S2",
+          "title": "From Local to Global: A Graph RAG Approach to Query-Focused Summarization",
+          "page": 2,
+          "score": 3.4517
+        },
+        {
+          "tag": "S3",
+          "title": "From Local to Global: A Graph RAG Approach to Query-Focused Summarization",
+          "page": 1,
+          "score": 3.3288
+        }
+      ],
+      "model": "Qwen3-1.7B-Q8_0",
+      "retries": 0,
+      "steps": [
+        "retrieve",
+        "grade",
+        "generate",
+        "check",
+        "entities"
+      ],
+      "entities": {
+        "entities": [
+          "GraphRAG"
+        ],
+        "supported": {
+          "GraphRAG": [
+            "S1"
+          ]
+        },
+        "verdict": "passed"
+      }
+    },
+    {
+      "id": "q17",
+      "answerable": true,
+      "abstained": false,
+      "correct_abstention": true,
+      "keyword_recall": 1.0,
+      "cited": [
+        "S1"
+      ],
+      "citation_on_evidence": true,
+      "citations_inferred": false,
+      "seconds": 29.6,
+      "answer": "The Dense X Retrieval paper proposes a novel retrieval unit called \"proposition\" [S1].",
+      "sources": [
+        {
+          "tag": "S1",
+          "title": "Dense X Retrieval: What Retrieval Granularity Should We Use?",
+          "page": 1,
+          "score": 6.5425
+        },
+        {
+          "tag": "S2",
+          "title": "Dense X Retrieval: What Retrieval Granularity Should We Use?",
+          "page": 8,
+          "score": 5.3227
+        },
+        {
+          "tag": "S3",
+          "title": "Dense X Retrieval: What Retrieval Granularity Should We Use?",
+          "page": 1,
+          "score": 4.5931
+        }
+      ],
+      "model": "Qwen3-1.7B-Q8_0",
+      "retries": 0,
+      "steps": [
+        "retrieve",
+        "grade",
+        "generate",
+        "check",
+        "entities"
+      ],
+      "entities": {
+        "entities": [
+          "Dense X Retrieval"
+        ],
+        "supported": {
+          "Dense X Retrieval": [
+            "S1"
+          ]
+        },
+        "verdict": "passed"
+      }
+    },
+    {
+      "id": "q18",
+      "answerable": true,
+      "abstained": false,
+      "correct_abstention": true,
+      "keyword_recall": 1.0,
+      "cited": [
+        "S2"
+      ],
+      "citation_on_evidence": true,
+      "citations_inferred": false,
+      "seconds": 31.4,
+      "answer": "RAGAS evaluates three quality dimensions: faithfulness, answer relevance, and context relevance [S2].",
+      "sources": [
+        {
+          "tag": "S1",
+          "title": "Ragas: Automated Evaluation of Retrieval Augmented Generation",
+          "page": 5,
+          "score": 5.6636
+        },
+        {
+          "tag": "S2",
+          "title": "Ragas: Automated Evaluation of Retrieval Augmented Generation",
+          "page": 1,
+          "score": 4.797
+        },
+        {
+          "tag": "S3",
+          "title": "Ragas: Automated Evaluation of Retrieval Augmented Generation",
+          "page": 5,
+          "score": 3.7069
+        }
+      ],
+      "model": "Qwen3-1.7B-Q8_0",
+      "retries": 0,
+      "steps": [
+        "retrieve",
+        "grade",
+        "generate",
+        "check",
+        "entities"
+      ],
+      "entities": {
+        "entities": [
+          "RAGAS"
+        ],
+        "supported": {
+          "RAGAS": [
+            "S2"
+          ]
+        },
+        "verdict": "passed"
+      }
+    },
+    {
+      "id": "q19",
+      "answerable": true,
+      "abstained": false,
+      "correct_abstention": true,
+      "keyword_recall": 1.0,
+      "cited": [
+        "S3"
+      ],
+      "citation_on_evidence": true,
+      "citations_inferred": false,
+      "seconds": 41.6,
+      "answer": "ColBERTv2 reduces the storage cost of late interaction through a residual compression approach [S3]. This approach compresses embeddings to 1 or 2 bits per dimension, resulting in compression ratios of 6–10× compared to vanilla ColBERT [S3]. The residual compression mechanism reduces the index size significantly, making it more efficient in terms of storage [S3].",
+      "sources": [
+        {
+          "tag": "S1",
+          "title": "ColBERTv2: Effective and Efficient Retrieval via Lightweight Late Interaction",
+          "page": 10,
+          "score": 6.0075
+        },
+        {
+          "tag": "S2",
+          "title": "ColBERTv2: Effective and Efficient Retrieval via Lightweight Late Interaction",
+          "page": 2,
+          "score": 5.4706
+        },
+        {
+          "tag": "S3",
+          "title": "ColBERTv2: Effective and Efficient Retrieval via Lightweight Late Interaction",
+          "page": 9,
+          "score": 4.0867
+        }
+      ],
+      "model": "Qwen3-1.7B-Q8_0",
+      "retries": 0,
+      "steps": [
+        "retrieve",
+        "grade",
+        "generate",
+        "check",
+        "entities"
+      ],
+      "entities": {
+        "entities": [
+          "ColBERTv2"
+        ],
+        "supported": {
+          "ColBERTv2": [
+            "S3"
+          ]
+        },
+        "verdict": "passed"
+      }
+    },
+    {
+      "id": "q20",
+      "answerable": true,
+      "abstained": false,
+      "correct_abstention": true,
+      "keyword_recall": 1.0,
+      "cited": [
+        "S2"
+      ],
+      "citation_on_evidence": true,
+      "citations_inferred": false,
+      "seconds": 43.1,
+      "answer": "Contriever is trained without supervision by using a BERT-base encoder and contrastively training it with segment pairs constructed from unlabeled documents from Wikipedia and web crawl data [S2].",
+      "sources": [
+        {
+          "tag": "S1",
+          "title": "Dense X Retrieval: What Retrieval Granularity Should We Use?",
+          "page": 4,
+          "score": 5.2438
+        },
+        {
+          "tag": "S2",
+          "title": "Unsupervised Dense Information Retrieval with Contrastive Learning",
+          "page": 13,
+          "score": 4.1323
+        },
+        {
+          "tag": "S3",
+          "title": "Unsupervised Dense Information Retrieval with Contrastive Learning",
+          "page": 7,
+          "score": 3.3441
+        }
+      ],
+      "model": "Qwen3-1.7B-Q8_0",
+      "retries": 0,
+      "steps": [
+        "retrieve",
+        "grade",
+        "generate",
+        "check",
+        "entities"
+      ],
+      "entities": {
+        "entities": [
+          "Contriever"
+        ],
+        "supported": {
+          "Contriever": [
+            "S2"
+          ]
+        },
+        "verdict": "passed"
+      }
+    },
+    {
+      "id": "q21",
+      "answerable": true,
+      "abstained": false,
+      "correct_abstention": true,
+      "keyword_recall": 1.0,
+      "cited": [
+        "S1"
+      ],
+      "citation_on_evidence": true,
+      "citations_inferred": false,
+      "seconds": 32.5,
+      "answer": "The BEIR benchmark includes 18 retrieval datasets [S1].",
+      "sources": [
+        {
+          "tag": "S1",
+          "title": "BEIR: A Heterogenous Benchmark for Zero-shot Evaluation of Information Retrieval Models",
+          "page": 2,
+          "score": 6.3623
+        },
+        {
+          "tag": "S2",
+          "title": "BEIR: A Heterogenous Benchmark for Zero-shot Evaluation of Information Retrieval Models",
+          "page": 9,
+          "score": 6.1621
+        },
+        {
+          "tag": "S3",
+          "title": "Unsupervised Dense Information Retrieval with Contrastive Learning",
+          "page": 6,
+          "score": 5.971
+        }
+      ],
+      "model": "Qwen3-1.7B-Q8_0",
+      "retries": 0,
+      "steps": [
+        "retrieve",
+        "grade",
+        "generate",
+        "check",
+        "entities"
+      ],
+      "entities": {
+        "entities": [
+          "BEIR"
+        ],
+        "supported": {
+          "BEIR": [
+            "S1"
+          ]
+        },
+        "verdict": "passed"
+      }
+    },
+    {
+      "id": "q22",
+      "answerable": true,
+      "abstained": false,
+      "correct_abstention": true,
+      "keyword_recall": 1.0,
+      "cited": [
+        "S1"
+      ],
+      "citation_on_evidence": true,
+      "citations_inferred": false,
+      "seconds": 30.7,
+      "answer": "According to BEIR, BM25 is a robust baseline for zero-shot retrieval [S1].",
+      "sources": [
+        {
+          "tag": "S1",
+          "title": "BEIR: A Heterogenous Benchmark for Zero-shot Evaluation of Information Retrieval Models",
+          "page": 1,
+          "score": 6.5977
+        },
+        {
+          "tag": "S2",
+          "title": "BEIR: A Heterogenous Benchmark for Zero-shot Evaluation of Information Retrieval Models",
+          "page": 2,
+          "score": 6.5928
+        },
+        {
+          "tag": "S3",
+          "title": "BEIR: A Heterogenous Benchmark for Zero-shot Evaluation of Information Retrieval Models",
+          "page": 2,
+          "score": 5.4413
+        }
+      ],
+      "model": "Qwen3-1.7B-Q8_0",
+      "retries": 0,
+      "steps": [
+        "retrieve",
+        "grade",
+        "generate",
+        "check",
+        "entities"
+      ],
+      "entities": {
+        "entities": [
+          "BEIR"
+        ],
+        "supported": {
+          "BEIR": [
+            "S1"
+          ]
+        },
+        "verdict": "passed"
+      }
+    },
+    {
+      "id": "q23",
+      "answerable": true,
+      "abstained": false,
+      "correct_abstention": true,
+      "keyword_recall": 1.0,
+      "cited": [
+        "S2",
+        "S3",
+        "S1",
+        "S4"
+      ],
+      "citation_on_evidence": true,
+      "citations_inferred": false,
+      "seconds": 69.0,
+      "answer": "The SCIFACT dataset contains 1,409 scientific claims [S2]. [S3] mentions that it is a dataset of 1.4K expert-written scientific claims, which aligns with the 1,409 claims mentioned in [S2]. [S1] states that the SCIFACT dataset consists of 1,409 scientific claims verified against a corpus of 5,183 abstracts. [S4] also supports the claim that SCIFACT contains 1,409 claims. \n\nThe answer is: The SCIFACT dataset contains 1,409 scientific claims [S2].",
+      "sources": [
+        {
+          "tag": "S1",
+          "title": "Fact or Fiction: Verifying Scientific Claims",
+          "page": 3,
+          "score": 9.842
+        },
+        {
+          "tag": "S2",
+          "title": "Fact or Fiction: Verifying Scientific Claims",
+          "page": 2,
+          "score": 8.7519
+        },
+        {
+          "tag": "S3",
+          "title": "Fact or Fiction: Verifying Scientific Claims",
+          "page": 1,
+          "score": 7.6219
+        },
+        {
+          "tag": "S4",
+          "title": "Fact or Fiction: Verifying Scientific Claims",
+          "page": 4,
+          "score": 4.2796
+        },
+        {
+          "tag": "S5",
+          "title": "Fact or Fiction: Verifying Scientific Claims",
+          "page": 9,
+          "score": 3.6306
+        },
+        {
+          "tag": "S6",
+          "title": "BEIR: A Heterogenous Benchmark for Zero-shot Evaluation of Information Retrieval Models",
+          "page": 20,
+          "score": 3.5869
+        }
+      ],
+      "model": "Qwen3-1.7B-Q8_0",
+      "retries": 1,
+      "steps": [
+        "retrieve",
+        "grade",
+        "generate",
+        "check",
+        "focus",
+        "generate",
+        "check",
+        "entities"
+      ],
+      "entities": {
+        "entities": [
+          "SciFact"
+        ],
+        "supported": {
+          "SciFact": [
+            "S2",
+            "S3",
+            "S1",
+            "S4"
+          ]
+        },
+        "verdict": "passed"
+      }
+    },
+    {
+      "id": "q24",
+      "answerable": true,
+      "abstained": false,
+      "correct_abstention": true,
+      "keyword_recall": 1.0,
+      "cited": [
+        "S3"
+      ],
+      "citation_on_evidence": true,
+      "citations_inferred": false,
+      "seconds": 42.8,
+      "answer": "BERT is too slow for finding the most similar pair of sentences in a large collection because it requires both sentences to be fed into the network, leading to a massive computational overhead. This results in a high number of inference computations, such as 50 million for a collection of 10,000 sentences [S3].",
+      "sources": [
+        {
+          "tag": "S1",
+          "title": "Sentence-BERT: Sentence Embeddings using Siamese BERT-Networks",
+          "page": 1,
+          "score": 4.9489
+        },
+        {
+          "tag": "S2",
+          "title": "Sentence-BERT: Sentence Embeddings using Siamese BERT-Networks",
+          "page": 2,
+          "score": 4.7408
+        },
+        {
+          "tag": "S3",
+          "title": "Sentence-BERT: Sentence Embeddings using Siamese BERT-Networks",
+          "page": 1,
+          "score": 4.4813
+        }
+      ],
+      "model": "Qwen3-1.7B-Q8_0",
+      "retries": 0,
+      "steps": [
+        "retrieve",
+        "grade",
+        "generate",
+        "check",
+        "entities"
+      ],
+      "entities": {
+        "entities": [
+          "BERT"
+        ],
+        "supported": {
+          "BERT": [
+            "S3"
+          ]
+        },
+        "verdict": "passed"
+      }
+    },
+    {
+      "id": "q25",
+      "answerable": true,
+      "abstained": true,
+      "correct_abstention": false,
+      "keyword_recall": null,
+      "cited": [],
+      "citation_on_evidence": null,
+      "citations_inferred": false,
+      "seconds": 29.8,
+      "answer": "I don't have enough information in the indexed documents to answer that.",
+      "sources": [
+        {
+          "tag": "S1",
+          "title": "Text Embeddings by Weakly-Supervised Contrastive Pre-training",
+          "page": 5,
+          "score": 6.0804
+        },
+        {
+          "tag": "S2",
+          "title": "Text Embeddings by Weakly-Supervised Contrastive Pre-training",
+          "page": 1,
+          "score": 5.6788
+        },
+        {
+          "tag": "S3",
+          "title": "Text Embeddings by Weakly-Supervised Contrastive Pre-training",
+          "page": 8,
+          "score": 3.6517
+        }
+      ],
+      "model": "Qwen3-1.7B-Q8_0",
+      "retries": 0,
+      "steps": [
+        "retrieve",
+        "grade",
+        "generate",
+        "check",
+        "entities"
+      ],
+      "entities": {
+        "entities": [
+          "E5"
+        ],
+        "supported": {
+          "E5": []
+        },
+        "verdict": "rejected",
+        "withdrawn_answer": "The E5 model was pre-trained on a large-scale text pair dataset called CCPairs, which was harvested from heterogeneous data sources across the web [S1]."
+      }
+    },
+    {
+      "id": "q26",
+      "answerable": true,
+      "abstained": false,
+      "correct_abstention": true,
+      "keyword_recall": 1.0,
+      "cited": [
+        "S2",
+        "S3"
+      ],
+      "citation_on_evidence": true,
+      "citations_inferred": false,
+      "seconds": 37.9,
+      "answer": "DETR uses a bipartite matching loss during training to match predicted objects with ground-truth objects [S2]. This loss assigns each predicted object to a ground-truth object in a way that optimizes the overall prediction accuracy [S3]. The matching process is performed in a single pass through the decoder [S2].",
+      "sources": [
+        {
+          "tag": "S1",
+          "title": "End-to-End Object Detection with Transformers",
+          "page": 2,
+          "score": 7.5157
+        },
+        {
+          "tag": "S2",
+          "title": "End-to-End Object Detection with Transformers",
+          "page": 2,
+          "score": 7.3998
+        },
+        {
+          "tag": "S3",
+          "title": "End-to-End Object Detection with Transformers",
+          "page": 5,
+          "score": 6.7709
+        }
+      ],
+      "model": "Qwen3-1.7B-Q8_0",
+      "retries": 0,
+      "steps": [
+        "retrieve",
+        "grade",
+        "generate",
+        "check",
+        "entities"
+      ],
+      "entities": {
+        "entities": [
+          "DETR"
+        ],
+        "supported": {
+          "DETR": [
+            "S2",
+            "S3"
+          ]
+        },
+        "verdict": "passed"
+      }
+    },
+    {
+      "id": "q27",
+      "answerable": true,
+      "abstained": false,
+      "correct_abstention": true,
+      "keyword_recall": 0.0,
+      "cited": [
+        "S2",
+        "S3"
+      ],
+      "citation_on_evidence": true,
+      "citations_inferred": false,
+      "seconds": 40.6,
+      "answer": "DINO uses self-supervised training by directly predicting the output of a teacher network, which is built with a momentum encoder, using a standard cross-entropy loss [S2]. The method simplifies self-supervised training by avoiding additional components such as a predictor [30] or advanced augmentations [10] [S2]. The synergy between DINO and ViTs is demonstrated by achieving 80.1% top-1 on ImageNet in linear evaluation with ViT-Base [S3].",
+      "sources": [
+        {
+          "tag": "S1",
+          "title": "Emerging Properties in Self-Supervised Vision Transformers",
+          "page": 13,
+          "score": 6.0076
+        },
+        {
+          "tag": "S2",
+          "title": "Emerging Properties in Self-Supervised Vision Transformers",
+          "page": 2,
+          "score": 5.3762
+        },
+        {
+          "tag": "S3",
+          "title": "Emerging Properties in Self-Supervised Vision Transformers",
+          "page": 1,
+          "score": 5.3494
+        }
+      ],
+      "model": "Qwen3-1.7B-Q8_0",
+      "retries": 0,
+      "steps": [
+        "retrieve",
+        "grade",
+        "generate",
+        "check",
+        "entities"
+      ],
+      "entities": {
+        "entities": [
+          "DINO"
+        ],
+        "supported": {
+          "DINO": [
+            "S2",
+            "S3"
+          ]
+        },
+        "verdict": "passed"
+      }
+    },
+    {
+      "id": "q28",
+      "answerable": true,
+      "abstained": false,
+      "correct_abstention": true,
+      "keyword_recall": 1.0,
+      "cited": [
+        "S2"
+      ],
+      "citation_on_evidence": true,
+      "citations_inferred": false,
+      "seconds": 28.7,
+      "answer": "ColPali embeds image patches instead of text extracted from documents [S2].",
+      "sources": [
+        {
+          "tag": "S1",
+          "title": "ColPali: Efficient Document Retrieval with Vision Language Models",
+          "page": 8,
+          "score": 4.0776
+        },
+        {
+          "tag": "S2",
+          "title": "ColPali: Efficient Document Retrieval with Vision Language Models",
+          "page": 1,
+          "score": 3.2116
+        },
+        {
+          "tag": "S3",
+          "title": "ColPali: Efficient Document Retrieval with Vision Language Models",
+          "page": 10,
+          "score": 2.3648
+        }
+      ],
+      "model": "Qwen3-1.7B-Q8_0",
+      "retries": 0,
+      "steps": [
+        "retrieve",
+        "grade",
+        "generate",
+        "check",
+        "entities"
+      ],
+      "entities": {
+        "entities": [
+          "ColPali"
+        ],
+        "supported": {
+          "ColPali": [
+            "S2"
+          ]
+        },
+        "verdict": "passed"
+      }
+    },
+    {
+      "id": "q29",
+      "answerable": true,
+      "abstained": false,
+      "correct_abstention": true,
+      "keyword_recall": 0.5,
+      "cited": [
+        "S3",
+        "S2"
+      ],
+      "citation_on_evidence": true,
+      "citations_inferred": false,
+      "seconds": 38.8,
+      "answer": "Late chunking is a strategy that leverages the difference in size between the long context input windows of recent embedding models and the relatively small size of optimal text chunks for most applications [S3]. It involves encoding text in a way that allows the model to capture context before chunking the text, enabling it to handle longer input sequences [S2]. This approach requires no additional training and can be implemented in any long-context text embedding model that uses mean pooling with any chunking technique [S2].",
+      "sources": [
+        {
+          "tag": "S1",
+          "title": "Late Chunking: Contextual Chunk Embeddings Using Long-Context Embedding Models",
+          "page": 10,
+          "score": 7.1613
+        },
+        {
+          "tag": "S2",
+          "title": "Late Chunking: Contextual Chunk Embeddings Using Long-Context Embedding Models",
+          "page": 2,
+          "score": 6.626
+        },
+        {
+          "tag": "S3",
+          "title": "Late Chunking: Contextual Chunk Embeddings Using Long-Context Embedding Models",
+          "page": 3,
+          "score": 6.5678
+        }
+      ],
+      "model": "Qwen3-1.7B-Q8_0",
+      "retries": 0,
+      "steps": [
+        "retrieve",
+        "grade",
+        "generate",
+        "check"
+      ],
+      "entities": null
+    },
+    {
+      "id": "q30",
+      "answerable": true,
+      "abstained": false,
+      "correct_abstention": true,
+      "keyword_recall": 1.0,
+      "cited": [
+        "S2",
+        "S3"
+      ],
+      "citation_on_evidence": true,
+      "citations_inferred": false,
+      "seconds": 31.5,
+      "answer": "The two training stages of Constitutional AI are the supervised learning stage and the reinforcement learning (RL) stage [S2][S3].",
+      "sources": [
+        {
+          "tag": "S1",
+          "title": "Constitutional AI: Harmlessness from AI Feedback",
+          "page": 5,
+          "score": 7.2775
+        },
+        {
+          "tag": "S2",
+          "title": "Constitutional AI: Harmlessness from AI Feedback",
+          "page": 1,
+          "score": 4.6694
+        },
+        {
+          "tag": "S3",
+          "title": "Constitutional AI: Harmlessness from AI Feedback",
+          "page": 2,
+          "score": 4.1325
+        }
+      ],
+      "model": "Qwen3-1.7B-Q8_0",
+      "retries": 0,
+      "steps": [
+        "retrieve",
+        "grade",
+        "generate",
+        "check",
+        "entities"
+      ],
+      "entities": {
+        "entities": [
+          "Constitutional AI"
+        ],
+        "supported": {
+          "Constitutional AI": [
+            "S2",
+            "S3"
+          ]
+        },
+        "verdict": "passed"
+      }
+    },
+    {
+      "id": "u01",
+      "answerable": false,
+      "abstained": false,
+      "correct_abstention": false,
+      "keyword_recall": null,
+      "cited": [
+        "S3"
+      ],
+      "citation_on_evidence": null,
+      "citations_inferred": false,
+      "seconds": 36.5,
+      "answer": "The original Transformer base model used a dropout rate of 0.25 [S3].",
+      "sources": [
+        {
+          "tag": "S1",
+          "title": "End-to-End Object Detection with Transformers",
+          "page": 23,
+          "score": 2.6315
+        },
+        {
+          "tag": "S2",
+          "title": "Improving language models by retrieving from trillions of tokens",
+          "page": 29,
+          "score": -0.837
+        },
+        {
+          "tag": "S3",
+          "title": "Improving language models by retrieving from trillions of tokens",
+          "page": 28,
+          "score": -0.933
+        }
+      ],
+      "model": "Qwen3-1.7B-Q8_0",
+      "retries": 0,
+      "steps": [
+        "retrieve",
+        "grade",
+        "generate",
+        "check",
+        "entities"
+      ],
+      "entities": {
+        "entities": [
+          "Transformer"
+        ],
+        "supported": {
+          "Transformer": [
+            "S3"
+          ]
+        },
+        "verdict": "passed"
+      }
+    },
+    {
+      "id": "u02",
+      "answerable": false,
+      "abstained": true,
+      "correct_abstention": true,
+      "keyword_recall": null,
+      "cited": [],
+      "citation_on_evidence": null,
+      "citations_inferred": false,
+      "seconds": 9.5,
+      "answer": "I don't have enough information in the indexed documents to answer that.",
+      "sources": [
+        {
+          "tag": "S1",
+          "title": "Late Chunking: Contextual Chunk Embeddings Using Long-Context Embedding Models",
+          "page": 2,
+          "score": -7.3298
+        },
+        {
+          "tag": "S2",
+          "title": "Late Chunking: Contextual Chunk Embeddings Using Long-Context Embedding Models",
+          "page": 2,
+          "score": -8.5011
+        },
+        {
+          "tag": "S3",
+          "title": "Sentence-BERT: Sentence Embeddings using Siamese BERT-Networks",
+          "page": 9,
+          "score": -10.1671
+        }
+      ],
+      "model": null,
+      "retries": 2,
+      "steps": [
+        "retrieve",
+        "grade",
+        "rewrite",
+        "retrieve",
+        "grade",
+        "rewrite"
+      ],
+      "entities": null
+    },
+    {
+      "id": "u03",
+      "answerable": false,
+      "abstained": true,
+      "correct_abstention": true,
+      "keyword_recall": null,
+      "cited": [],
+      "citation_on_evidence": null,
+      "citations_inferred": false,
+      "seconds": 66.6,
+      "answer": "I don't have enough information in the indexed documents to answer that.",
+      "sources": [
+        {
+          "tag": "S1",
+          "title": "Tree of Thoughts: Deliberate Problem Solving with Large Language Models",
+          "page": 6,
+          "score": 3.197
+        },
+        {
+          "tag": "S2",
+          "title": "QLoRA: Efficient Finetuning of Quantized LLMs",
+          "page": 14,
+          "score": 1.3645
+        },
+        {
+          "tag": "S3",
+          "title": "Direct Preference Optimization: Your Language Model is Secretly a Reward Model",
+          "page": 10,
+          "score": 1.0105
+        },
+        {
+          "tag": "S4",
+          "title": "Direct Preference Optimization: Your Language Model is Secretly a Reward Model",
+          "page": 10,
+          "score": 0.8382
+        }
+      ],
+      "model": "Qwen3-1.7B-Q8_0",
+      "retries": 1,
+      "steps": [
+        "retrieve",
+        "grade",
+        "generate",
+        "check",
+        "focus",
+        "generate",
+        "check"
+      ],
+      "entities": null
+    },
+    {
+      "id": "u04",
+      "answerable": false,
+      "abstained": true,
+      "correct_abstention": true,
+      "keyword_recall": null,
+      "cited": [],
+      "citation_on_evidence": null,
+      "citations_inferred": false,
+      "seconds": 51.6,
+      "answer": "I don't have enough information in the indexed documents to answer that.",
+      "sources": [
+        {
+          "tag": "S1",
+          "title": "Mixtral of Experts",
+          "page": 2,
+          "score": 2.1549
+        },
+        {
+          "tag": "S2",
+          "title": "Mistral 7B",
+          "page": 2,
+          "score": 2.0339
+        },
+        {
+          "tag": "S3",
+          "title": "From Local to Global: A Graph RAG Approach to Query-Focused Summarization",
+          "page": 19,
+          "score": 2.0029
+        }
+      ],
+      "model": "Qwen3-1.7B-Q8_0",
+      "retries": 2,
+      "steps": [
+        "retrieve",
+        "grade",
+        "rewrite",
+        "retrieve",
+        "grade",
+        "generate",
+        "check",
+        "focus"
+      ],
+      "entities": null
+    },
+    {
+      "id": "u05",
+      "answerable": false,
+      "abstained": true,
+      "correct_abstention": true,
+      "keyword_recall": null,
+      "cited": [],
+      "citation_on_evidence": null,
+      "citations_inferred": false,
+      "seconds": 10.9,
+      "answer": "I don't have enough information in the indexed documents to answer that.",
+      "sources": [
+        {
+          "tag": "S1",
+          "title": "Dense X Retrieval: What Retrieval Granularity Should We Use?",
+          "page": 10,
+          "score": -3.0606
+        },
+        {
+          "tag": "S2",
+          "title": "ColPali: Efficient Document Retrieval with Vision Language Models",
+          "page": 11,
+          "score": -6.8443
+        },
+        {
+          "tag": "S3",
+          "title": "Improving language models by retrieving from trillions of tokens",
+          "page": 40,
+          "score": -7.5281
+        }
+      ],
+      "model": null,
+      "retries": 2,
+      "steps": [
+        "retrieve",
+        "grade",
+        "rewrite",
+        "retrieve",
+        "grade",
+        "rewrite"
+      ],
+      "entities": null
+    }
+  ]
+}

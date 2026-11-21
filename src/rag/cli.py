@@ -236,6 +236,7 @@ def _answer_settings(settings):
         focus_retry=settings.focus_retry,
         focus_sentences=settings.focus_sentences,
         focus_gate=settings.focus_gate,
+        entity_check=settings.entity_check,
     )
 
 
@@ -409,6 +410,7 @@ def cmd_eval_golden(args: argparse.Namespace) -> int:
     config["llm"] = llm.name
     config["max_tokens"] = settings.answer_max_tokens
     config["pipeline"] = pipeline
+    config["entity_check"] = settings.entity_check
     if pipeline == "agent":
         config["max_retries"] = settings.max_retries
         config["focus_retry"] = settings.focus_retry

@@ -52,6 +52,7 @@ class Settings(BaseSettings):
     focus_retry: bool = False  # agent: retry refusals on focused sentences (E12/E12b: unsafe)
     focus_sentences: int = 6  # agent: sentences kept by the focus retry
     focus_gate: bool = True  # agent: focused sentences must pass the reranker gate (E12b)
+    entity_check: bool = True  # every name in the question must be in a cited source (E14)
 
     # Indexing
     index_dir: Path = Path("indexes")

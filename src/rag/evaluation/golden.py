@@ -187,6 +187,7 @@ class AnswerRow:
     model: str | None = None
     retries: int = 0  # agent corrective steps
     steps: list[str] = field(default_factory=list)  # trace step names, in order
+    entities: dict | None = None  # E14 entity-check step (names, support, withdrawn answer)
 
 
 def evaluate_answers(
@@ -243,6 +244,7 @@ def evaluate_answers(
             model=ans.model,
             retries=ans.retries,
             steps=[s.name for s in ans.trace.steps],
+            entities=next((dict(s.data) for s in ans.trace.steps if s.name == "entities"), None),
         )
         on_row(row)
         rows.append(row)
@@ -270,6 +272,9 @@ def summarize_answers(rows: list[AnswerRow]) -> dict:
         "citations_inferred": sum(r.citations_inferred for r in answered),
         "questions_with_retries": sum(r.retries > 0 for r in rows),
         "max_retries_used": max((r.retries for r in rows), default=0),
+        "entity_check_withdrawn": sum(
+            bool(r.entities and r.entities.get("verdict") == "rejected") for r in rows
+        ),
         "median_seconds": sorted(r.seconds for r in rows)[len(rows) // 2] if rows else None,
     }
     return summary
