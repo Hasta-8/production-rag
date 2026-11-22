@@ -37,8 +37,8 @@ eval/results/*.local.json
 notes/
 report.md
 startup.md
-docs/Production_RAG_Project_Report.pdf
-docs/build_report.py
+docs/Production_RAG_Project_Report*.pdf
+docs/build_report*.py
 
 # Editor / OS
 .DS_Store
