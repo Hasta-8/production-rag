@@ -135,9 +135,9 @@ several projects can share one copy.
   candidates). Many famous papers use arXiv's default licence and aren't
   included.
 
-> **Status:** all seven phases are built and their exit gates passed, except
-> the parts that need a person: a rehearsal from a phone on mobile data, and a
-> narrated video. The Docker image hasn't been built yet.
+> **Status:** all seven phases are built and their exit gates passed, including
+> a rehearsal through the tunnel from a phone on mobile data (2026-11-22). The
+> Docker image hasn't been built yet.
 
 ## Capability status
 
