@@ -10,6 +10,8 @@ security layers serves it, and a web UI shows every pipeline step.
 
 ![The demo UI: a cited answer, the pipeline trace with per-chunk ranks, and the cited page with the passage highlighted](assets/screenshots/answer-trace-viewer.png)
 
+**▶ [3-minute walkthrough video](https://youtu.be/VBb8cBV-7U4)**: a live run of every preset. The waits while the CPU generates an answer are sped up 4×, and the captions say where.
+
 ## Results
 
 | | |
@@ -100,7 +102,7 @@ several projects can share one copy.
     even while the model is still loading. Record them with
     `uv run rag demo record`, against a freshly started service. Re-record
     after re-indexing; stale replays are flagged.
-  - If everything fails, use the walkthrough video:
+  - If everything fails, use the [walkthrough video](https://youtu.be/VBb8cBV-7U4). To re-record it:
     `(cd frontend && node e2e/walkthrough.mjs)` records a captioned live run of
     every preset, and `uv run --with imageio-ffmpeg python scripts/make_video.py`
     speeds up only the CPU-generation waits, with a caption saying so.
