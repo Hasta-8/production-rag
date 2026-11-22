@@ -491,3 +491,10 @@ uv run ruff check .          # lint
 uv run ruff format --check . # formatting
 uv run pytest                # tests
 ```
+
+## Licence
+
+The code is under the [MIT licence](LICENSE). The papers in the corpus keep
+their own licences (Creative Commons, recorded per paper in
+`corpus/manifest.yaml`); only redistributable ones are downloaded and served.
+The models are Apache-2.0 (Qwen3, the ms-marco-MiniLM reranker) and MIT (bge-small).
