@@ -217,9 +217,10 @@ def answer_question(
     llm: LLMClient,
     settings: AnswerSettings = AnswerSettings(),
     on_token: TokenCallback | None = None,
+    trace: Trace | None = None,
 ) -> Answer:
     """Single pass (Phases 2–3): retrieve, grade, generate, check. No retries."""
-    trace = Trace()
+    trace = trace if trace is not None else Trace()
     question = question.strip()
 
     with trace.step("retrieve", mode=retriever.mode, k=settings.retrieve_k) as rec:

@@ -7,7 +7,7 @@ panel, recorded replays and the tests.
 from __future__ import annotations
 
 import time
-from collections.abc import Iterator
+from collections.abc import Callable, Iterator
 from contextlib import contextmanager
 from dataclasses import asdict, dataclass, field
 from typing import Any
@@ -23,6 +23,8 @@ class TraceStep:
 @dataclass
 class Trace:
     steps: list[TraceStep] = field(default_factory=list)
+    # Called with each step as it finishes (the API streams steps as server-sent events).
+    listener: Callable[[TraceStep], None] | None = field(default=None, repr=False, compare=False)
 
     @contextmanager
     def step(self, name: str, **data: Any) -> Iterator[dict[str, Any]]:
@@ -33,7 +35,10 @@ class Trace:
             yield record
         finally:
             ms = (time.perf_counter() - start) * 1000
-            self.steps.append(TraceStep(name=name, ms=round(ms, 1), data=record))
+            step = TraceStep(name=name, ms=round(ms, 1), data=record)
+            self.steps.append(step)
+            if self.listener is not None:
+                self.listener(step)
 
     def get(self, name: str) -> TraceStep | None:
         return next((s for s in self.steps if s.name == name), None)

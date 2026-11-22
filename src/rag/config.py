@@ -54,6 +54,23 @@ class Settings(BaseSettings):
     focus_gate: bool = True  # agent: focused sentences must pass the reranker gate (E12b)
     entity_check: bool = True  # every name in the question must be in a cited source (E14)
 
+    # API service (Phase 5)
+    demo_mode: bool = False  # one switch for the public-tunnel safeguards (design 9.4)
+    max_question_chars: int = Field(default=4000, ge=1)
+    demo_max_question_chars: int = Field(default=500, ge=1)
+    rate_limit_per_minute: int = Field(default=20, ge=1)  # question endpoints, per client
+    general_rate_limit_per_minute: int = Field(default=120, ge=1)  # everything else
+    cache_ttl_s: float = 300.0  # exact-match answer cache; the demo pre-warm sets it higher
+    cache_max_entries: int = 256
+    queue_size: int = Field(default=1, ge=0)  # questions allowed to wait behind the one running
+    # Behind cloudflared every request comes from 127.0.0.1; read the client IP from this
+    # header, but only when the direct peer is local (a trusted proxy on this machine).
+    trusted_proxy_header: str | None = None  # e.g. "cf-connecting-ip"
+    admin_token: SecretStr | None = Field(default=None, validation_alias="RAG_ADMIN_TOKEN")
+    uploads_dir: Path = Path("data/uploads")
+    max_upload_mb: int = Field(default=20, ge=1)
+    presets_file: Path = Path("demo/presets.yaml")
+
     # Indexing
     index_dir: Path = Path("indexes")
     cache_dir: Path = Path(".cache")

@@ -229,13 +229,15 @@ class RAGAgent:
 
     # ------------------------------------------------------------ entry point
 
-    def answer(self, question: str, on_token: TokenCallback | None = None) -> Answer:
+    def answer(
+        self, question: str, on_token: TokenCallback | None = None, trace: Trace | None = None
+    ) -> Answer:
         question = question.strip()
         self._on_token = on_token
         state: AgentState = {
             "question": question,
             "query": question,
-            "trace": Trace(),
+            "trace": trace if trace is not None else Trace(),
             "attempt": None,
             "retries": 0,
             "focused": False,

@@ -8,6 +8,12 @@ from collections import Counter
 
 from rag import corpus
 from rag.config import get_settings
+from rag.runtime import answer_settings as _answer_settings
+from rag.runtime import make_answer_fn as _make_answer_fn
+from rag.runtime import make_llm as _make_llm
+from rag.runtime import make_retriever as _make_retriever
+from rag.runtime import manifest_metadata as _manifest_metadata
+from rag.runtime import open_index as _open_index
 
 
 def _print(msg: str) -> None:
@@ -46,51 +52,6 @@ def cmd_corpus_download(args: argparse.Namespace) -> int:
 
 
 EMBED_PRICE_PER_M_TOKENS = {"text-embedding-3-small": 0.02, "text-embedding-3-large": 0.13}
-
-
-def _open_index(settings):
-    from rag.indexing.embeddings import make_embeddings
-    from rag.indexing.index import VersionedIndex
-
-    settings.export_hf_token()
-    embeddings = make_embeddings(
-        settings.embedding_provider,
-        settings.embedding_model,
-        settings.cache_dir,
-        query_prefix=settings.embedding_query_prefix,
-        threads=settings.embedding_threads,
-        openai_api_key=(
-            settings.require_openai_key() if settings.embedding_provider == "openai" else None
-        ),
-        model_dir=settings.fastembed_dir,
-    )
-    index = VersionedIndex.open(
-        settings.index_dir,
-        embeddings,
-        settings.embedding_model,
-        settings.chunk_size,
-        settings.chunk_overlap,
-    )
-    return index, embeddings
-
-
-def _manifest_metadata(settings):
-    """Map PDF file name -> paper metadata from the corpus manifest."""
-    manifest = corpus.load_manifest(settings.corpus_manifest)
-    by_file = {
-        p.filename: {
-            "title": p.title,
-            "authors": p.authors,
-            "year": p.year,
-            "arxiv_id": p.arxiv_id,
-            "arxiv_version": p.version,
-            "abs_url": p.abs_url,
-            "licence_class": p.licence_class.value,
-            "topic": p.topic,
-        }
-        for p in manifest.papers
-    }
-    return lambda path: by_file.get(path.name, {})
 
 
 def cmd_ingest(args: argparse.Namespace) -> int:
@@ -137,27 +98,6 @@ def cmd_ingest(args: argparse.Namespace) -> int:
     return 1 if errors else 0
 
 
-def _make_retriever(settings, index, mode: str | None = None):
-    from rag.retrieval.bm25 import BM25Index
-    from rag.retrieval.hybrid import Retriever
-
-    mode = mode or settings.retrieval_mode
-    reranker = None
-    if mode.endswith("_rerank"):
-        from rag.retrieval.rerank import CrossEncoderReranker
-
-        reranker = CrossEncoderReranker(settings.reranker_model, cache_dir=settings.fastembed_dir)
-    return Retriever(
-        index,
-        BM25Index.from_store(index.store),
-        reranker=reranker,
-        mode=mode,
-        candidates=settings.rerank_candidates,
-        rrf_k=settings.rrf_k,
-        skip_references=settings.skip_references,
-    )
-
-
 def _fmt(x, spec=".3f"):
     return "-" if x is None else format(x, spec)
 
@@ -179,65 +119,6 @@ def cmd_search(args: argparse.Namespace) -> int:
             f"#{_fmt(c.fused_rank, 'd')} | rerank {_fmt(c.rerank_score, '.2f')}\n   {snippet}…"
         )
     return 0
-
-
-def _make_llm(settings, fallback: bool = False):
-    """The main model behind the fallback gateway, or (``--small``) the fallback model alone."""
-    from rag.generation.llm import FallbackLLM, LlamaCppClient
-
-    def client(path, timeout=None):
-        return LlamaCppClient(
-            path,
-            n_ctx=settings.llm_n_ctx,
-            n_threads=settings.llm_threads,
-            first_token_timeout_s=timeout,
-        )
-
-    if fallback:
-        return client(settings.llm_fallback_model_path)
-    if not settings.llm_fallback:
-        return client(settings.llm_model_path)
-    return FallbackLLM(
-        client(settings.llm_model_path, settings.llm_first_token_timeout_s),
-        client(settings.llm_fallback_model_path),  # loaded only if it is ever needed
-    )
-
-
-def _make_answer_fn(settings, retriever, llm, pipeline: str | None = None):
-    """question -> Answer, for the chosen pipeline ("single" pass or the "agent" loop)."""
-    from rag.generation.answer import answer_question
-
-    pipeline = pipeline or settings.pipeline
-    answer_settings = _answer_settings(settings)
-    if pipeline == "agent":
-        from rag.agent import RAGAgent
-
-        agent = RAGAgent(retriever, llm, answer_settings)
-        return agent.answer
-    if pipeline != "single":
-        raise ValueError(f"unknown pipeline {pipeline!r}; choose single or agent")
-
-    def single(question, on_token=None):
-        return answer_question(question, retriever, llm, answer_settings, on_token=on_token)
-
-    return single
-
-
-def _answer_settings(settings):
-    from rag.generation.answer import AnswerSettings
-
-    return AnswerSettings(
-        retrieve_k=settings.retrieve_k,
-        context_k=settings.context_k,
-        min_relevance=settings.min_relevance,
-        min_rerank_score=settings.min_rerank_score,
-        max_tokens=settings.answer_max_tokens,
-        max_retries=settings.max_retries,
-        focus_retry=settings.focus_retry,
-        focus_sentences=settings.focus_sentences,
-        focus_gate=settings.focus_gate,
-        entity_check=settings.entity_check,
-    )
 
 
 def cmd_ask(args: argparse.Namespace) -> int:
@@ -551,6 +432,26 @@ def cmd_eval_beir(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_serve(args: argparse.Namespace) -> int:
+    import uvicorn
+
+    from rag.service.app import create_app
+
+    settings = get_settings()
+    if args.demo:
+        settings = settings.model_copy(update={"demo_mode": True})
+    if args.host not in ("127.0.0.1", "localhost", "::1"):
+        _print(f"Warning: listening on {args.host} exposes the API beyond this machine.")
+    demo = "on" if settings.demo_mode else "off"
+    _print(
+        f"Serving on http://{args.host}:{args.port} (demo mode {demo}). "
+        "/ready turns 200 once the model is loaded."
+    )
+    # The service writes its own JSON access log (with request IDs), so uvicorn's is off.
+    uvicorn.run(create_app(settings), host=args.host, port=args.port, access_log=False)
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="rag", description="Production RAG command line")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -576,6 +477,12 @@ def build_parser() -> argparse.ArgumentParser:
         help="Retrieval mode (default: settings): dense, bm25, hybrid, dense_rerank, hybrid_rerank",
     )
     search_p.set_defaults(func=cmd_search)
+
+    serve_p = sub.add_parser("serve", help="Run the API service (FastAPI)")
+    serve_p.add_argument("--host", default="127.0.0.1")
+    serve_p.add_argument("--port", type=int, default=8000)
+    serve_p.add_argument("--demo", action="store_true", help="Demo mode (design 9.4)")
+    serve_p.set_defaults(func=cmd_serve)
 
     ask_p = sub.add_parser("ask", help="Answer a question with citations (local LLM)")
     ask_p.add_argument("question")

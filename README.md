@@ -10,7 +10,7 @@ web UI shows each pipeline step next to the answer.
 
 Everything runs **locally on a laptop CPU with no paid APIs**: embeddings use
 `BAAI/bge-small-en-v1.5` (a quantized ONNX export) through fastembed (ONNX
-Runtime, no PyTorch), and answers will come from Qwen3-1.7B (Q8_0 GGUF) through
+Runtime, no PyTorch), and answers come from Qwen3-1.7B (Q8_0 GGUF) through
 llama.cpp, with Qwen3-0.6B as a faster fallback.
 
 Model files live in a models folder set by `RAG_MODELS_DIR` (default
@@ -18,7 +18,8 @@ Model files live in a models folder set by `RAG_MODELS_DIR` (default
 `llm/` holds the GGUF files and `fastembed/` holds the embedding model cache.
 
 > **Status: in development.** Ingestion, hybrid retrieval with reranking, cited
-> answers and the agent loop are built, tested and evaluated. Everything below
+> answers, the agent loop and the API service are built, tested and evaluated.
+> The web UI is next. Everything below
 > marked PLANNED is not built yet.
 
 ## Capability status
@@ -38,7 +39,7 @@ Model files live in a models folder set by `RAG_MODELS_DIR` (default
 | LangGraph correction loop with bounded retries and model fallback | IMPLEMENTED |
 | Entity check: names in the question must appear in a cited source | IMPLEMENTED |
 | Held-out question set for changes chosen after seeing results | IMPLEMENTED |
-| FastAPI service: security, caching, rate limits, streaming, observability | PLANNED |
+| FastAPI service: security, caching, rate limits, streaming, observability | IMPLEMENTED |
 | Demo UI: chat, citation viewer, trace panel, compare mode | PLANNED |
 | Local demo: Docker, start script, Cloudflare tunnel | PLANNED |
 
@@ -243,6 +244,51 @@ made its hyperparameter table readable, and the model attributes RETRO's dropout
 rate to the original Transformer. The fix stays: it is correct, and the earlier
 5/5 relied partly on garbled text. Attributing facts to the wrong model is the
 main open weakness; the entity check above catches only the cases with a specific name.
+
+## API service (Phase 5)
+
+```bash
+uv run rag serve              # http://127.0.0.1:8000, API docs at /docs
+uv run rag serve --demo       # demo mode, for sharing through a tunnel
+scripts/curl_scenarios.sh     # the exit-gate scenarios against a running service
+```
+
+| Endpoint | Purpose |
+|---|---|
+| `POST /v1/query` | Answer with sources, citations, the trace, `cached`, `latency_ms`, `request_id` |
+| `POST /v1/query/stream` | Server-sent events: each trace step as it finishes, answer tokens, then the checked final answer |
+| `POST /v1/compare` | One question through several retrieval modes (retrieval only, no LLM) |
+| `GET /v1/documents`, `GET /v1/documents/{id}/file` | Indexed papers; the PDF for the citation viewer, only if its licence allows redistribution |
+| `POST /v1/documents`, `DELETE /v1/documents/{id}` | Upload (PDF checks, 409 on duplicates) and delete; off in demo mode |
+| `GET /v1/demo/presets` | Preset demo questions |
+| `GET /health`, `GET /ready` | Liveness; readiness (503 until the index, reranker and model are loaded) |
+| `GET /metrics` | Requests, error rate, p50/p95 latency, cache hit rate, abstention rate, tokens |
+
+**Layers, outermost first.**
+
+1. **Request ID and JSON logs.** Every log line carries the request ID; client IPs are logged as hashes.
+2. **Rate limits per client.** Questions and other requests have separate limits, with a 429 and `Retry-After` when exceeded. Behind the Cloudflare tunnel every request arrives from 127.0.0.1, so the client IP is read from `CF-Connecting-IP`, but only when the connection comes from this machine.
+3. **Input screen.** It strips chat-template delimiters (`<|im_start|>`, `[INST]`), blocks common injection phrases before any model call, and masks PII (emails, phones, cards with a Luhn check, SSN, Aadhaar with its checksum, PAN, UK NI numbers).
+4. **Cache.** An exact-match cache whose key includes the index version, the corpus revision, the prompt version and the answer settings, so re-indexing or uploading invalidates old answers. Answers from the fallback model aren't cached, so they're retried live next time.
+5. **Generation gate.** One answer at a time, since the CPU can't run two. One more question may wait; beyond that the reply is 503 "busy" with `Retry-After`.
+6. **Output checks.** PII the model repeats is masked, including in the token stream, where text is held back briefly so a split email is masked before any of it is sent. An answer that repeats the system prompt is withheld.
+
+Errors share one shape, `{"error", "detail", "request_id"}`, and never include a stack trace, a host path or the input. Writes need `RAG_ADMIN_TOKEN` when it's set, or a request from this machine.
+
+**Demo mode** (`--demo` or `RAG_DEMO_MODE=true`) turns off uploads, deletes and the API docs, and limits questions to 500 characters.
+
+**Regex limits.** The input screen catches common attacks without an LLM call, but a determined attacker can get past it. It's one layer: the model has no tools that can do damage, the prompt treats sources as data, and answers must cite them. Masking rules were tested against research text, because tables like "2048 1024 4096" look like ID numbers. Snippets from the published papers aren't masked.
+
+**Exit gate.** `scripts/curl_scenarios.sh` passes against the real service with Qwen3-1.7B: 21/21 scenarios normally and 14/14 in demo mode (2026-11-22). Highlights:
+
+- A cited answer in 33.9 s.
+- The same question as a cache hit in milliseconds.
+- A queued question answered after the running one.
+- A third concurrent question refused with "busy" at once.
+- Trace steps streamed before the first token.
+- 429 after the per-minute limit.
+
+The run also found a bug the unit tests had missed. The refusal sentence is part of the system prompt, so the leak check relabelled model refusals as "the answer repeated the system prompt". It's fixed, with a regression test.
 
 ## Tracing
 
