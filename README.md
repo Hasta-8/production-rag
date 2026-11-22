@@ -107,9 +107,11 @@ several projects can share one copy.
     every preset, and `uv run --with imageio-ffmpeg python scripts/make_video.py`
     speeds up only the CPU-generation waits, with a caption saying so.
 - **Docker:** `docker compose up --build` builds the UI and the service into one
-  image (non-root, HEALTHCHECK on `/health`), with the models, index and PDFs
-  mounted. **Not yet verified:** Docker isn't installed on the development
-  laptop, so the image has never been built. Use `demo.sh` until it has.
+  1.2 GB image (non-root, HEALTHCHECK on `/health`), with the models, index and
+  PDFs mounted rather than copied, and serves it on 127.0.0.1:8000 in demo mode.
+  Verified 2026-11-22: the container turns healthy, is ready after about 45 s
+  of model loading, and passes the same 23 browser checks as the local demo.
+  `demo.sh` remains the quickest way to run it on the laptop.
 
 ## Limitations
 
@@ -138,8 +140,8 @@ several projects can share one copy.
   included.
 
 > **Status:** all seven phases are built and their exit gates passed, including
-> a rehearsal through the tunnel from a phone on mobile data (2026-11-22). The
-> Docker image hasn't been built yet.
+> a rehearsal through the tunnel from a phone on mobile data and a tested Docker
+> image (2026-11-22).
 
 ## Capability status
 

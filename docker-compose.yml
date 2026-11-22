@@ -2,7 +2,7 @@
 # http://127.0.0.1:8000 (published on this machine only). Needs, on the host:
 #   - the GGUF models in RAG_MODELS_DIR (uv run rag models download)
 #   - an index in ./indexes and the PDFs in ./corpus/pdfs (rag corpus download, rag ingest)
-# Not yet built on the development laptop (no Docker there); see README.
+# Tested 2026-11-22 (Docker 29, Compose 2.40): healthy, ready in ~45 s, e2e 23/23.
 services:
   rag:
     build: .

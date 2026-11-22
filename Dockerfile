@@ -3,8 +3,8 @@
 # corpus PDFs are mounted at run time (docker-compose.yml), not baked in: the GGUF
 # files alone are 2.5 GB, and the index is rebuilt with `rag ingest`.
 #
-# NOTE: written for Phase 7 but not yet built: Docker isn't installed on the
-# development laptop (see README, "Docker"). The local demo uses deploy/local-demo/demo.sh.
+# Built and tested 2026-11-22 (Docker 29): `docker compose up` passes the same
+# browser check as the local demo (README, "Docker").
 
 # ---- 1. the UI (Vite build) ------------------------------------------------------
 FROM node:22-slim AS ui
@@ -28,20 +28,26 @@ RUN apt-get update \
 WORKDIR /app
 
 # Dependencies first (cached layer), exactly as locked; then the project itself.
+# uv's download cache lives in a BuildKit cache mount, not in the image layer.
 COPY pyproject.toml uv.lock README.md ./
-RUN uv sync --frozen --no-dev --no-install-project
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv sync --frozen --no-dev --no-install-project
 COPY src/ src/
-RUN uv sync --frozen --no-dev
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv sync --frozen --no-dev
 
 COPY corpus/manifest.yaml corpus/candidates.yaml corpus/
 COPY demo/ demo/
 COPY --from=ui /ui/dist frontend/dist
 
 # Non-root. uid 1000 matches the usual first desktop user, so mounted folders
-# (indexes/, .cache/) stay writable without chown on the host.
+# (indexes/, .cache/) stay writable without chown on the host. Only the folders
+# the app writes to change owner: a recursive chown of /app would copy the whole
+# virtual environment into a new layer (it cost 719 MB), and the code and
+# dependencies are better left read-only for the app user anyway.
 RUN useradd --uid 1000 --create-home rag \
  && mkdir -p indexes .cache data corpus/pdfs \
- && chown -R rag:rag /app
+ && chown rag:rag indexes .cache data corpus/pdfs
 USER rag
 
 ENV PATH=/app/.venv/bin:$PATH \
