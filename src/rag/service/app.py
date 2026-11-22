@@ -34,6 +34,7 @@ from rag.service.cache import TTLCache, cache_key
 from rag.service.engine import Engine, build_engine
 from rag.service.limits import Busy, GenerationGate, RateLimiter
 from rag.service.monitoring import Metrics, log, new_request_id, request_id_var, setup_logging
+from rag.service.replays import load_replay, staleness
 from rag.service.schemas import CompareRequest, QueryRequest
 from rag.service.security import leaks_prompt, mask_pii, scan_document, screen_input
 from rag.tracing import Trace, TraceStep
@@ -689,7 +690,22 @@ def create_app(settings: Settings | None = None, engine: Engine | None = None) -
 
     @app.get("/v1/demo/presets", tags=["demo"])
     async def presets():
-        return {"presets": state.presets, "demo_mode": demo}
+        folder = settings.replays_dir
+        rows = [
+            {**p, "replay": load_replay(folder, str(p.get("id", ""))) is not None}
+            for p in state.presets
+        ]
+        return {"presets": rows, "demo_mode": demo}
+
+    @app.get("/v1/demo/replays/{preset_id}", tags=["demo"])
+    async def replay(preset_id: str):
+        """A recorded run of a preset (works even while the model is loading or failed)."""
+        rec = load_replay(settings.replays_dir, preset_id)
+        if rec is None:
+            raise ApiError(404, "not_found", "No recorded run for this preset.")
+        engine = state.engine
+        reason = staleness(rec, engine.index.info.version if engine else None, PROMPT_VERSION)
+        return {**rec, "stale": reason is not None, "stale_reason": reason}
 
     @app.get("/health", tags=["ops"])
     async def health():
@@ -708,6 +724,7 @@ def create_app(settings: Settings | None = None, engine: Engine | None = None) -
         return {
             "status": "ready",
             "index_version": engine.index.info.version,
+            "prompt_version": PROMPT_VERSION,
             "revision": engine.revision,
             "documents": len(engine.index.info.documents),
             "chunks": engine.index.info.total_chunks,

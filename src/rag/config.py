@@ -71,6 +71,7 @@ class Settings(BaseSettings):
     uploads_dir: Path = Path("data/uploads")
     max_upload_mb: int = Field(default=20, ge=1)
     presets_file: Path = Path("demo/presets.yaml")
+    replays_dir: Path = Path("demo/replays")  # recorded preset runs (rag demo record)
     frontend_dir: Path = Path("frontend/dist")  # the built UI, served at "/" if present
 
     # Indexing

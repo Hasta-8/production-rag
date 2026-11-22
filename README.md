@@ -1,26 +1,143 @@
 # Production RAG
 
-A question-answering service over a collection of openly licensed AI/ML papers.
-It answers only from those documents and cites the page for every claim.
-Retrieval is hybrid (BM25 plus embeddings, fused with Reciprocal Rank Fusion)
-with a cross-encoder reranker. A LangGraph agent checks the evidence, rewrites
-the query when retrieval is weak, and declines to answer rather than guess.
-The pipeline runs behind a FastAPI service with production safeguards, and a
-web UI shows each pipeline step next to the answer.
+Cited answers over 28 openly licensed AI/ML papers, **running entirely on a laptop
+CPU**: no paid APIs, and no data leaves the machine. It answers only from the
+papers, cites the page for every sentence, and declines rather than guesses.
+Behind the answer sit hybrid retrieval (BM25 plus embeddings, fused with
+Reciprocal Rank Fusion), a cross-encoder reranker, and a LangGraph agent that
+grades the evidence and retries in bounded steps. A FastAPI service with
+security layers serves it, and a web UI shows every pipeline step.
 
-Everything runs **locally on a laptop CPU with no paid APIs**: embeddings use
-`BAAI/bge-small-en-v1.5` (a quantized ONNX export) through fastembed (ONNX
-Runtime, no PyTorch), and answers come from Qwen3-1.7B (Q8_0 GGUF) through
-llama.cpp, with Qwen3-0.6B as a faster fallback.
+![The demo UI: a cited answer, the pipeline trace with per-chunk ranks, and the cited page with the passage highlighted](assets/screenshots/answer-trace-viewer.png)
 
-Model files live in a models folder set by `RAG_MODELS_DIR` (default
-`.cache/models`), so several projects can share one copy of each model:
-`llm/` holds the GGUF files and `fastembed/` holds the embedding model cache.
+## Results
 
-> **Status: in development.** Ingestion, hybrid retrieval with reranking, cited
-> answers, the agent loop, the API service and the web UI are built, tested and
-> evaluated. Packaging for the demo (Docker, start script, tunnel, replays) is
-> next. Everything below marked PLANNED is not built yet.
+| | |
+|---|---|
+| Golden set (30 answerable, 5 trap questions) | 27/30 answered, **100% citing an evidence page**, 4/5 traps declined |
+| Held-out sets written before their experiments (12 answerable, 12 traps) | 10/12 answered, **12/12 traps declined** |
+| Retrieval: evidence page in the top 3 (golden set) | dense 73% → hybrid + rerank **97%** |
+| Public benchmark: BEIR SciFact nDCG@10 | dense 0.707, hybrid + rerank 0.687 (published BM25 + same reranker: 0.688) |
+| Latency on a 4-core laptop CPU | retrieval and trace in **~2 s**, answer in ~35–65 s, cache hit in ms |
+| API exit gate (curl scenarios against the real service) | 21/21, and 14/14 in demo mode |
+| UI exit gate (headless Chrome, real models, through a Cloudflare tunnel) | 23/23 checks, every preset |
+
+The traps are the interesting part. Each one asks about a model the corpus
+doesn't cover, while the corpus holds a similar fact about a nearby model. One
+asks how many GPUs trained Llama 2; the LLaMA (v1) paper states its own 2,048
+A100s. Every experiment, including the failed ones, is recorded with criteria
+set before it ran (see the Phase 3 and Phase 4 sections).
+
+## How it works
+
+```mermaid
+flowchart LR
+    Q[Question] --> S{Security screen<br/>injection, PII, delimiters}
+    S -- blocked --> X[400, no model call]
+    S --> C{Answer cache<br/>versioned keys}
+    C -- hit --> A
+    C --> R[Hybrid retrieval<br/>BM25 + bge-small, RRF]
+    R --> RR[Cross-encoder rerank]
+    RR --> G{Grade:<br/>rerank score ≥ 2.0?}
+    G -- weak --> W[Rewrite query<br/>≤ 2 steps] --> R
+    G -- weak, budget spent --> D[Decline with the score]
+    G -- relevant --> L[Qwen3-1.7B<br/>3 chunks, cited answer]
+    L --> K[Checks: citations,<br/>entity names, PII, prompt leak]
+    K --> A[Answer + sources + trace]
+```
+
+Every step records what it did into a trace. The trace is streamed to the UI
+as server-sent events, so the retrieval scores appear about 30 seconds before
+the answer finishes. The LLM sits behind a gateway that switches to
+Qwen3-0.6B if the main model hasn't produced a first token within 90 s.
+
+| Part | Choice |
+|---|---|
+| Embeddings | `BAAI/bge-small-en-v1.5`, quantized ONNX via fastembed (no PyTorch) |
+| Index | Chroma on disk, versioned by embedding model and chunking settings |
+| Keyword search | BM25 (rank-bm25) |
+| Reranker | `ms-marco-MiniLM-L-6-v2` (ONNX) |
+| LLM | Qwen3-1.7B Q8_0 via llama.cpp, Qwen3-0.6B fallback |
+| Agent | LangGraph state machine, bounded retries |
+| Service | FastAPI, SSE streaming, own rate limiter and cache |
+| UI | React, Vite, TypeScript, PDF.js |
+
+## Quick start (clean clone)
+
+Needs Python 3.12+, [uv](https://docs.astral.sh/uv/), Node 22, about 3 GB of
+disk for the models, and a few GB of RAM (Qwen3-1.7B uses about 2.4 GB).
+
+```bash
+git clone <this repo> productionRAG && cd productionRAG
+uv sync --locked
+cp .env.example .env              # optional: RAG_MODELS_DIR, HF_TOKEN
+uv run rag models download        # Qwen3 1.7B + 0.6B GGUF (2.5 GB), SHA-256 checked
+uv run rag corpus download        # the 28 redistributable PDFs from arXiv, hash-pinned
+uv run rag ingest                 # chunk, embed, index (~14 min on a 4-core CPU)
+(cd frontend && npm ci && npm run build)
+deploy/local-demo/demo.sh start   # waits until the model is loaded
+```
+
+Open http://127.0.0.1:8000. `demo.sh status` and `demo.sh stop` manage the
+server. Model files go to `RAG_MODELS_DIR` (default `.cache/models`), so
+several projects can share one copy.
+
+## Running the demo
+
+- **Start:** `deploy/local-demo/demo.sh start` binds to 127.0.0.1 only, in
+  demo mode: uploads, deletes and API docs off, and questions limited to 500
+  characters.
+- **Pre-warm (optional):** `demo.sh warm` answers the preset questions once, so
+  they're served from the cache. The UI labels them "cached", never "live".
+- **Share:** `cloudflared tunnel --no-autoupdate --url http://127.0.0.1:8000`
+  gives a temporary `https://….trycloudflare.com` link. The server reads the
+  real client IP from Cloudflare's header for rate limiting. Stop the tunnel
+  after the interview.
+- **Fallbacks:**
+  - If the tunnel is blocked, share your screen and use the local URL.
+  - If the model is too slow or fails, use **Replay mode** in the UI. It plays
+    real recorded runs of the presets step by step, labelled REPLAY, and works
+    even while the model is still loading. Record them with
+    `uv run rag demo record`, against a freshly started service. Re-record
+    after re-indexing; stale replays are flagged.
+  - If everything fails, use the walkthrough video:
+    `(cd frontend && node e2e/walkthrough.mjs)` records a captioned live run of
+    every preset, and `uv run --with imageio-ffmpeg python scripts/make_video.py`
+    speeds up only the CPU-generation waits, with a caption saying so.
+- **Docker:** `docker compose up --build` builds the UI and the service into one
+  image (non-root, HEALTHCHECK on `/health`), with the models, index and PDFs
+  mounted. **Not yet verified:** Docker isn't installed on the development
+  laptop, so the image has never been built. Use `demo.sh` until it has.
+
+## Limitations
+
+- **Slow by design:** about 35–65 s per answer on the CPU, one answer at a time.
+  A second question waits, and a third gets "busy, try again in a minute". The
+  UI shows retrieval within 2 s so the wait is visible, not silent.
+- **Wrong-entity answers:** the 1.7B model can credit a fact about a nearby
+  model to the one asked about. One golden trap is still answered this way: it
+  gives RETRO's dropout rate as the original Transformer's. An entity-name check
+  catches the cases with a specific name (it caught the Llama 2 one), not
+  generic names like "Transformer".
+- **Over-refusals:** 3 of 30 golden questions are declined. One is a retrieval
+  miss, one the model declines although the evidence is in its context, and one
+  is withdrawn by the entity check because the passage never says "E5".
+- **Query rewrites rarely help:** they rescued 1 of 6 vague held-out questions.
+- **Small evaluation sets:** 30 + 5, 5 + 5 and 7 + 7 questions. A difference of
+  one or two questions is noise, which is why changes are validated on
+  held-out sets written before they run.
+- **Keyword checks over-credit:** an answer giving DINO's batch size as 128 (an
+  ablation setting) passed because "1024" appeared later in the same answer.
+- **Regex security is one layer:** it catches common prompt injections
+  instantly but not determined attackers. The model also has no tools, the
+  prompt treats sources as data, and answers must cite them.
+- **Corpus:** only papers whose licence allows redistribution (28 of 78
+  candidates). Many famous papers use arXiv's default licence and aren't
+  included.
+
+> **Status:** all seven phases are built and their exit gates passed, except
+> the parts that need a person: a rehearsal from a phone on mobile data, and a
+> narrated video. The Docker image hasn't been built yet.
 
 ## Capability status
 
@@ -59,7 +176,7 @@ uv run rag search "How does ColBERTv2 reduce the storage cost of late interactio
 uv run rag eval phrases      # sanity check: do sampled sentences find their own page?
 ```
 
-Current index: 28 papers, 2,835 chunks. Baseline dense-only results are in
+Current index: 28 papers, 2,829 chunks (2,835 before the Phase 4 text repair). Baseline dense-only results are in
 the table below. They come from the known-phrase check: 200 sentences sampled
 from the index (seed 7), each used as a query.
 
@@ -336,7 +453,13 @@ headlessly against the real service in demo mode and checks every preset:
 | Injection | Blocked by the security layer; no retrieval or model call |
 | Repeat | Served from the cache in 1 ms |
 
-Unit tests (Vitest and React Testing Library, 16) cover streaming, citation
+| Compare mode | The rewrite in the trace |
+|---|---|
+| ![Dense, hybrid, and hybrid with reranking side by side](assets/screenshots/compare.png) | ![A weak first retrieval, a rewritten query and a successful retry](assets/screenshots/rewrite-trace.png) |
+
+![Replay mode: a recorded run, labelled REPLAY with its recording time](assets/screenshots/replay.png)
+
+Unit tests (Vitest and React Testing Library, 19 including replay mode) cover streaming, citation
 clicks, refusal, blocked, busy, cached and replay states, the SSE parser and
 passage matching.
 

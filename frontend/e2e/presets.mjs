@@ -137,6 +137,25 @@ if (has("repeat")) {
   await shot("7-repeat");
 }
 
+if (process.env.E2E_REPLAY === "1") {
+  console.log("-- replay mode (recorded runs)");
+  await page.getByRole("tab", { name: "Single" }).click();
+  await page.getByRole("button", { name: /Replay mode off/ }).click();
+  await page.getByTestId("replay-bar").waitFor();
+  await clickPreset("cited");
+  await page.getByRole("button", { name: "skip to the end" }).click({ timeout: 10_000 }).catch(() => {});
+  await page.getByTestId("status-line").waitFor({ timeout: 120_000 });
+  const status = await page.getByTestId("status-line").innerText();
+  const bar = await page.getByTestId("replay-bar").innerText();
+  check("a replay is labelled replay, never live", /^REPLAY/i.test(status), status);
+  check("the replay bar says when it was recorded, and it isn't stale", /recorded 20\d\d-/.test(bar) && !/stale/.test(bar), bar.replace(/\s+/g, " "));
+  check("the replay shows the recorded trace", (await stepNames()).includes("generate"), (await stepNames()).join(" → "));
+  await shot("8-replay");
+  await clickPreset("injection");
+  await page.getByRole("alert").waitFor({ timeout: 10_000 });
+  check("the injection replay shows the recorded block", /Blocked by the security layer/.test(await page.getByRole("alert").innerText()));
+}
+
 check("no browser console errors", consoleErrors.length === 0, consoleErrors.slice(0, 3).join(" | "));
 await browser.close();
 console.log(`== ${failed === 0 ? "all checks passed" : `${failed} failed`}`);

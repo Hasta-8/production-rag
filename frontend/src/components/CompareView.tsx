@@ -17,10 +17,12 @@ export function CompareView({
   question,
   onQuestion,
   runKey,
+  injected = null,
 }: {
   question: string;
   onQuestion: (q: string) => void;
   runKey: number; // a preset bumps this to run the comparison at once
+  injected?: CompareResponse | null; // a recorded comparison (replay mode)
 }) {
   const [result, setResult] = useState<CompareResponse | null>(null);
   const [error, setError] = useState<ApiError | null>(null);
@@ -41,8 +43,12 @@ export function CompareView({
   }
 
   useEffect(() => {
-    if (runKey) void run();
+    if (runKey && !injected) void run();
   }, [runKey]);
+
+  useEffect(() => {
+    if (injected) setResult(injected);
+  }, [injected]);
 
   const rankIn = (mode: Mode, chunk: string) =>
     result?.modes[mode]?.hits.find((h) => h.chunk_id === chunk)?.rank ?? null;

@@ -76,6 +76,24 @@ export interface Preset {
   shows?: string;
   view?: "single" | "compare";
   verified?: boolean;
+  replay?: boolean; // a recorded run exists (Phase 7)
+}
+
+/** A recorded run of a preset (design 9.5), served by /v1/demo/replays/{id}. */
+export interface Replay {
+  preset_id: string;
+  question: string;
+  view: "single" | "compare";
+  recorded_at: string;
+  index_version: string;
+  prompt_version: string;
+  model: string;
+  kind: "stream" | "compare" | "error";
+  events?: { t_ms: number; event: string; data: unknown }[];
+  compare?: CompareResponse;
+  error?: { status: number; error: string; detail: string; request_id?: string };
+  stale: boolean;
+  stale_reason: string | null;
 }
 
 export interface Ready {
@@ -126,6 +144,7 @@ async function getJson<T>(path: string, init?: RequestInit): Promise<T> {
 export const api = {
   ready: () => getJson<Ready>("/ready"),
   presets: () => getJson<{ presets: Preset[]; demo_mode: boolean }>("/v1/demo/presets"),
+  replay: (id: string) => getJson<Replay>(`/v1/demo/replays/${encodeURIComponent(id)}`),
   compare: (question: string, modes: Mode[], k = 10) =>
     getJson<CompareResponse>("/v1/compare", {
       method: "POST",

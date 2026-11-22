@@ -1,0 +1,25 @@
+# One-command run of the service and UI: `docker compose up --build`, then
+# http://127.0.0.1:8000 (published on this machine only). Needs, on the host:
+#   - the GGUF models in RAG_MODELS_DIR (uv run rag models download)
+#   - an index in ./indexes and the PDFs in ./corpus/pdfs (rag corpus download, rag ingest)
+# Not yet built on the development laptop (no Docker there); see README.
+services:
+  rag:
+    build: .
+    image: production-rag:0.7
+    ports:
+      - "127.0.0.1:8000:8000"
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      RAG_MODELS_DIR: /models          # overrides the host path from .env
+      RAG_DEMO_MODE: ${RAG_DEMO_MODE:-true}
+      RAG_CACHE_TTL_S: ${RAG_CACHE_TTL_S:-28800}
+    volumes:
+      - ${RAG_MODELS_HOST_DIR:-../ai_models}:/models:ro
+      - ./indexes:/app/indexes
+      - ./corpus/pdfs:/app/corpus/pdfs:ro
+      - ./.cache:/app/.cache
+      - ./demo/replays:/app/demo/replays:ro
+    restart: unless-stopped

@@ -432,6 +432,84 @@ def cmd_eval_beir(args: argparse.Namespace) -> int:
     return 0
 
 
+# Pinned like the corpus PDFs: the same bytes as in ../ai_models/README.md.
+LLM_FILES = {
+    "llm/Qwen3-1.7B-Q8_0.gguf": (
+        "Qwen/Qwen3-1.7B-GGUF",
+        "061b54daade076b5d3362dac252678d17da8c68f07560be70818cace6590cb1a",
+    ),
+    "llm/Qwen3-0.6B-Q8_0.gguf": (
+        "Qwen/Qwen3-0.6B-GGUF",
+        "9465e63a22add5354d9bb4b99e90117043c7124007664907259bd16d043bb031",
+    ),
+}
+
+
+def _sha256(path) -> str:
+    import hashlib
+
+    h = hashlib.sha256()
+    with open(path, "rb") as f:
+        for block in iter(lambda: f.read(1 << 20), b""):
+            h.update(block)
+    return h.hexdigest()
+
+
+def cmd_models_download(args: argparse.Namespace) -> int:
+    """Download the two GGUF models into RAG_MODELS_DIR and check their SHA-256."""
+    from huggingface_hub import hf_hub_download
+
+    settings = get_settings()
+    settings.export_hf_token()
+    bad = 0
+    for rel, (repo, sha) in LLM_FILES.items():
+        path = settings.models_dir / rel
+        if path.is_file() and (args.no_verify or _sha256(path) == sha):
+            _print(f"ok        {path}")
+            continue
+        _print(f"download  {repo}/{path.name} -> {path.parent}")
+        path.parent.mkdir(parents=True, exist_ok=True)
+        hf_hub_download(repo, path.name, local_dir=path.parent)
+        got = _sha256(path)
+        if got != sha:
+            _print(f"MISMATCH  {path}: sha256 {got}, expected {sha}")
+            bad += 1
+        else:
+            _print(f"verified  {path}")
+    _print("The embedding and reranker models download on first use (fastembed).")
+    return 1 if bad else 0
+
+
+def cmd_demo_record(args: argparse.Namespace) -> int:
+    """Record every preset from the running service into demo/replays/ (design 9.5)."""
+    import yaml
+
+    from rag.service.replays import record_all
+
+    settings = get_settings()
+    presets = yaml.safe_load(settings.presets_file.read_text())["presets"]
+    only = set(args.only) if args.only else None
+    try:
+        for pid, rec in record_all(args.base, presets, settings.replays_dir, only):
+            if rec["kind"] == "stream":
+                final = rec["events"][-1]["data"]
+                what = (
+                    f"{rec['events'][-1]['t_ms'] / 1000:.1f} s, "
+                    + ("declined" if final["abstained"] else "answered")
+                    + (", cached" if final["cached"] else "")
+                )
+            elif rec["kind"] == "compare":
+                what = f"compare, {rec['elapsed_ms']} ms"
+            else:
+                what = f"error {rec['error']['status']} {rec['error'].get('error')}"
+            _print(f"recorded  {pid:<14} {what}")
+    except Exception as exc:  # the service isn't up, or a preset hit the cache
+        _print(f"Stopped: {exc}")
+        return 1
+    _print(f"Saved to {settings.replays_dir}/. Re-record after re-indexing or a prompt change.")
+    return 0
+
+
 def cmd_serve(args: argparse.Namespace) -> int:
     import uvicorn
 
@@ -477,6 +555,19 @@ def build_parser() -> argparse.ArgumentParser:
         help="Retrieval mode (default: settings): dense, bm25, hybrid, dense_rerank, hybrid_rerank",
     )
     search_p.set_defaults(func=cmd_search)
+
+    models_p = sub.add_parser("models", help="Local model files")
+    models_sub = models_p.add_subparsers(dest="models_command", required=True)
+    dl_p = models_sub.add_parser("download", help="Download the GGUF LLMs and check SHA-256")
+    dl_p.add_argument("--no-verify", action="store_true", help="Skip hashing existing files")
+    dl_p.set_defaults(func=cmd_models_download)
+
+    demo_p = sub.add_parser("demo", help="Demo tools")
+    demo_sub = demo_p.add_subparsers(dest="demo_command", required=True)
+    rec_p = demo_sub.add_parser("record", help="Record preset runs as replays (service running)")
+    rec_p.add_argument("--base", default="http://127.0.0.1:8000")
+    rec_p.add_argument("--only", nargs="*", help="Preset IDs (default: all)")
+    rec_p.set_defaults(func=cmd_demo_record)
 
     serve_p = sub.add_parser("serve", help="Run the API service (FastAPI)")
     serve_p.add_argument("--host", default="127.0.0.1")

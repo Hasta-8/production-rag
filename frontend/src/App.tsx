@@ -1,10 +1,11 @@
 import { lazy, Suspense, useCallback, useEffect, useReducer, useRef, useState } from "react";
-import type { Preset, Ready, Source } from "./api";
+import type { CompareResponse, Preset, Ready, Replay, Source } from "./api";
 import { api, ApiError, streamQuery } from "./api";
 import { AnswerPanel } from "./components/Answer";
 import { Banner, PresetBar, type View } from "./components/Banner";
 import { CompareView } from "./components/CompareView";
 import { TracePanel } from "./components/TracePanel";
+import { playReplay, type PlayControl } from "./replay";
 import { initialRun, runReducer } from "./run";
 
 const SourceViewer = lazy(() => import("./components/SourceViewer"));
@@ -20,6 +21,10 @@ export default function App() {
   const [compareKey, setCompareKey] = useState(0);
   const [hint, setHint] = useState<string | null>(null);
   const abort = useRef<AbortController | null>(null);
+  const [replayMode, setReplayMode] = useState(false);
+  const [replayInfo, setReplayInfo] = useState<Replay | null>(null);
+  const [injected, setInjected] = useState<CompareResponse | null>(null);
+  const control = useRef<PlayControl>({ skip: false });
 
   // /ready stays 503 while the model loads (D8): poll until it is up.
   useEffect(() => {
@@ -68,9 +73,45 @@ export default function App() {
     }
   }, []);
 
+  const playPreset = async (p: Preset) => {
+    abort.current?.abort();
+    const ctrl = new AbortController();
+    abort.current = ctrl;
+    setViewing(null);
+    setReplayInfo(null);
+    let rec: Replay;
+    try {
+      rec = await api.replay(p.id);
+    } catch (e) {
+      dispatch({ type: "start", question: p.question, at: Date.now() });
+      dispatch({ type: "error", error: e instanceof ApiError ? e : new ApiError(0, "network", "No recording.") });
+      return;
+    }
+    setReplayInfo(rec);
+    if (rec.kind === "compare" && rec.compare) {
+      setView("compare");
+      setInjected(rec.compare);
+      return;
+    }
+    setView("single");
+    dispatch({ type: "start", question: p.question, at: Date.now() });
+    if (rec.kind === "error" && rec.error) {
+      const e = rec.error;
+      dispatch({ type: "error", error: new ApiError(e.status, e.error, e.detail, "replay") });
+      return;
+    }
+    control.current = { skip: false };
+    await playReplay(rec, (event) => dispatch({ type: "event", event }), control.current, ctrl.signal);
+  };
+
   const pick = (p: Preset) => {
     setQuestion(p.question);
     setHint(p.shows ?? null);
+    if (replayMode) {
+      void playPreset(p);
+      return;
+    }
+    setInjected(null);
     if (p.view === "compare") {
       setView("compare");
       setCompareKey((k) => k + 1);
@@ -83,11 +124,45 @@ export default function App() {
   const running = run.status === "running";
   return (
     <div className="app">
-      <Banner ready={ready} readyError={readyError} run={run} view={view} onView={setView} />
-      <PresetBar presets={presets} onPick={pick} disabled={running || !ready} />
+      <Banner
+        ready={ready}
+        readyError={readyError}
+        run={run}
+        view={view}
+        onView={setView}
+        replayMode={replayMode}
+        onReplayMode={(on) => {
+          abort.current?.abort();
+          setReplayMode(on);
+          setReplayInfo(null);
+          setInjected(null);
+        }}
+      />
+      <PresetBar
+        presets={replayMode ? presets.filter((p) => p.replay) : presets}
+        onPick={pick}
+        disabled={replayMode ? false : running || !ready}
+      />
       {hint && <p className="hint">Shows: {hint}</p>}
+      {replayMode && (
+        <p className="replay-bar" role="status" data-testid="replay-bar">
+          <strong>REPLAY MODE</strong> · recorded runs of the presets, not live
+          {replayInfo && (
+            <>
+              {" "}
+              · recorded {replayInfo.recorded_at.slice(0, 16).replace("T", " ")} UTC with {replayInfo.model}
+              {replayInfo.stale && <span className="warn"> · stale: {replayInfo.stale_reason}</span>}
+            </>
+          )}
+          {running && (
+            <button type="button" className="link" onClick={() => (control.current.skip = true)}>
+              skip to the end
+            </button>
+          )}
+        </p>
+      )}
       {view === "compare" ? (
-        <CompareView question={question} onQuestion={setQuestion} runKey={compareKey} />
+        <CompareView question={question} onQuestion={setQuestion} runKey={compareKey} injected={injected} />
       ) : (
         <>
           <form
@@ -102,10 +177,11 @@ export default function App() {
               aria-label="Question"
               value={question}
               onChange={(e) => setQuestion(e.target.value)}
-              placeholder="Ask about the indexed AI/ML papers…"
+              placeholder={replayMode ? "Replay mode plays the recorded presets only" : "Ask about the indexed AI/ML papers…"}
               maxLength={ready?.demo_mode ? 500 : 4000}
+              disabled={replayMode}
             />
-            <button type="submit" disabled={running || !question.trim() || !ready}>
+            <button type="submit" disabled={replayMode || running || !question.trim() || !ready}>
               {running ? "Answering…" : "Ask"}
             </button>
           </form>

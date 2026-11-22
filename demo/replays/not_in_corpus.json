@@ -1,0 +1,717 @@
+{
+ "preset_id": "not_in_corpus",
+ "question": "Who won the 2022 FIFA World Cup?",
+ "view": "single",
+ "recorded_at": "2026-11-22T11:48:19+00:00",
+ "index_version": "v-3358110700c6",
+ "prompt_version": "1",
+ "model": "Qwen3-1.7B-Q8_0",
+ "kind": "stream",
+ "events": [
+  {
+   "t_ms": 7,
+   "event": "meta",
+   "data": {
+    "request_id": "b2b9e063205247e6",
+    "cached": false,
+    "security": {
+     "masked": [],
+     "stripped": 0,
+     "output_masked": []
+    }
+   }
+  },
+  {
+   "t_ms": 1632,
+   "event": "step",
+   "data": {
+    "name": "retrieve",
+    "ms": 1620.7,
+    "data": {
+     "mode": "hybrid_rerank",
+     "k": 10,
+     "hits": [
+      {
+       "chunk_id": "9988d539268321a6:00110",
+       "title": "Self-RAG: Learning to Retrieve, Generate, and Critique through Self-Reflection",
+       "page": 24,
+       "rank": 1,
+       "dense_rank": 1,
+       "dense_score": 0.5931,
+       "bm25_rank": 1,
+       "bm25_score": 22.4573,
+       "fused_rank": 1,
+       "rerank_score": -4.9328
+      },
+      {
+       "chunk_id": "cdbd3697120441b7:00055",
+       "title": "ReAct: Synergizing Reasoning and Acting in Language Models",
+       "page": 11,
+       "rank": 2,
+       "dense_rank": null,
+       "dense_score": null,
+       "bm25_rank": 7,
+       "bm25_score": 7.4419,
+       "fused_rank": 15,
+       "rerank_score": -8.6274
+      },
+      {
+       "chunk_id": "9988d539268321a6:00131",
+       "title": "Self-RAG: Learning to Retrieve, Generate, and Critique through Self-Reflection",
+       "page": 30,
+       "rank": 3,
+       "dense_rank": 2,
+       "dense_score": 0.5868,
+       "bm25_rank": null,
+       "bm25_score": null,
+       "fused_rank": 4,
+       "rerank_score": -8.8216
+      },
+      {
+       "chunk_id": "45d2ff6c6f22e462:00149",
+       "title": "Improving language models by retrieving from trillions of tokens",
+       "page": 39,
+       "rank": 4,
+       "dense_rank": 4,
+       "dense_score": 0.5758,
+       "bm25_rank": null,
+       "bm25_score": null,
+       "fused_rank": 8,
+       "rerank_score": -9.175
+      },
+      {
+       "chunk_id": "45d2ff6c6f22e462:00150",
+       "title": "Improving language models by retrieving from trillions of tokens",
+       "page": 39,
+       "rank": 5,
+       "dense_rank": 14,
+       "dense_score": 0.553,
+       "bm25_rank": 13,
+       "bm25_score": 6.5426,
+       "fused_rank": 3,
+       "rerank_score": -9.5088
+      },
+      {
+       "chunk_id": "a957896ba42bd6f7:00050",
+       "title": "Dense X Retrieval: What Retrieval Granularity Should We Use?",
+       "page": 10,
+       "rank": 6,
+       "dense_rank": null,
+       "dense_score": null,
+       "bm25_rank": 8,
+       "bm25_score": 7.1785,
+       "fused_rank": 17,
+       "rerank_score": -10.1901
+      },
+      {
+       "chunk_id": "45d2ff6c6f22e462:00153",
+       "title": "Improving language models by retrieving from trillions of tokens",
+       "page": 39,
+       "rank": 7,
+       "dense_rank": 16,
+       "dense_score": 0.5498,
+       "bm25_rank": 10,
+       "bm25_score": 6.9307,
+       "fused_rank": 2,
+       "rerank_score": -10.2731
+      },
+      {
+       "chunk_id": "88431dc93f417b63:00014",
+       "title": "Chain-of-Thought Prompting Elicits Reasoning in Large Language Models",
+       "page": 4,
+       "rank": 8,
+       "dense_rank": 5,
+       "dense_score": 0.5728,
+       "bm25_rank": null,
+       "bm25_score": null,
+       "fused_rank": 10,
+       "rerank_score": -10.3675
+      },
+      {
+       "chunk_id": "45d2ff6c6f22e462:00159",
+       "title": "Improving language models by retrieving from trillions of tokens",
+       "page": 40,
+       "rank": 9,
+       "dense_rank": 7,
+       "dense_score": 0.5695,
+       "bm25_rank": null,
+       "bm25_score": null,
+       "fused_rank": 14,
+       "rerank_score": -10.372
+      },
+      {
+       "chunk_id": "45d2ff6c6f22e462:00163",
+       "title": "Improving language models by retrieving from trillions of tokens",
+       "page": 40,
+       "rank": 10,
+       "dense_rank": null,
+       "dense_score": null,
+       "bm25_rank": 3,
+       "bm25_score": 8.1511,
+       "fused_rank": 7,
+       "rerank_score": -10.4025
+      }
+     ]
+    }
+   }
+  },
+  {
+   "t_ms": 1632,
+   "event": "step",
+   "data": {
+    "name": "grade",
+    "ms": 0.0,
+    "data": {
+     "signal": "rerank",
+     "threshold": 2.0,
+     "best_score": -4.9328,
+     "verdict": "too weak"
+    }
+   }
+  },
+  {
+   "t_ms": 12314,
+   "event": "step",
+   "data": {
+    "name": "rewrite",
+    "ms": 10679.9,
+    "data": {
+     "retry": 1,
+     "budget": 2,
+     "model": "Qwen3-1.7B-Q8_0",
+     "query": "2022 fifa world cup winner",
+     "repeated": false
+    }
+   }
+  },
+  {
+   "t_ms": 14018,
+   "event": "step",
+   "data": {
+    "name": "retrieve",
+    "ms": 1700.9,
+    "data": {
+     "mode": "hybrid_rerank",
+     "k": 10,
+     "query": "2022 fifa world cup winner",
+     "hits": [
+      {
+       "chunk_id": "9988d539268321a6:00110",
+       "title": "Self-RAG: Learning to Retrieve, Generate, and Critique through Self-Reflection",
+       "page": 24,
+       "rank": 1,
+       "dense_rank": 1,
+       "dense_score": 0.6327,
+       "bm25_rank": 1,
+       "bm25_score": 15.7568,
+       "fused_rank": 1,
+       "rerank_score": -6.7155
+      },
+      {
+       "chunk_id": "45d2ff6c6f22e462:00149",
+       "title": "Improving language models by retrieving from trillions of tokens",
+       "page": 39,
+       "rank": 2,
+       "dense_rank": 2,
+       "dense_score": 0.6065,
+       "bm25_rank": null,
+       "bm25_score": null,
+       "fused_rank": 2,
+       "rerank_score": -7.2574
+      },
+      {
+       "chunk_id": "9988d539268321a6:00131",
+       "title": "Self-RAG: Learning to Retrieve, Generate, and Critique through Self-Reflection",
+       "page": 30,
+       "rank": 3,
+       "dense_rank": 6,
+       "dense_score": 0.5982,
+       "bm25_rank": null,
+       "bm25_score": null,
+       "fused_rank": 10,
+       "rerank_score": -8.2534
+      },
+      {
+       "chunk_id": "88431dc93f417b63:00030",
+       "title": "Chain-of-Thought Prompting Elicits Reasoning in Large Language Models",
+       "page": 7,
+       "rank": 4,
+       "dense_rank": null,
+       "dense_score": null,
+       "bm25_rank": 7,
+       "bm25_score": 7.4937,
+       "fused_rank": 13,
+       "rerank_score": -9.3977
+      },
+      {
+       "chunk_id": "45d2ff6c6f22e462:00159",
+       "title": "Improving language models by retrieving from trillions of tokens",
+       "page": 40,
+       "rank": 5,
+       "dense_rank": 7,
+       "dense_score": 0.5947,
+       "bm25_rank": null,
+       "bm25_score": null,
+       "fused_rank": 12,
+       "rerank_score": -9.4247
+      },
+      {
+       "chunk_id": "45d2ff6c6f22e462:00163",
+       "title": "Improving language models by retrieving from trillions of tokens",
+       "page": 40,
+       "rank": 6,
+       "dense_rank": null,
+       "dense_score": null,
+       "bm25_rank": 3,
+       "bm25_score": 8.1511,
+       "fused_rank": 5,
+       "rerank_score": -9.7963
+      },
+      {
+       "chunk_id": "45d2ff6c6f22e462:00161",
+       "title": "Improving language models by retrieving from trillions of tokens",
+       "page": 40,
+       "rank": 7,
+       "dense_rank": 10,
+       "dense_score": 0.5818,
+       "bm25_rank": null,
+       "bm25_score": null,
+       "fused_rank": 18,
+       "rerank_score": -9.8649
+      },
+      {
+       "chunk_id": "45d2ff6c6f22e462:00157",
+       "title": "Improving language models by retrieving from trillions of tokens",
+       "page": 40,
+       "rank": 8,
+       "dense_rank": 5,
+       "dense_score": 0.5988,
+       "bm25_rank": null,
+       "bm25_score": null,
+       "fused_rank": 8,
+       "rerank_score": -9.9171
+      },
+      {
+       "chunk_id": "3d150ec8e60c62d0:00051",
+       "title": "From Local to Global: A Graph RAG Approach to Query-Focused Summarization",
+       "page": 11,
+       "rank": 9,
+       "dense_rank": null,
+       "dense_score": null,
+       "bm25_rank": 6,
+       "bm25_score": 7.7253,
+       "fused_rank": 11,
+       "rerank_score": -10.2225
+      },
+      {
+       "chunk_id": "3d150ec8e60c62d0:00084",
+       "title": "From Local to Global: A Graph RAG Approach to Query-Focused Summarization",
+       "page": 20,
+       "rank": 10,
+       "dense_rank": null,
+       "dense_score": null,
+       "bm25_rank": 4,
+       "bm25_score": 7.9479,
+       "fused_rank": 7,
+       "rerank_score": -10.2608
+      }
+     ]
+    }
+   }
+  },
+  {
+   "t_ms": 14018,
+   "event": "step",
+   "data": {
+    "name": "grade",
+    "ms": 0.0,
+    "data": {
+     "signal": "rerank",
+     "threshold": 2.0,
+     "best_score": -6.7155,
+     "verdict": "too weak"
+    }
+   }
+  },
+  {
+   "t_ms": 16488,
+   "event": "step",
+   "data": {
+    "name": "rewrite",
+    "ms": 2465.9,
+    "data": {
+     "retry": 2,
+     "budget": 2,
+     "model": "Qwen3-1.7B-Q8_0",
+     "query": "2022 fifa world cup winner",
+     "repeated": true
+    }
+   }
+  },
+  {
+   "t_ms": 16489,
+   "event": "final",
+   "data": {
+    "answer": "I don't have enough information in the indexed documents to answer that.",
+    "abstained": true,
+    "abstain_reason": "best rerank score -6.72 is below the threshold 2.00; the query rewrite added nothing new (after 2 query rewrite attempt(s))",
+    "sources": [
+     {
+      "tag": "S1",
+      "doc_id": "9988d539268321a6",
+      "chunk_id": "9988d539268321a6:00110",
+      "title": "Self-RAG: Learning to Retrieve, Generate, and Critique through Self-Reflection",
+      "page": 24,
+      "score": -6.7155,
+      "snippet": "midfielder and was known for his technical skills, creativity, dribbling ability, and accuracy from free kicks[ Retrieve =Continue]He won two FIFA World Player of the Year awards and a Ballon d’Or.[ ISUSE =5] Reference [1] Ronaldo de Assis Moreira (born 21 March 1980), commonly known as Ronaldinho G",
+      "cited": false,
+      "file_url": "/v1/documents/9988d539268321a6/file#page=24"
+     },
+     {
+      "tag": "S2",
+      "doc_id": "45d2ff6c6f22e462",
+      "chunk_id": "45d2ff6c6f22e462:00149",
+      "title": "Improving language models by retrieving from trillions of tokens",
+      "page": 39,
+      "score": -7.2574,
+      "snippet": "mpionship FinalThe 2021 All-Irelan mpionship Final The 2021 All-Irelan mpionship FinalThe 2018 All-Irelan mpionship FinalThe 2018 All-Irelan d Senior Football Championship Final d Senior Football Championship Final d Senior Football Championship Final d Senior Football Championship Final was the 134",
+      "cited": false,
+      "file_url": "/v1/documents/45d2ff6c6f22e462/file#page=39"
+     },
+     {
+      "tag": "S3",
+      "doc_id": "9988d539268321a6",
+      "chunk_id": "9988d539268321a6:00131",
+      "title": "Self-RAG: Learning to Retrieve, Generate, and Critique through Self-Reflection",
+      "page": 30,
+      "score": -8.2534,
+      "snippet": "irrelevant. Instruction Who is the current prime minister of the UK as of 2023? Output Boris Johnson was the prime minister of the UK from 2019 - 2022. Perceived utility 2 Explanation While the output provides a factually correct statement about the UK prime minister from 2019 to 2022, this instruct",
+      "cited": false,
+      "file_url": "/v1/documents/9988d539268321a6/file#page=30"
+     }
+    ],
+    "cited": [],
+    "model_used": null,
+    "fallback_reason": null,
+    "pipeline": "agent",
+    "mode": "hybrid_rerank",
+    "retries": 2,
+    "index_version": "v-3358110700c6",
+    "prompt_version": "1",
+    "security": {
+     "masked": [],
+     "stripped": 0,
+     "output_masked": []
+    },
+    "trace": [
+     {
+      "name": "retrieve",
+      "ms": 1620.7,
+      "data": {
+       "mode": "hybrid_rerank",
+       "k": 10,
+       "hits": [
+        {
+         "chunk_id": "9988d539268321a6:00110",
+         "title": "Self-RAG: Learning to Retrieve, Generate, and Critique through Self-Reflection",
+         "page": 24,
+         "rank": 1,
+         "dense_rank": 1,
+         "dense_score": 0.5931,
+         "bm25_rank": 1,
+         "bm25_score": 22.4573,
+         "fused_rank": 1,
+         "rerank_score": -4.9328
+        },
+        {
+         "chunk_id": "cdbd3697120441b7:00055",
+         "title": "ReAct: Synergizing Reasoning and Acting in Language Models",
+         "page": 11,
+         "rank": 2,
+         "dense_rank": null,
+         "dense_score": null,
+         "bm25_rank": 7,
+         "bm25_score": 7.4419,
+         "fused_rank": 15,
+         "rerank_score": -8.6274
+        },
+        {
+         "chunk_id": "9988d539268321a6:00131",
+         "title": "Self-RAG: Learning to Retrieve, Generate, and Critique through Self-Reflection",
+         "page": 30,
+         "rank": 3,
+         "dense_rank": 2,
+         "dense_score": 0.5868,
+         "bm25_rank": null,
+         "bm25_score": null,
+         "fused_rank": 4,
+         "rerank_score": -8.8216
+        },
+        {
+         "chunk_id": "45d2ff6c6f22e462:00149",
+         "title": "Improving language models by retrieving from trillions of tokens",
+         "page": 39,
+         "rank": 4,
+         "dense_rank": 4,
+         "dense_score": 0.5758,
+         "bm25_rank": null,
+         "bm25_score": null,
+         "fused_rank": 8,
+         "rerank_score": -9.175
+        },
+        {
+         "chunk_id": "45d2ff6c6f22e462:00150",
+         "title": "Improving language models by retrieving from trillions of tokens",
+         "page": 39,
+         "rank": 5,
+         "dense_rank": 14,
+         "dense_score": 0.553,
+         "bm25_rank": 13,
+         "bm25_score": 6.5426,
+         "fused_rank": 3,
+         "rerank_score": -9.5088
+        },
+        {
+         "chunk_id": "a957896ba42bd6f7:00050",
+         "title": "Dense X Retrieval: What Retrieval Granularity Should We Use?",
+         "page": 10,
+         "rank": 6,
+         "dense_rank": null,
+         "dense_score": null,
+         "bm25_rank": 8,
+         "bm25_score": 7.1785,
+         "fused_rank": 17,
+         "rerank_score": -10.1901
+        },
+        {
+         "chunk_id": "45d2ff6c6f22e462:00153",
+         "title": "Improving language models by retrieving from trillions of tokens",
+         "page": 39,
+         "rank": 7,
+         "dense_rank": 16,
+         "dense_score": 0.5498,
+         "bm25_rank": 10,
+         "bm25_score": 6.9307,
+         "fused_rank": 2,
+         "rerank_score": -10.2731
+        },
+        {
+         "chunk_id": "88431dc93f417b63:00014",
+         "title": "Chain-of-Thought Prompting Elicits Reasoning in Large Language Models",
+         "page": 4,
+         "rank": 8,
+         "dense_rank": 5,
+         "dense_score": 0.5728,
+         "bm25_rank": null,
+         "bm25_score": null,
+         "fused_rank": 10,
+         "rerank_score": -10.3675
+        },
+        {
+         "chunk_id": "45d2ff6c6f22e462:00159",
+         "title": "Improving language models by retrieving from trillions of tokens",
+         "page": 40,
+         "rank": 9,
+         "dense_rank": 7,
+         "dense_score": 0.5695,
+         "bm25_rank": null,
+         "bm25_score": null,
+         "fused_rank": 14,
+         "rerank_score": -10.372
+        },
+        {
+         "chunk_id": "45d2ff6c6f22e462:00163",
+         "title": "Improving language models by retrieving from trillions of tokens",
+         "page": 40,
+         "rank": 10,
+         "dense_rank": null,
+         "dense_score": null,
+         "bm25_rank": 3,
+         "bm25_score": 8.1511,
+         "fused_rank": 7,
+         "rerank_score": -10.4025
+        }
+       ]
+      }
+     },
+     {
+      "name": "grade",
+      "ms": 0.0,
+      "data": {
+       "signal": "rerank",
+       "threshold": 2.0,
+       "best_score": -4.9328,
+       "verdict": "too weak"
+      }
+     },
+     {
+      "name": "rewrite",
+      "ms": 10679.9,
+      "data": {
+       "retry": 1,
+       "budget": 2,
+       "model": "Qwen3-1.7B-Q8_0",
+       "query": "2022 fifa world cup winner",
+       "repeated": false
+      }
+     },
+     {
+      "name": "retrieve",
+      "ms": 1700.9,
+      "data": {
+       "mode": "hybrid_rerank",
+       "k": 10,
+       "query": "2022 fifa world cup winner",
+       "hits": [
+        {
+         "chunk_id": "9988d539268321a6:00110",
+         "title": "Self-RAG: Learning to Retrieve, Generate, and Critique through Self-Reflection",
+         "page": 24,
+         "rank": 1,
+         "dense_rank": 1,
+         "dense_score": 0.6327,
+         "bm25_rank": 1,
+         "bm25_score": 15.7568,
+         "fused_rank": 1,
+         "rerank_score": -6.7155
+        },
+        {
+         "chunk_id": "45d2ff6c6f22e462:00149",
+         "title": "Improving language models by retrieving from trillions of tokens",
+         "page": 39,
+         "rank": 2,
+         "dense_rank": 2,
+         "dense_score": 0.6065,
+         "bm25_rank": null,
+         "bm25_score": null,
+         "fused_rank": 2,
+         "rerank_score": -7.2574
+        },
+        {
+         "chunk_id": "9988d539268321a6:00131",
+         "title": "Self-RAG: Learning to Retrieve, Generate, and Critique through Self-Reflection",
+         "page": 30,
+         "rank": 3,
+         "dense_rank": 6,
+         "dense_score": 0.5982,
+         "bm25_rank": null,
+         "bm25_score": null,
+         "fused_rank": 10,
+         "rerank_score": -8.2534
+        },
+        {
+         "chunk_id": "88431dc93f417b63:00030",
+         "title": "Chain-of-Thought Prompting Elicits Reasoning in Large Language Models",
+         "page": 7,
+         "rank": 4,
+         "dense_rank": null,
+         "dense_score": null,
+         "bm25_rank": 7,
+         "bm25_score": 7.4937,
+         "fused_rank": 13,
+         "rerank_score": -9.3977
+        },
+        {
+         "chunk_id": "45d2ff6c6f22e462:00159",
+         "title": "Improving language models by retrieving from trillions of tokens",
+         "page": 40,
+         "rank": 5,
+         "dense_rank": 7,
+         "dense_score": 0.5947,
+         "bm25_rank": null,
+         "bm25_score": null,
+         "fused_rank": 12,
+         "rerank_score": -9.4247
+        },
+        {
+         "chunk_id": "45d2ff6c6f22e462:00163",
+         "title": "Improving language models by retrieving from trillions of tokens",
+         "page": 40,
+         "rank": 6,
+         "dense_rank": null,
+         "dense_score": null,
+         "bm25_rank": 3,
+         "bm25_score": 8.1511,
+         "fused_rank": 5,
+         "rerank_score": -9.7963
+        },
+        {
+         "chunk_id": "45d2ff6c6f22e462:00161",
+         "title": "Improving language models by retrieving from trillions of tokens",
+         "page": 40,
+         "rank": 7,
+         "dense_rank": 10,
+         "dense_score": 0.5818,
+         "bm25_rank": null,
+         "bm25_score": null,
+         "fused_rank": 18,
+         "rerank_score": -9.8649
+        },
+        {
+         "chunk_id": "45d2ff6c6f22e462:00157",
+         "title": "Improving language models by retrieving from trillions of tokens",
+         "page": 40,
+         "rank": 8,
+         "dense_rank": 5,
+         "dense_score": 0.5988,
+         "bm25_rank": null,
+         "bm25_score": null,
+         "fused_rank": 8,
+         "rerank_score": -9.9171
+        },
+        {
+         "chunk_id": "3d150ec8e60c62d0:00051",
+         "title": "From Local to Global: A Graph RAG Approach to Query-Focused Summarization",
+         "page": 11,
+         "rank": 9,
+         "dense_rank": null,
+         "dense_score": null,
+         "bm25_rank": 6,
+         "bm25_score": 7.7253,
+         "fused_rank": 11,
+         "rerank_score": -10.2225
+        },
+        {
+         "chunk_id": "3d150ec8e60c62d0:00084",
+         "title": "From Local to Global: A Graph RAG Approach to Query-Focused Summarization",
+         "page": 20,
+         "rank": 10,
+         "dense_rank": null,
+         "dense_score": null,
+         "bm25_rank": 4,
+         "bm25_score": 7.9479,
+         "fused_rank": 7,
+         "rerank_score": -10.2608
+        }
+       ]
+      }
+     },
+     {
+      "name": "grade",
+      "ms": 0.0,
+      "data": {
+       "signal": "rerank",
+       "threshold": 2.0,
+       "best_score": -6.7155,
+       "verdict": "too weak"
+      }
+     },
+     {
+      "name": "rewrite",
+      "ms": 2465.9,
+      "data": {
+       "retry": 2,
+       "budget": 2,
+       "model": "Qwen3-1.7B-Q8_0",
+       "query": "2022 fifa world cup winner",
+       "repeated": true
+      }
+     }
+    ],
+    "cached": false,
+    "latency_ms": 16483.8,
+    "request_id": "b2b9e063205247e6"
+   }
+  }
+ ]
+}

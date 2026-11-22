@@ -9,12 +9,16 @@ export function Banner({
   run,
   view,
   onView,
+  replayMode,
+  onReplayMode,
 }: {
   ready: Ready | null;
   readyError: string | null;
   run: RunState;
   view: View;
   onView: (v: View) => void;
+  replayMode: boolean;
+  onReplayMode: (on: boolean) => void;
 }) {
   let queue = "idle";
   if (run.status === "running") queue = run.queuedPosition ? `busy · you're next (#${run.queuedPosition})` : "answering";
@@ -33,9 +37,21 @@ export function Banner({
             <span className={`queue ${queue.startsWith("busy") ? "warn" : ""}`}>queue: {queue}</span>
           </>
         ) : (
-          <span className="warn">{readyError ?? "connecting…"}</span>
+          <span className="warn">
+            {readyError ?? "connecting…"}
+            {readyError ? " · Replay mode still works" : ""}
+          </span>
         )}
       </div>
+      <button
+        type="button"
+        className={`replay-toggle ${replayMode ? "on" : ""}`}
+        aria-pressed={replayMode}
+        onClick={() => onReplayMode(!replayMode)}
+        title="Play recorded runs of the presets instead of running the model"
+      >
+        Replay mode {replayMode ? "on" : "off"}
+      </button>
       <div className="views" role="tablist" aria-label="View">
         {(["single", "compare"] as const).map((v) => (
           <button

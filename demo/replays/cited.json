@@ -1,0 +1,519 @@
+{
+ "preset_id": "cited",
+ "question": "How many datasets does the BEIR benchmark include?",
+ "view": "single",
+ "recorded_at": "2026-11-22T11:46:30+00:00",
+ "index_version": "v-3358110700c6",
+ "prompt_version": "1",
+ "model": "Qwen3-1.7B-Q8_0",
+ "kind": "stream",
+ "events": [
+  {
+   "t_ms": 209,
+   "event": "meta",
+   "data": {
+    "request_id": "cba5a5d087c84f9b",
+    "cached": false,
+    "security": {
+     "masked": [],
+     "stripped": 0,
+     "output_masked": []
+    }
+   }
+  },
+  {
+   "t_ms": 1498,
+   "event": "step",
+   "data": {
+    "name": "retrieve",
+    "ms": 1284.6,
+    "data": {
+     "mode": "hybrid_rerank",
+     "k": 10,
+     "hits": [
+      {
+       "chunk_id": "05574f3c8bcf2713:00006",
+       "title": "BEIR: A Heterogenous Benchmark for Zero-shot Evaluation of Information Retrieval Models",
+       "page": 2,
+       "rank": 1,
+       "dense_rank": 8,
+       "dense_score": 0.7525,
+       "bm25_rank": null,
+       "bm25_score": null,
+       "fused_rank": 15,
+       "rerank_score": 6.3623
+      },
+      {
+       "chunk_id": "05574f3c8bcf2713:00048",
+       "title": "BEIR: A Heterogenous Benchmark for Zero-shot Evaluation of Information Retrieval Models",
+       "page": 9,
+       "rank": 2,
+       "dense_rank": null,
+       "dense_score": null,
+       "bm25_rank": 4,
+       "bm25_score": 14.9169,
+       "fused_rank": 11,
+       "rerank_score": 6.1621
+      },
+      {
+       "chunk_id": "d58ac6c23e42ba35:00028",
+       "title": "Unsupervised Dense Information Retrieval with Contrastive Learning",
+       "page": 6,
+       "rank": 3,
+       "dense_rank": 4,
+       "dense_score": 0.7653,
+       "bm25_rank": 18,
+       "bm25_score": 11.5257,
+       "fused_rank": 6,
+       "rerank_score": 5.971
+      },
+      {
+       "chunk_id": "05574f3c8bcf2713:00020",
+       "title": "BEIR: A Heterogenous Benchmark for Zero-shot Evaluation of Information Retrieval Models",
+       "page": 4,
+       "rank": 4,
+       "dense_rank": 1,
+       "dense_score": 0.8323,
+       "bm25_rank": 2,
+       "bm25_score": 16.1964,
+       "fused_rank": 1,
+       "rerank_score": 5.8789
+      },
+      {
+       "chunk_id": "55803f3620abbe1a:00023",
+       "title": "Text Embeddings by Weakly-Supervised Contrastive Pre-training",
+       "page": 5,
+       "rank": 5,
+       "dense_rank": 6,
+       "dense_score": 0.7549,
+       "bm25_rank": 11,
+       "bm25_score": 12.1948,
+       "fused_rank": 4,
+       "rerank_score": 5.776
+      },
+      {
+       "chunk_id": "05574f3c8bcf2713:00019",
+       "title": "BEIR: A Heterogenous Benchmark for Zero-shot Evaluation of Information Retrieval Models",
+       "page": 4,
+       "rank": 6,
+       "dense_rank": 3,
+       "dense_score": 0.7655,
+       "bm25_rank": null,
+       "bm25_score": null,
+       "fused_rank": 10,
+       "rerank_score": 5.7644
+      },
+      {
+       "chunk_id": "05574f3c8bcf2713:00080",
+       "title": "BEIR: A Heterogenous Benchmark for Zero-shot Evaluation of Information Retrieval Models",
+       "page": 17,
+       "rank": 7,
+       "dense_rank": 10,
+       "dense_score": 0.7486,
+       "bm25_rank": 1,
+       "bm25_score": 18.0074,
+       "fused_rank": 3,
+       "rerank_score": 5.5585
+      },
+      {
+       "chunk_id": "d58ac6c23e42ba35:00080",
+       "title": "Unsupervised Dense Information Retrieval with Contrastive Learning",
+       "page": 18,
+       "rank": 8,
+       "dense_rank": 15,
+       "dense_score": 0.7346,
+       "bm25_rank": 3,
+       "bm25_score": 14.9189,
+       "fused_rank": 5,
+       "rerank_score": 5.1952
+      },
+      {
+       "chunk_id": "d58ac6c23e42ba35:00035",
+       "title": "Unsupervised Dense Information Retrieval with Contrastive Learning",
+       "page": 8,
+       "rank": 9,
+       "dense_rank": 9,
+       "dense_score": 0.7497,
+       "bm25_rank": null,
+       "bm25_score": null,
+       "fused_rank": 16,
+       "rerank_score": 5.1947
+      },
+      {
+       "chunk_id": "55803f3620abbe1a:00073",
+       "title": "Text Embeddings by Weakly-Supervised Contrastive Pre-training",
+       "page": 16,
+       "rank": 10,
+       "dense_rank": null,
+       "dense_score": null,
+       "bm25_rank": 5,
+       "bm25_score": 14.6667,
+       "fused_rank": 13,
+       "rerank_score": 5.1337
+      }
+     ]
+    }
+   }
+  },
+  {
+   "t_ms": 1498,
+   "event": "step",
+   "data": {
+    "name": "grade",
+    "ms": 0.0,
+    "data": {
+     "signal": "rerank",
+     "threshold": 2.0,
+     "best_score": 6.3623,
+     "verdict": "relevant"
+    }
+   }
+  },
+  {
+   "t_ms": 40508,
+   "event": "token",
+   "data": {
+    "text": "T"
+   }
+  },
+  {
+   "t_ms": 40689,
+   "event": "token",
+   "data": {
+    "text": "he"
+   }
+  },
+  {
+   "t_ms": 40858,
+   "event": "token",
+   "data": {
+    "text": " "
+   }
+  },
+  {
+   "t_ms": 41029,
+   "event": "token",
+   "data": {
+    "text": "B"
+   }
+  },
+  {
+   "t_ms": 41197,
+   "event": "token",
+   "data": {
+    "text": "EI"
+   }
+  },
+  {
+   "t_ms": 41393,
+   "event": "step",
+   "data": {
+    "name": "generate",
+    "ms": 39881.2,
+    "data": {
+     "model": "Qwen3-1.7B-Q8_0",
+     "max_tokens": 150,
+     "prompt_tokens": 886,
+     "completion_tokens": 18,
+     "first_token_ms": 36551.5,
+     "sources": [
+      "S1",
+      "S2",
+      "S3"
+     ]
+    }
+   }
+  },
+  {
+   "t_ms": 41393,
+   "event": "step",
+   "data": {
+    "name": "check",
+    "ms": 0.1,
+    "data": {
+     "result": "answered",
+     "cited": [
+      "S1"
+     ],
+     "invalid": [],
+     "inferred": false,
+     "uncited_sentences": 0
+    }
+   }
+  },
+  {
+   "t_ms": 41393,
+   "event": "step",
+   "data": {
+    "name": "entities",
+    "ms": 4.4,
+    "data": {
+     "entities": [
+      "BEIR"
+     ],
+     "supported": {
+      "BEIR": [
+       "S1"
+      ]
+     },
+     "verdict": "passed"
+    }
+   }
+  },
+  {
+   "t_ms": 41393,
+   "event": "token",
+   "data": {
+    "text": "R benchmark includes 18 retrieval datasets [S1]."
+   }
+  },
+  {
+   "t_ms": 41393,
+   "event": "final",
+   "data": {
+    "answer": "The BEIR benchmark includes 18 retrieval datasets [S1].",
+    "abstained": false,
+    "abstain_reason": null,
+    "sources": [
+     {
+      "tag": "S1",
+      "doc_id": "05574f3c8bcf2713",
+      "chunk_id": "05574f3c8bcf2713:00006",
+      "title": "BEIR: A Heterogenous Benchmark for Zero-shot Evaluation of Information Retrieval Models",
+      "page": 2,
+      "score": 6.3623,
+      "snippet": "IR), comprising of 18 retrieval datasets for comparison and evaluation of model generalization. Prior retrieval benchmarks [19, 50] have issues of a comparatively narrow evaluation focusing either only on a single task, like question-answering, or on a certain domain. In BEIR, we focus on Diversity,",
+      "cited": true,
+      "file_url": "/v1/documents/05574f3c8bcf2713/file#page=2"
+     },
+     {
+      "tag": "S2",
+      "doc_id": "05574f3c8bcf2713",
+      "chunk_id": "05574f3c8bcf2713:00048",
+      "title": "BEIR: A Heterogenous Benchmark for Zero-shot Evaluation of Information Retrieval Models",
+      "page": 9,
+      "score": 6.1621,
+      "snippet": "pool is still biased towards lexical approaches. 7 Conclusions and Future Work In this work, we presented BEIR: a heterogeneous benchmark for information retrieval. We provided a broader selection of target tasks ranging from narrow expert domains to open domain datasets. We included nine different ",
+      "cited": false,
+      "file_url": "/v1/documents/05574f3c8bcf2713/file#page=9"
+     },
+     {
+      "tag": "S3",
+      "doc_id": "d58ac6c23e42ba35",
+      "chunk_id": "d58ac6c23e42ba35:00028",
+      "title": "Unsupervised Dense Information Retrieval with Contrastive Learning",
+      "page": 6,
+      "score": 5.971,
+      "snippet": "2019) and TriviaQA (Joshi et al., 2017). For both datasets, we use the open domain versions as introduced by Lee et al. (2019), and the English Wikipedia dump from Dec. 20, 2018 as the collection of documents to retrieve from. We report the top-k retrieval accuracy, i.e. the number of questions for ",
+      "cited": false,
+      "file_url": "/v1/documents/d58ac6c23e42ba35/file#page=6"
+     }
+    ],
+    "cited": [
+     "S1"
+    ],
+    "model_used": "Qwen3-1.7B-Q8_0",
+    "fallback_reason": null,
+    "pipeline": "agent",
+    "mode": "hybrid_rerank",
+    "retries": 0,
+    "index_version": "v-3358110700c6",
+    "prompt_version": "1",
+    "security": {
+     "masked": [],
+     "stripped": 0,
+     "output_masked": []
+    },
+    "trace": [
+     {
+      "name": "retrieve",
+      "ms": 1284.6,
+      "data": {
+       "mode": "hybrid_rerank",
+       "k": 10,
+       "hits": [
+        {
+         "chunk_id": "05574f3c8bcf2713:00006",
+         "title": "BEIR: A Heterogenous Benchmark for Zero-shot Evaluation of Information Retrieval Models",
+         "page": 2,
+         "rank": 1,
+         "dense_rank": 8,
+         "dense_score": 0.7525,
+         "bm25_rank": null,
+         "bm25_score": null,
+         "fused_rank": 15,
+         "rerank_score": 6.3623
+        },
+        {
+         "chunk_id": "05574f3c8bcf2713:00048",
+         "title": "BEIR: A Heterogenous Benchmark for Zero-shot Evaluation of Information Retrieval Models",
+         "page": 9,
+         "rank": 2,
+         "dense_rank": null,
+         "dense_score": null,
+         "bm25_rank": 4,
+         "bm25_score": 14.9169,
+         "fused_rank": 11,
+         "rerank_score": 6.1621
+        },
+        {
+         "chunk_id": "d58ac6c23e42ba35:00028",
+         "title": "Unsupervised Dense Information Retrieval with Contrastive Learning",
+         "page": 6,
+         "rank": 3,
+         "dense_rank": 4,
+         "dense_score": 0.7653,
+         "bm25_rank": 18,
+         "bm25_score": 11.5257,
+         "fused_rank": 6,
+         "rerank_score": 5.971
+        },
+        {
+         "chunk_id": "05574f3c8bcf2713:00020",
+         "title": "BEIR: A Heterogenous Benchmark for Zero-shot Evaluation of Information Retrieval Models",
+         "page": 4,
+         "rank": 4,
+         "dense_rank": 1,
+         "dense_score": 0.8323,
+         "bm25_rank": 2,
+         "bm25_score": 16.1964,
+         "fused_rank": 1,
+         "rerank_score": 5.8789
+        },
+        {
+         "chunk_id": "55803f3620abbe1a:00023",
+         "title": "Text Embeddings by Weakly-Supervised Contrastive Pre-training",
+         "page": 5,
+         "rank": 5,
+         "dense_rank": 6,
+         "dense_score": 0.7549,
+         "bm25_rank": 11,
+         "bm25_score": 12.1948,
+         "fused_rank": 4,
+         "rerank_score": 5.776
+        },
+        {
+         "chunk_id": "05574f3c8bcf2713:00019",
+         "title": "BEIR: A Heterogenous Benchmark for Zero-shot Evaluation of Information Retrieval Models",
+         "page": 4,
+         "rank": 6,
+         "dense_rank": 3,
+         "dense_score": 0.7655,
+         "bm25_rank": null,
+         "bm25_score": null,
+         "fused_rank": 10,
+         "rerank_score": 5.7644
+        },
+        {
+         "chunk_id": "05574f3c8bcf2713:00080",
+         "title": "BEIR: A Heterogenous Benchmark for Zero-shot Evaluation of Information Retrieval Models",
+         "page": 17,
+         "rank": 7,
+         "dense_rank": 10,
+         "dense_score": 0.7486,
+         "bm25_rank": 1,
+         "bm25_score": 18.0074,
+         "fused_rank": 3,
+         "rerank_score": 5.5585
+        },
+        {
+         "chunk_id": "d58ac6c23e42ba35:00080",
+         "title": "Unsupervised Dense Information Retrieval with Contrastive Learning",
+         "page": 18,
+         "rank": 8,
+         "dense_rank": 15,
+         "dense_score": 0.7346,
+         "bm25_rank": 3,
+         "bm25_score": 14.9189,
+         "fused_rank": 5,
+         "rerank_score": 5.1952
+        },
+        {
+         "chunk_id": "d58ac6c23e42ba35:00035",
+         "title": "Unsupervised Dense Information Retrieval with Contrastive Learning",
+         "page": 8,
+         "rank": 9,
+         "dense_rank": 9,
+         "dense_score": 0.7497,
+         "bm25_rank": null,
+         "bm25_score": null,
+         "fused_rank": 16,
+         "rerank_score": 5.1947
+        },
+        {
+         "chunk_id": "55803f3620abbe1a:00073",
+         "title": "Text Embeddings by Weakly-Supervised Contrastive Pre-training",
+         "page": 16,
+         "rank": 10,
+         "dense_rank": null,
+         "dense_score": null,
+         "bm25_rank": 5,
+         "bm25_score": 14.6667,
+         "fused_rank": 13,
+         "rerank_score": 5.1337
+        }
+       ]
+      }
+     },
+     {
+      "name": "grade",
+      "ms": 0.0,
+      "data": {
+       "signal": "rerank",
+       "threshold": 2.0,
+       "best_score": 6.3623,
+       "verdict": "relevant"
+      }
+     },
+     {
+      "name": "generate",
+      "ms": 39881.2,
+      "data": {
+       "model": "Qwen3-1.7B-Q8_0",
+       "max_tokens": 150,
+       "prompt_tokens": 886,
+       "completion_tokens": 18,
+       "first_token_ms": 36551.5,
+       "sources": [
+        "S1",
+        "S2",
+        "S3"
+       ]
+      }
+     },
+     {
+      "name": "check",
+      "ms": 0.1,
+      "data": {
+       "result": "answered",
+       "cited": [
+        "S1"
+       ],
+       "invalid": [],
+       "inferred": false,
+       "uncited_sentences": 0
+      }
+     },
+     {
+      "name": "entities",
+      "ms": 4.4,
+      "data": {
+       "entities": [
+        "BEIR"
+       ],
+       "supported": {
+        "BEIR": [
+         "S1"
+        ]
+       },
+       "verdict": "passed"
+      }
+     }
+    ],
+    "cached": false,
+    "latency_ms": 41389.2,
+    "request_id": "cba5a5d087c84f9b"
+   }
+  }
+ ]
+}

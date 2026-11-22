@@ -1,0 +1,1053 @@
+{
+ "preset_id": "vague",
+ "question": "How do you embed a long document first and cut it into pieces afterwards?",
+ "view": "single",
+ "recorded_at": "2026-11-22T11:47:13+00:00",
+ "index_version": "v-3358110700c6",
+ "prompt_version": "1",
+ "model": "Qwen3-1.7B-Q8_0",
+ "kind": "stream",
+ "events": [
+  {
+   "t_ms": 9,
+   "event": "meta",
+   "data": {
+    "request_id": "88fcc6bb29ed4a58",
+    "cached": false,
+    "security": {
+     "masked": [],
+     "stripped": 0,
+     "output_masked": []
+    }
+   }
+  },
+  {
+   "t_ms": 1709,
+   "event": "step",
+   "data": {
+    "name": "retrieve",
+    "ms": 1692.5,
+    "data": {
+     "mode": "hybrid_rerank",
+     "k": 10,
+     "hits": [
+      {
+       "chunk_id": "37e119b259c015eb:00001",
+       "title": "Late Chunking: Contextual Chunk Embeddings Using Long-Context Embedding Models",
+       "page": 1,
+       "rank": 1,
+       "dense_rank": 15,
+       "dense_score": 0.6956,
+       "bm25_rank": 3,
+       "bm25_score": 11.9909,
+       "fused_rank": 2,
+       "rerank_score": 1.0955
+      },
+      {
+       "chunk_id": "37e119b259c015eb:00015",
+       "title": "Late Chunking: Contextual Chunk Embeddings Using Long-Context Embedding Models",
+       "page": 4,
+       "rank": 2,
+       "dense_rank": 5,
+       "dense_score": 0.7186,
+       "bm25_rank": 6,
+       "bm25_score": 10.767,
+       "fused_rank": 1,
+       "rerank_score": -0.1021
+      },
+      {
+       "chunk_id": "37e119b259c015eb:00000",
+       "title": "Late Chunking: Contextual Chunk Embeddings Using Long-Context Embedding Models",
+       "page": 1,
+       "rank": 3,
+       "dense_rank": 8,
+       "dense_score": 0.713,
+       "bm25_rank": null,
+       "bm25_score": null,
+       "fused_rank": 16,
+       "rerank_score": -2.001
+      },
+      {
+       "chunk_id": "37e119b259c015eb:00003",
+       "title": "Late Chunking: Contextual Chunk Embeddings Using Long-Context Embedding Models",
+       "page": 1,
+       "rank": 4,
+       "dense_rank": 14,
+       "dense_score": 0.6959,
+       "bm25_rank": 8,
+       "bm25_score": 9.8554,
+       "fused_rank": 3,
+       "rerank_score": -2.3631
+      },
+      {
+       "chunk_id": "37e119b259c015eb:00012",
+       "title": "Late Chunking: Contextual Chunk Embeddings Using Long-Context Embedding Models",
+       "page": 3,
+       "rank": 5,
+       "dense_rank": 2,
+       "dense_score": 0.7293,
+       "bm25_rank": null,
+       "bm25_score": null,
+       "fused_rank": 7,
+       "rerank_score": -2.6158
+      },
+      {
+       "chunk_id": "37e119b259c015eb:00010",
+       "title": "Late Chunking: Contextual Chunk Embeddings Using Long-Context Embedding Models",
+       "page": 3,
+       "rank": 6,
+       "dense_rank": 1,
+       "dense_score": 0.7385,
+       "bm25_rank": null,
+       "bm25_score": null,
+       "fused_rank": 5,
+       "rerank_score": -3.082
+      },
+      {
+       "chunk_id": "37e119b259c015eb:00004",
+       "title": "Late Chunking: Contextual Chunk Embeddings Using Long-Context Embedding Models",
+       "page": 1,
+       "rank": 7,
+       "dense_rank": 3,
+       "dense_score": 0.7214,
+       "bm25_rank": null,
+       "bm25_score": null,
+       "fused_rank": 9,
+       "rerank_score": -3.4665
+      },
+      {
+       "chunk_id": "37e119b259c015eb:00008",
+       "title": "Late Chunking: Contextual Chunk Embeddings Using Long-Context Embedding Models",
+       "page": 2,
+       "rank": 8,
+       "dense_rank": 4,
+       "dense_score": 0.7197,
+       "bm25_rank": null,
+       "bm25_score": null,
+       "fused_rank": 10,
+       "rerank_score": -4.6191
+      },
+      {
+       "chunk_id": "37e119b259c015eb:00017",
+       "title": "Late Chunking: Contextual Chunk Embeddings Using Long-Context Embedding Models",
+       "page": 4,
+       "rank": 9,
+       "dense_rank": 6,
+       "dense_score": 0.7171,
+       "bm25_rank": null,
+       "bm25_score": null,
+       "fused_rank": 13,
+       "rerank_score": -4.7381
+      },
+      {
+       "chunk_id": "37e119b259c015eb:00021",
+       "title": "Late Chunking: Contextual Chunk Embeddings Using Long-Context Embedding Models",
+       "page": 6,
+       "rank": 10,
+       "dense_rank": 10,
+       "dense_score": 0.7078,
+       "bm25_rank": null,
+       "bm25_score": null,
+       "fused_rank": 19,
+       "rerank_score": -5.0026
+      }
+     ]
+    }
+   }
+  },
+  {
+   "t_ms": 1709,
+   "event": "step",
+   "data": {
+    "name": "grade",
+    "ms": 0.0,
+    "data": {
+     "signal": "rerank",
+     "threshold": 2.0,
+     "best_score": 1.0955,
+     "verdict": "too weak"
+    }
+   }
+  },
+  {
+   "t_ms": 11737,
+   "event": "step",
+   "data": {
+    "name": "rewrite",
+    "ms": 10029.7,
+    "data": {
+     "retry": 1,
+     "budget": 2,
+     "model": "Qwen3-1.7B-Q8_0",
+     "query": "document segmentation long document embedding",
+     "repeated": false
+    }
+   }
+  },
+  {
+   "t_ms": 13373,
+   "event": "step",
+   "data": {
+    "name": "retrieve",
+    "ms": 1631.5,
+    "data": {
+     "mode": "hybrid_rerank",
+     "k": 10,
+     "query": "document segmentation long document embedding",
+     "hits": [
+      {
+       "chunk_id": "37e119b259c015eb:00000",
+       "title": "Late Chunking: Contextual Chunk Embeddings Using Long-Context Embedding Models",
+       "page": 1,
+       "rank": 1,
+       "dense_rank": 3,
+       "dense_score": 0.8399,
+       "bm25_rank": null,
+       "bm25_score": null,
+       "fused_rank": 7,
+       "rerank_score": 3.9788
+      },
+      {
+       "chunk_id": "37e119b259c015eb:00015",
+       "title": "Late Chunking: Contextual Chunk Embeddings Using Long-Context Embedding Models",
+       "page": 4,
+       "rank": 2,
+       "dense_rank": 11,
+       "dense_score": 0.816,
+       "bm25_rank": 1,
+       "bm25_score": 17.3832,
+       "fused_rank": 1,
+       "rerank_score": 3.4481
+      },
+      {
+       "chunk_id": "37e119b259c015eb:00010",
+       "title": "Late Chunking: Contextual Chunk Embeddings Using Long-Context Embedding Models",
+       "page": 3,
+       "rank": 3,
+       "dense_rank": 1,
+       "dense_score": 0.8681,
+       "bm25_rank": null,
+       "bm25_score": null,
+       "fused_rank": 4,
+       "rerank_score": 3.333
+      },
+      {
+       "chunk_id": "37e119b259c015eb:00003",
+       "title": "Late Chunking: Contextual Chunk Embeddings Using Long-Context Embedding Models",
+       "page": 1,
+       "rank": 4,
+       "dense_rank": null,
+       "dense_score": null,
+       "bm25_rank": 2,
+       "bm25_score": 14.5648,
+       "fused_rank": 6,
+       "rerank_score": 3.1151
+      },
+      {
+       "chunk_id": "b997db628248fcc9:00002",
+       "title": "ColPali: Efficient Document Retrieval with Vision Language Models",
+       "page": 1,
+       "rank": 5,
+       "dense_rank": null,
+       "dense_score": null,
+       "bm25_rank": 10,
+       "bm25_score": 12.9327,
+       "fused_rank": 19,
+       "rerank_score": 1.5124
+      },
+      {
+       "chunk_id": "37e119b259c015eb:00001",
+       "title": "Late Chunking: Contextual Chunk Embeddings Using Long-Context Embedding Models",
+       "page": 1,
+       "rank": 6,
+       "dense_rank": 4,
+       "dense_score": 0.8302,
+       "bm25_rank": null,
+       "bm25_score": null,
+       "fused_rank": 8,
+       "rerank_score": 1.1855
+      },
+      {
+       "chunk_id": "37e119b259c015eb:00014",
+       "title": "Late Chunking: Contextual Chunk Embeddings Using Long-Context Embedding Models",
+       "page": 3,
+       "rank": 7,
+       "dense_rank": null,
+       "dense_score": null,
+       "bm25_rank": 7,
+       "bm25_score": 13.7983,
+       "fused_rank": 15,
+       "rerank_score": 0.9736
+      },
+      {
+       "chunk_id": "b997db628248fcc9:00011",
+       "title": "ColPali: Efficient Document Retrieval with Vision Language Models",
+       "page": 3,
+       "rank": 8,
+       "dense_rank": null,
+       "dense_score": null,
+       "bm25_rank": 9,
+       "bm25_score": 13.2128,
+       "fused_rank": 17,
+       "rerank_score": 0.8537
+      },
+      {
+       "chunk_id": "b997db628248fcc9:00010",
+       "title": "ColPali: Efficient Document Retrieval with Vision Language Models",
+       "page": 3,
+       "rank": 9,
+       "dense_rank": null,
+       "dense_score": null,
+       "bm25_rank": 5,
+       "bm25_score": 13.8593,
+       "fused_rank": 11,
+       "rerank_score": 0.4713
+      },
+      {
+       "chunk_id": "37e119b259c015eb:00004",
+       "title": "Late Chunking: Contextual Chunk Embeddings Using Long-Context Embedding Models",
+       "page": 1,
+       "rank": 10,
+       "dense_rank": 6,
+       "dense_score": 0.8257,
+       "bm25_rank": null,
+       "bm25_score": null,
+       "fused_rank": 12,
+       "rerank_score": 0.1738
+      }
+     ]
+    }
+   }
+  },
+  {
+   "t_ms": 13374,
+   "event": "step",
+   "data": {
+    "name": "grade",
+    "ms": 0.0,
+    "data": {
+     "signal": "rerank",
+     "threshold": 2.0,
+     "best_score": 3.9788,
+     "verdict": "relevant"
+    }
+   }
+  },
+  {
+   "t_ms": 58427,
+   "event": "token",
+   "data": {
+    "text": "In lat"
+   }
+  },
+  {
+   "t_ms": 58601,
+   "event": "token",
+   "data": {
+    "text": "e chu"
+   }
+  },
+  {
+   "t_ms": 58758,
+   "event": "token",
+   "data": {
+    "text": "nking,"
+   }
+  },
+  {
+   "t_ms": 58921,
+   "event": "token",
+   "data": {
+    "text": " "
+   }
+  },
+  {
+   "t_ms": 59126,
+   "event": "token",
+   "data": {
+    "text": "the trans"
+   }
+  },
+  {
+   "t_ms": 59465,
+   "event": "token",
+   "data": {
+    "text": "former"
+   }
+  },
+  {
+   "t_ms": 59612,
+   "event": "token",
+   "data": {
+    "text": " processes "
+   }
+  },
+  {
+   "t_ms": 59770,
+   "event": "token",
+   "data": {
+    "text": "the"
+   }
+  },
+  {
+   "t_ms": 59925,
+   "event": "token",
+   "data": {
+    "text": " entire "
+   }
+  },
+  {
+   "t_ms": 60087,
+   "event": "token",
+   "data": {
+    "text": "text fir"
+   }
+  },
+  {
+   "t_ms": 60243,
+   "event": "token",
+   "data": {
+    "text": "st, a"
+   }
+  },
+  {
+   "t_ms": 60408,
+   "event": "token",
+   "data": {
+    "text": "llow"
+   }
+  },
+  {
+   "t_ms": 60582,
+   "event": "token",
+   "data": {
+    "text": "ing ch"
+   }
+  },
+  {
+   "t_ms": 60742,
+   "event": "token",
+   "data": {
+    "text": "unk e"
+   }
+  },
+  {
+   "t_ms": 60906,
+   "event": "token",
+   "data": {
+    "text": "m"
+   }
+  },
+  {
+   "t_ms": 61074,
+   "event": "token",
+   "data": {
+    "text": "bedding"
+   }
+  },
+  {
+   "t_ms": 61249,
+   "event": "token",
+   "data": {
+    "text": "s to"
+   }
+  },
+  {
+   "t_ms": 61455,
+   "event": "token",
+   "data": {
+    "text": " captu"
+   }
+  },
+  {
+   "t_ms": 61655,
+   "event": "token",
+   "data": {
+    "text": "re contex"
+   }
+  },
+  {
+   "t_ms": 61854,
+   "event": "token",
+   "data": {
+    "text": "t from"
+   }
+  },
+  {
+   "t_ms": 62048,
+   "event": "token",
+   "data": {
+    "text": " the w"
+   }
+  },
+  {
+   "t_ms": 62224,
+   "event": "token",
+   "data": {
+    "text": "hole te"
+   }
+  },
+  {
+   "t_ms": 62389,
+   "event": "token",
+   "data": {
+    "text": "xt, "
+   }
+  },
+  {
+   "t_ms": 62555,
+   "event": "token",
+   "data": {
+    "text": "unlik"
+   }
+  },
+  {
+   "t_ms": 62732,
+   "event": "token",
+   "data": {
+    "text": "e the"
+   }
+  },
+  {
+   "t_ms": 62920,
+   "event": "token",
+   "data": {
+    "text": " nai"
+   }
+  },
+  {
+   "t_ms": 63078,
+   "event": "token",
+   "data": {
+    "text": "v"
+   }
+  },
+  {
+   "t_ms": 63244,
+   "event": "token",
+   "data": {
+    "text": "e appro"
+   }
+  },
+  {
+   "t_ms": 63419,
+   "event": "token",
+   "data": {
+    "text": "ach wh"
+   }
+  },
+  {
+   "t_ms": 63588,
+   "event": "token",
+   "data": {
+    "text": "ich "
+   }
+  },
+  {
+   "t_ms": 63753,
+   "event": "token",
+   "data": {
+    "text": "first s"
+   }
+  },
+  {
+   "t_ms": 63903,
+   "event": "token",
+   "data": {
+    "text": "pli"
+   }
+  },
+  {
+   "t_ms": 64085,
+   "event": "token",
+   "data": {
+    "text": "ts the text "
+   }
+  },
+  {
+   "t_ms": 64247,
+   "event": "token",
+   "data": {
+    "text": "into s"
+   }
+  },
+  {
+   "t_ms": 64419,
+   "event": "token",
+   "data": {
+    "text": "ub-"
+   }
+  },
+  {
+   "t_ms": 64577,
+   "event": "token",
+   "data": {
+    "text": "stri"
+   }
+  },
+  {
+   "t_ms": 64736,
+   "event": "token",
+   "data": {
+    "text": "ngs wh"
+   }
+  },
+  {
+   "t_ms": 64905,
+   "event": "token",
+   "data": {
+    "text": "ic"
+   }
+  },
+  {
+   "t_ms": 65067,
+   "event": "token",
+   "data": {
+    "text": "h"
+   }
+  },
+  {
+   "t_ms": 65224,
+   "event": "token",
+   "data": {
+    "text": " "
+   }
+  },
+  {
+   "t_ms": 65386,
+   "event": "token",
+   "data": {
+    "text": "ar"
+   }
+  },
+  {
+   "t_ms": 65570,
+   "event": "step",
+   "data": {
+    "name": "generate",
+    "ms": 52190.7,
+    "data": {
+     "model": "Qwen3-1.7B-Q8_0",
+     "max_tokens": 150,
+     "prompt_tokens": 914,
+     "completion_tokens": 54,
+     "first_token_ms": 42722.2,
+     "sources": [
+      "S1",
+      "S2",
+      "S3"
+     ]
+    }
+   }
+  },
+  {
+   "t_ms": 65571,
+   "event": "step",
+   "data": {
+    "name": "check",
+    "ms": 0.1,
+    "data": {
+     "result": "answered",
+     "cited": [
+      "S2"
+     ],
+     "invalid": [],
+     "inferred": false,
+     "uncited_sentences": 0
+    }
+   }
+  },
+  {
+   "t_ms": 65571,
+   "event": "token",
+   "data": {
+    "text": "e passed as independent units to the model [S2]."
+   }
+  },
+  {
+   "t_ms": 65572,
+   "event": "final",
+   "data": {
+    "answer": "In late chunking, the transformer processes the entire text first, allowing chunk embeddings to capture context from the whole text, unlike the naive approach which first splits the text into sub-strings which are passed as independent units to the model [S2].",
+    "abstained": false,
+    "abstain_reason": null,
+    "sources": [
+     {
+      "tag": "S1",
+      "doc_id": "37e119b259c015eb",
+      "chunk_id": "37e119b259c015eb:00000",
+      "title": "Late Chunking: Contextual Chunk Embeddings Using Long-Context Embedding Models",
+      "page": 1,
+      "score": 3.9788,
+      "snippet": "arXiv:2409.04701v3 [cs.CL] 7 Jul 2025 LATE CHUNKING: CONTEXTUAL CHUNK EMBEDDINGS USING LONG-CONTEXT EMBEDDING MODELS Michael G ̈unther1, Isabelle Mohr1, Daniel James Williams2, Bo Wang1, Han Xiao1 1Jina AI GmbH, Prinzessinnenstr. 19-20, 10969 Berlin, Germany research@jina.ai 2Weaviate B.V., Prinseng",
+      "cited": false,
+      "file_url": "/v1/documents/37e119b259c015eb/file#page=1"
+     },
+     {
+      "tag": "S2",
+      "doc_id": "37e119b259c015eb",
+      "chunk_id": "37e119b259c015eb:00015",
+      "title": "Late Chunking: Contextual Chunk Embeddings Using Long-Context Embedding Models",
+      "page": 4,
+      "score": 3.4481,
+      "snippet": "Chunk Embedding model Long document Chunk embedding Chunk2 ChunkNChunk1 Embedding model Long document Chunk1 embedding Chunk2 ChunkNChunk1 Chunk2 embedding ChunkN embedding Token emb Token emb Token emb Token emb Token emb Token emb Token emb Pooling Pooling Pooling Pooling i.i.d. embeddings N Naive",
+      "cited": true,
+      "file_url": "/v1/documents/37e119b259c015eb/file#page=4"
+     },
+     {
+      "tag": "S3",
+      "doc_id": "37e119b259c015eb",
+      "chunk_id": "37e119b259c015eb:00010",
+      "title": "Late Chunking: Contextual Chunk Embeddings Using Long-Context Embedding Models",
+      "page": 3,
+      "score": 3.333,
+      "snippet": "• Extended Algorithm for Long Documents: For encoding long documents with more tokens than long-context embedding models can handle, we propose a long late chunking approach (see Section 3.1) and prove its effectiveness in Section 4.3. • Training for Late Chunking: While late chunking does not requi",
+      "cited": false,
+      "file_url": "/v1/documents/37e119b259c015eb/file#page=3"
+     }
+    ],
+    "cited": [
+     "S2"
+    ],
+    "model_used": "Qwen3-1.7B-Q8_0",
+    "fallback_reason": null,
+    "pipeline": "agent",
+    "mode": "hybrid_rerank",
+    "retries": 1,
+    "index_version": "v-3358110700c6",
+    "prompt_version": "1",
+    "security": {
+     "masked": [],
+     "stripped": 0,
+     "output_masked": []
+    },
+    "trace": [
+     {
+      "name": "retrieve",
+      "ms": 1692.5,
+      "data": {
+       "mode": "hybrid_rerank",
+       "k": 10,
+       "hits": [
+        {
+         "chunk_id": "37e119b259c015eb:00001",
+         "title": "Late Chunking: Contextual Chunk Embeddings Using Long-Context Embedding Models",
+         "page": 1,
+         "rank": 1,
+         "dense_rank": 15,
+         "dense_score": 0.6956,
+         "bm25_rank": 3,
+         "bm25_score": 11.9909,
+         "fused_rank": 2,
+         "rerank_score": 1.0955
+        },
+        {
+         "chunk_id": "37e119b259c015eb:00015",
+         "title": "Late Chunking: Contextual Chunk Embeddings Using Long-Context Embedding Models",
+         "page": 4,
+         "rank": 2,
+         "dense_rank": 5,
+         "dense_score": 0.7186,
+         "bm25_rank": 6,
+         "bm25_score": 10.767,
+         "fused_rank": 1,
+         "rerank_score": -0.1021
+        },
+        {
+         "chunk_id": "37e119b259c015eb:00000",
+         "title": "Late Chunking: Contextual Chunk Embeddings Using Long-Context Embedding Models",
+         "page": 1,
+         "rank": 3,
+         "dense_rank": 8,
+         "dense_score": 0.713,
+         "bm25_rank": null,
+         "bm25_score": null,
+         "fused_rank": 16,
+         "rerank_score": -2.001
+        },
+        {
+         "chunk_id": "37e119b259c015eb:00003",
+         "title": "Late Chunking: Contextual Chunk Embeddings Using Long-Context Embedding Models",
+         "page": 1,
+         "rank": 4,
+         "dense_rank": 14,
+         "dense_score": 0.6959,
+         "bm25_rank": 8,
+         "bm25_score": 9.8554,
+         "fused_rank": 3,
+         "rerank_score": -2.3631
+        },
+        {
+         "chunk_id": "37e119b259c015eb:00012",
+         "title": "Late Chunking: Contextual Chunk Embeddings Using Long-Context Embedding Models",
+         "page": 3,
+         "rank": 5,
+         "dense_rank": 2,
+         "dense_score": 0.7293,
+         "bm25_rank": null,
+         "bm25_score": null,
+         "fused_rank": 7,
+         "rerank_score": -2.6158
+        },
+        {
+         "chunk_id": "37e119b259c015eb:00010",
+         "title": "Late Chunking: Contextual Chunk Embeddings Using Long-Context Embedding Models",
+         "page": 3,
+         "rank": 6,
+         "dense_rank": 1,
+         "dense_score": 0.7385,
+         "bm25_rank": null,
+         "bm25_score": null,
+         "fused_rank": 5,
+         "rerank_score": -3.082
+        },
+        {
+         "chunk_id": "37e119b259c015eb:00004",
+         "title": "Late Chunking: Contextual Chunk Embeddings Using Long-Context Embedding Models",
+         "page": 1,
+         "rank": 7,
+         "dense_rank": 3,
+         "dense_score": 0.7214,
+         "bm25_rank": null,
+         "bm25_score": null,
+         "fused_rank": 9,
+         "rerank_score": -3.4665
+        },
+        {
+         "chunk_id": "37e119b259c015eb:00008",
+         "title": "Late Chunking: Contextual Chunk Embeddings Using Long-Context Embedding Models",
+         "page": 2,
+         "rank": 8,
+         "dense_rank": 4,
+         "dense_score": 0.7197,
+         "bm25_rank": null,
+         "bm25_score": null,
+         "fused_rank": 10,
+         "rerank_score": -4.6191
+        },
+        {
+         "chunk_id": "37e119b259c015eb:00017",
+         "title": "Late Chunking: Contextual Chunk Embeddings Using Long-Context Embedding Models",
+         "page": 4,
+         "rank": 9,
+         "dense_rank": 6,
+         "dense_score": 0.7171,
+         "bm25_rank": null,
+         "bm25_score": null,
+         "fused_rank": 13,
+         "rerank_score": -4.7381
+        },
+        {
+         "chunk_id": "37e119b259c015eb:00021",
+         "title": "Late Chunking: Contextual Chunk Embeddings Using Long-Context Embedding Models",
+         "page": 6,
+         "rank": 10,
+         "dense_rank": 10,
+         "dense_score": 0.7078,
+         "bm25_rank": null,
+         "bm25_score": null,
+         "fused_rank": 19,
+         "rerank_score": -5.0026
+        }
+       ]
+      }
+     },
+     {
+      "name": "grade",
+      "ms": 0.0,
+      "data": {
+       "signal": "rerank",
+       "threshold": 2.0,
+       "best_score": 1.0955,
+       "verdict": "too weak"
+      }
+     },
+     {
+      "name": "rewrite",
+      "ms": 10029.7,
+      "data": {
+       "retry": 1,
+       "budget": 2,
+       "model": "Qwen3-1.7B-Q8_0",
+       "query": "document segmentation long document embedding",
+       "repeated": false
+      }
+     },
+     {
+      "name": "retrieve",
+      "ms": 1631.5,
+      "data": {
+       "mode": "hybrid_rerank",
+       "k": 10,
+       "query": "document segmentation long document embedding",
+       "hits": [
+        {
+         "chunk_id": "37e119b259c015eb:00000",
+         "title": "Late Chunking: Contextual Chunk Embeddings Using Long-Context Embedding Models",
+         "page": 1,
+         "rank": 1,
+         "dense_rank": 3,
+         "dense_score": 0.8399,
+         "bm25_rank": null,
+         "bm25_score": null,
+         "fused_rank": 7,
+         "rerank_score": 3.9788
+        },
+        {
+         "chunk_id": "37e119b259c015eb:00015",
+         "title": "Late Chunking: Contextual Chunk Embeddings Using Long-Context Embedding Models",
+         "page": 4,
+         "rank": 2,
+         "dense_rank": 11,
+         "dense_score": 0.816,
+         "bm25_rank": 1,
+         "bm25_score": 17.3832,
+         "fused_rank": 1,
+         "rerank_score": 3.4481
+        },
+        {
+         "chunk_id": "37e119b259c015eb:00010",
+         "title": "Late Chunking: Contextual Chunk Embeddings Using Long-Context Embedding Models",
+         "page": 3,
+         "rank": 3,
+         "dense_rank": 1,
+         "dense_score": 0.8681,
+         "bm25_rank": null,
+         "bm25_score": null,
+         "fused_rank": 4,
+         "rerank_score": 3.333
+        },
+        {
+         "chunk_id": "37e119b259c015eb:00003",
+         "title": "Late Chunking: Contextual Chunk Embeddings Using Long-Context Embedding Models",
+         "page": 1,
+         "rank": 4,
+         "dense_rank": null,
+         "dense_score": null,
+         "bm25_rank": 2,
+         "bm25_score": 14.5648,
+         "fused_rank": 6,
+         "rerank_score": 3.1151
+        },
+        {
+         "chunk_id": "b997db628248fcc9:00002",
+         "title": "ColPali: Efficient Document Retrieval with Vision Language Models",
+         "page": 1,
+         "rank": 5,
+         "dense_rank": null,
+         "dense_score": null,
+         "bm25_rank": 10,
+         "bm25_score": 12.9327,
+         "fused_rank": 19,
+         "rerank_score": 1.5124
+        },
+        {
+         "chunk_id": "37e119b259c015eb:00001",
+         "title": "Late Chunking: Contextual Chunk Embeddings Using Long-Context Embedding Models",
+         "page": 1,
+         "rank": 6,
+         "dense_rank": 4,
+         "dense_score": 0.8302,
+         "bm25_rank": null,
+         "bm25_score": null,
+         "fused_rank": 8,
+         "rerank_score": 1.1855
+        },
+        {
+         "chunk_id": "37e119b259c015eb:00014",
+         "title": "Late Chunking: Contextual Chunk Embeddings Using Long-Context Embedding Models",
+         "page": 3,
+         "rank": 7,
+         "dense_rank": null,
+         "dense_score": null,
+         "bm25_rank": 7,
+         "bm25_score": 13.7983,
+         "fused_rank": 15,
+         "rerank_score": 0.9736
+        },
+        {
+         "chunk_id": "b997db628248fcc9:00011",
+         "title": "ColPali: Efficient Document Retrieval with Vision Language Models",
+         "page": 3,
+         "rank": 8,
+         "dense_rank": null,
+         "dense_score": null,
+         "bm25_rank": 9,
+         "bm25_score": 13.2128,
+         "fused_rank": 17,
+         "rerank_score": 0.8537
+        },
+        {
+         "chunk_id": "b997db628248fcc9:00010",
+         "title": "ColPali: Efficient Document Retrieval with Vision Language Models",
+         "page": 3,
+         "rank": 9,
+         "dense_rank": null,
+         "dense_score": null,
+         "bm25_rank": 5,
+         "bm25_score": 13.8593,
+         "fused_rank": 11,
+         "rerank_score": 0.4713
+        },
+        {
+         "chunk_id": "37e119b259c015eb:00004",
+         "title": "Late Chunking: Contextual Chunk Embeddings Using Long-Context Embedding Models",
+         "page": 1,
+         "rank": 10,
+         "dense_rank": 6,
+         "dense_score": 0.8257,
+         "bm25_rank": null,
+         "bm25_score": null,
+         "fused_rank": 12,
+         "rerank_score": 0.1738
+        }
+       ]
+      }
+     },
+     {
+      "name": "grade",
+      "ms": 0.0,
+      "data": {
+       "signal": "rerank",
+       "threshold": 2.0,
+       "best_score": 3.9788,
+       "verdict": "relevant"
+      }
+     },
+     {
+      "name": "generate",
+      "ms": 52190.7,
+      "data": {
+       "model": "Qwen3-1.7B-Q8_0",
+       "max_tokens": 150,
+       "prompt_tokens": 914,
+       "completion_tokens": 54,
+       "first_token_ms": 42722.2,
+       "sources": [
+        "S1",
+        "S2",
+        "S3"
+       ]
+      }
+     },
+     {
+      "name": "check",
+      "ms": 0.1,
+      "data": {
+       "result": "answered",
+       "cited": [
+        "S2"
+       ],
+       "invalid": [],
+       "inferred": false,
+       "uncited_sentences": 0
+      }
+     }
+    ],
+    "cached": false,
+    "latency_ms": 65567.3,
+    "request_id": "88fcc6bb29ed4a58"
+   }
+  }
+ ]
+}

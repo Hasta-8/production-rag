@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { SSEParser } from "./api";
 import { findHighlight, normalise } from "./highlight";
+import { playReplay } from "./replay";
 import { initialRun, resultKind, runReducer, type RunState } from "./run";
 
 describe("SSEParser", () => {
@@ -71,5 +72,24 @@ describe("runReducer", () => {
     expect(resultKind({ cached: false } as never)).toBe("live");
     expect(resultKind({ cached: true } as never)).toBe("cached");
     expect(resultKind({ cached: false, replay: true } as never)).toBe("replay");
+  });
+});
+
+describe("playReplay", () => {
+  it("replays events in order, marks the final answer as a replay, and can skip", async () => {
+    const rec = {
+      preset_id: "cited",
+      events: [
+        { t_ms: 0, event: "meta", data: {} },
+        { t_ms: 60_000, event: "token", data: { text: "slow" } },
+        { t_ms: 120_000, event: "final", data: { cached: false } },
+      ],
+    } as never;
+    const seen: { event: string; data: unknown }[] = [];
+    const started = Date.now();
+    await playReplay(rec, (e) => seen.push(e), { skip: true });
+    expect(Date.now() - started).toBeLessThan(1000);
+    expect(seen.map((e) => e.event)).toEqual(["meta", "token", "final"]);
+    expect(seen[2].data).toMatchObject({ replay: true, cached: false });
   });
 });
