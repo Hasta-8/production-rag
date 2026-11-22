@@ -18,9 +18,9 @@ Model files live in a models folder set by `RAG_MODELS_DIR` (default
 `llm/` holds the GGUF files and `fastembed/` holds the embedding model cache.
 
 > **Status: in development.** Ingestion, hybrid retrieval with reranking, cited
-> answers, the agent loop and the API service are built, tested and evaluated.
-> The web UI is next. Everything below
-> marked PLANNED is not built yet.
+> answers, the agent loop, the API service and the web UI are built, tested and
+> evaluated. Packaging for the demo (Docker, start script, tunnel, replays) is
+> next. Everything below marked PLANNED is not built yet.
 
 ## Capability status
 
@@ -40,7 +40,7 @@ Model files live in a models folder set by `RAG_MODELS_DIR` (default
 | Entity check: names in the question must appear in a cited source | IMPLEMENTED |
 | Held-out question set for changes chosen after seeing results | IMPLEMENTED |
 | FastAPI service: security, caching, rate limits, streaming, observability | IMPLEMENTED |
-| Demo UI: chat, citation viewer, trace panel, compare mode | PLANNED |
+| Demo UI: chat, citation viewer, trace panel, compare mode | IMPLEMENTED |
 | Local demo: Docker, start script, Cloudflare tunnel | PLANNED |
 
 ## Corpus
@@ -177,7 +177,12 @@ retrieve -> grade --relevant--> generate -> check -> answer or decline
   grader on a CPU would be slow and unreliable.
 - **Rewrite**: when the evidence is weak, a short LLM call turns the question
   into a search query and retrieval runs again. At most 2 corrective steps per
-  question; each one is a trace step with its budget.
+  question; each one is a trace step with its budget. **It rarely rescues a
+  question.** On 6 vague held-out questions that failed the gate, the rewrite
+  rescued 1. The first version rescued 2, but only by luck: a prompt bug made
+  it produce slash-style junk ("/search_billion_vectors_quickly"). The likely
+  limit is that the cross-encoder, trained on natural questions, scores keyword
+  queries lower. Traps stayed declined with both versions (16/17).
 - **Fallback**: if Qwen3-1.7B produces no first token within 90 s (normally
   35–47 s on this laptop) or fails, Qwen3-0.6B answers and the trace says why.
   The timeout really interrupts llama.cpp mid-prompt, through its abort callback.
@@ -289,6 +294,55 @@ Errors share one shape, `{"error", "detail", "request_id"}`, and never include a
 - 429 after the per-minute limit.
 
 The run also found a bug the unit tests had missed. The refusal sentence is part of the system prompt, so the leak check relabelled model refusals as "the answer repeated the system prompt". It's fixed, with a regression test.
+
+## Demo UI (Phase 6)
+
+```bash
+cd frontend && npm ci && npm run build && cd ..
+uv run rag serve --demo          # UI and API on http://127.0.0.1:8000
+cd frontend && npm run dev       # development: Vite on :5173, API proxied to :8000
+```
+
+A React app (Vite, TypeScript) served by FastAPI from the same origin, so there's
+no CORS to configure and one URL works through the tunnel.
+
+- **Chat:** answers stream token by token over `POST /v1/query/stream`. The
+  checked final answer then replaces the raw tokens: the citation check, entity
+  check and output masks have run on it.
+- **Citation chips:** each `[S#]` opens the cited page in a PDF.js viewer, with
+  the passage highlighted. Matching compares letters and digits only, so it
+  copes with PDF hyphenation and spacing.
+- **Trace panel:** each step lights up as it finishes (security, cache,
+  retrieve, grade, rewrite, generate, check, entities), with scores, tokens and
+  timings, plus an expandable table of each chunk's dense, BM25, fused and
+  rerank ranks. Retrieval shows up in about 2 s, long before the answer (about
+  35 s on the CPU).
+- **Compare mode:** dense, hybrid, and hybrid with reranking side by side, top
+  10 each. Retrieval only, so it takes about 1.5 s.
+- **Presets and banner:** one button per capability. The banner shows demo
+  mode, the model and the queue. Each result is labelled **live**, **cached**
+  or (in Phase 7) **replay**, never one passed off as another.
+
+**Exit gate (2026-11-22).** `npm run e2e` drives the installed Chrome
+headlessly against the real service in demo mode and checks every preset:
+**18/18 checks pass**, with no console errors.
+
+| Preset | What the browser check confirmed |
+|---|---|
+| Cited answer | "18 retrieval datasets [S1]" in 37 s; the chip opens BEIR p. 2 with the passage highlighted |
+| Exact term | LLaMA's data-sources page: dense #7, hybrid #1, hybrid + rerank #1 |
+| Vague question | Gate 1.10 → rewrite → 3.98, answered from Late Chunking |
+| Not in the corpus | Declined: "best rerank score −6.72 is below the threshold 2.00", after 2 bounded rewrites |
+| Injection | Blocked by the security layer; no retrieval or model call |
+| Repeat | Served from the cache in 1 ms |
+
+Unit tests (Vitest and React Testing Library, 16) cover streaming, citation
+clicks, refusal, blocked, busy, cached and replay states, the SSE parser and
+passage matching.
+
+The vague-question preset shows the rewrite mechanism working on one question
+it reliably rescues. It doesn't show a typical rate: rewrites rescue 1 to 2
+vague questions in 6 (see the agent loop section).
 
 ## Tracing
 

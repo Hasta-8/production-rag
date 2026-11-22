@@ -52,6 +52,7 @@ class Settings(BaseSettings):
     focus_retry: bool = False  # agent: retry refusals on focused sentences (E12/E12b: unsafe)
     focus_sentences: int = 6  # agent: sentences kept by the focus retry
     focus_gate: bool = True  # agent: focused sentences must pass the reranker gate (E12b)
+    rewrite_version: str = "2"  # agent: query-rewrite prompt (E16; "1" reproduces Phase 4)
     entity_check: bool = True  # every name in the question must be in a cited source (E14)
 
     # API service (Phase 5)
@@ -70,6 +71,7 @@ class Settings(BaseSettings):
     uploads_dir: Path = Path("data/uploads")
     max_upload_mb: int = Field(default=20, ge=1)
     presets_file: Path = Path("demo/presets.yaml")
+    frontend_dir: Path = Path("frontend/dist")  # the built UI, served at "/" if present
 
     # Indexing
     index_dir: Path = Path("indexes")

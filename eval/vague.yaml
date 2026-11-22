@@ -1,0 +1,26 @@
+# Vague questions for the query-rewrite experiment (E16), written 2026-11-22.
+#
+# Each is answerable from one indexed paper but worded without its key terms, so the first
+# retrieval may miss and the agent's query rewrite has to recover. `split: tune` questions
+# were seen failing (rewrite v1 produced "/trick/model/think/...") before the fix was
+# designed; `split: heldout` questions were written before rewrite v2 ran on anything.
+# Only questions whose first retrieval fails the relevance gate (best rerank < 2.0) test
+# the rewrite; the others are kept and reported, but can't show a rescue.
+version: 1
+questions:
+  - {id: vt1, split: tune, arxiv_id: "2201.11903", question: "What's the trick that makes a model think out loud before answering?"}
+  - {id: vt2, split: tune, arxiv_id: "2401.08281", question: "How do you search a billion vectors quickly?"}
+  - {id: vt3, split: tune, arxiv_id: "2401.04088", question: "What makes the 8-expert model cheap to run?"}
+  - {id: vt4, split: tune, arxiv_id: "2407.01449", question: "Which model looks at page images instead of OCR text?"}
+  - {id: vt5, split: tune, arxiv_id: "2310.11511", question: "How does the model decide whether to look things up?"}
+  - {id: vt6, split: tune, arxiv_id: "2203.11171", question: "Which paper made reasoning paths vote on an answer?"}
+  - {id: vh1, split: heldout, arxiv_id: "2305.18290", question: "How do you get a chatbot to prefer the answers people like without training a reward model?"}
+  - {id: vh2, split: heldout, arxiv_id: "2210.03629", question: "What's the approach where the model alternates between thinking and doing things like searching?"}
+  - {id: vh3, split: heldout, arxiv_id: "2404.16130", question: "How can you answer questions about a whole pile of documents, like what the main themes are?"}
+  - {id: vh4, split: heldout, arxiv_id: "2005.12872", question: "Which detector treats finding objects as matching a set, without anchor boxes?"}
+  - {id: vh5, split: heldout, arxiv_id: "2112.01488", question: "How do you make the index for late interaction search smaller?"}
+  - {id: vh6, split: heldout, arxiv_id: "2305.10601", question: "What's the way to have the model explore several lines of thought and backtrack?"}
+  - {id: vh7, split: heldout, arxiv_id: "2212.03533", question: "Which embedding model was trained on huge numbers of web text pairs before fine-tuning?"}
+  - {id: vh8, split: heldout, arxiv_id: "2104.14294", question: "What did they find when training vision transformers without any labels?"}
+  - {id: vh9, split: heldout, arxiv_id: "2309.15217", question: "How can you score a retrieval pipeline's answers without human-written references?"}
+  - {id: vh10, split: heldout, arxiv_id: "2409.04701", question: "How do you embed a long document first and cut it into pieces afterwards?"}

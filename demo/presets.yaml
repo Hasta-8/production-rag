@@ -12,19 +12,19 @@ presets:
   - id: exact_term
     label: Exact term
     question: Which data sources were used to pre-train LLaMA?
+    view: compare
     shows: "Compare mode: dense search ranks the evidence page 7th; hybrid ranks it 1st."
     evidence: golden q07, retrieval run e13 (first evidence rank dense 7, hybrid 1, hybrid+rerank 1)
     verified: true
   - id: vague
     label: Vague question
-    question: What did the retrieval-enhanced model from DeepMind use as its database?
+    question: How do you embed a long document first and cut it into pieces afterwards?
     shows: A weak first retrieval, a rewritten query and a retry, all in the trace.
     evidence: >-
-      2026-11-22 live: answered correctly ("a 2 trillion token database") on the first
-      retrieval (best rerank 2.38, no rewrite), so it does not show the intended behaviour.
-      No answerable question has been rescued by a rewrite in any evaluation run yet; find a
-      wording that is, or change what this preset demonstrates (Phase 6/7)
-    verified: false
+      eval/vague.yaml vh10, E16 rewrite v2: gate 1.10 -> 3.98 after one rewrite ("document
+      segmentation long document embedding"), answered from Late Chunking. Rewrites rescue
+      only 1-2 of 6 vague questions (E16), so this shows the mechanism, not a typical rate
+    verified: true
   - id: not_in_corpus
     label: Not in the corpus
     question: Who won the 2022 FIFA World Cup?

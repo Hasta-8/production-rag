@@ -48,6 +48,7 @@ def make_settings(tmp_path, **kw) -> Settings:
     defaults = dict(
         uploads_dir=tmp_path / "uploads",
         presets_file=tmp_path / "presets.yaml",
+        frontend_dir=tmp_path / "ui",
         rate_limit_per_minute=100,
         general_rate_limit_per_minute=1000,
     )
@@ -461,3 +462,30 @@ def test_trusted_proxy_header_keys_the_rate_limit_by_real_client(make_client):
         "/v1/query", json={"question": QUESTION}, headers={"cf-connecting-ip": "1.1.1.1"}
     )
     assert (a.status_code, b.status_code, c.status_code) == (200, 200, 429)
+
+
+# ---------------------------------------------------------------- the UI (Phase 6)
+
+
+def test_the_built_ui_is_served_at_root_with_a_csp(make_client, tmp_path):
+    (tmp_path / "ui").mkdir()
+    (tmp_path / "ui" / "index.html").write_text("<!doctype html><title>RAG</title>")
+    client = make_client()
+    r = client.get("/")
+    assert r.status_code == 200 and "<title>RAG</title>" in r.text
+    assert "default-src 'self'" in r.headers["content-security-policy"]
+    assert client.get("/health").json() == {"status": "ok"}  # API routes keep precedence
+    assert ask(client).status_code == 200
+
+
+def test_without_a_build_root_says_how_to_build_it(make_client):
+    r = make_client().get("/")
+    assert r.status_code == 200 and "npm run build" in r.json()["ui"]
+
+
+def test_stream_meta_carries_the_security_result(make_client):
+    client = make_client()
+    events = parse_sse(
+        client.post("/v1/query/stream", json={"question": "a@b.org asks: " + QUESTION}).text
+    )
+    assert events[0][0] == "meta" and events[0][1]["security"]["masked"] == ["email"]

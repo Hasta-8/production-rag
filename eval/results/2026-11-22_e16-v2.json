@@ -1,0 +1,549 @@
+{
+  "version": "2",
+  "summary": {
+    "heldout_rescued": 1,
+    "heldout_n": 6,
+    "tune_rescued": 1,
+    "traps_declined": 16,
+    "traps_n": 17,
+    "traps_answered_after_rewrite": []
+  },
+  "rows": [
+    {
+      "id": "vt1",
+      "kind": "vague-tune",
+      "question": "What's the trick that makes a model think out loud before answering?",
+      "abstained": true,
+      "reason": "best rerank score -4.81 is below the threshold 2.00 (after 2 query rewrite attempt(s))",
+      "retries": 2,
+      "rewrites": [
+        "explanation generation dialogue generation logging logging mechanism",
+        "thinking aloud logging output generation"
+      ],
+      "grades": [
+        -3.3467,
+        -7.6048,
+        -4.8072
+      ],
+      "answer": "I don't have enough information in the indexed documents to answer that.",
+      "cited_arxiv": [],
+      "right_paper": false,
+      "seconds": 14.7
+    },
+    {
+      "id": "vt2",
+      "kind": "vague-tune",
+      "question": "How do you search a billion vectors quickly?",
+      "abstained": true,
+      "reason": "the query rewrite added nothing new (after 2 query rewrite attempt(s))",
+      "retries": 2,
+      "rewrites": [
+        "vector search billion dimensions",
+        "vector search billion dimensions"
+      ],
+      "grades": [
+        -2.1803,
+        -0.3271
+      ],
+      "answer": "I don't have enough information in the indexed documents to answer that.",
+      "cited_arxiv": [],
+      "right_paper": false,
+      "seconds": 6.8
+    },
+    {
+      "id": "vt3",
+      "kind": "vague-tune",
+      "question": "What makes the 8-expert model cheap to run?",
+      "abstained": true,
+      "reason": "the query rewrite added nothing new (after 2 query rewrite attempt(s))",
+      "retries": 2,
+      "rewrites": [
+        "8-expert model cost efficiency",
+        "8-expert model cost efficiency"
+      ],
+      "grades": [
+        -3.6678,
+        -1.2958
+      ],
+      "answer": "I don't have enough information in the indexed documents to answer that.",
+      "cited_arxiv": [],
+      "right_paper": false,
+      "seconds": 6.9
+    },
+    {
+      "id": "vt4",
+      "kind": "vague-tune",
+      "question": "Which model looks at page images instead of OCR text?",
+      "abstained": false,
+      "reason": null,
+      "retries": 1,
+      "rewrites": [
+        "page image model OCR"
+      ],
+      "grades": [
+        0.6022,
+        2.4255
+      ],
+      "answer": "The model that looks at page images instead of OCR text is ColPali [S2].",
+      "cited_arxiv": [
+        "2407.01449"
+      ],
+      "right_paper": true,
+      "seconds": 41.2
+    },
+    {
+      "id": "vt5",
+      "kind": "vague-tune",
+      "question": "How does the model decide whether to look things up?",
+      "abstained": true,
+      "reason": "the query rewrite added nothing new (after 2 query rewrite attempt(s))",
+      "retries": 2,
+      "rewrites": [
+        "lookup decision mechanism retrieval",
+        "lookup decision mechanism retrieval"
+      ],
+      "grades": [
+        -3.1416,
+        -2.4262
+      ],
+      "answer": "I don't have enough information in the indexed documents to answer that.",
+      "cited_arxiv": [],
+      "right_paper": false,
+      "seconds": 11.8
+    },
+    {
+      "id": "vt6",
+      "kind": "vague-tune",
+      "question": "Which paper made reasoning paths vote on an answer?",
+      "abstained": true,
+      "reason": "the model found no answer in the sources",
+      "retries": 1,
+      "rewrites": [
+        "reasoning paths vote answer paper"
+      ],
+      "grades": [
+        1.5899,
+        2.3924
+      ],
+      "answer": "I don't have enough information in the indexed documents to answer that.",
+      "cited_arxiv": [],
+      "right_paper": false,
+      "seconds": 50.8
+    },
+    {
+      "id": "vh1",
+      "kind": "vague-heldout",
+      "question": "How do you get a chatbot to prefer the answers people like without training a reward model?",
+      "abstained": true,
+      "reason": "the query rewrite added nothing new (after 2 query rewrite attempt(s))",
+      "retries": 2,
+      "rewrites": [
+        "neural rewardless preference learning chatbot bias optimization",
+        "neural rewardless preference learning chatbot bias optimization"
+      ],
+      "grades": [
+        1.7171,
+        0.6089
+      ],
+      "answer": "I don't have enough information in the indexed documents to answer that.",
+      "cited_arxiv": [],
+      "right_paper": false,
+      "seconds": 14.0
+    },
+    {
+      "id": "vh2",
+      "kind": "vague-heldout",
+      "question": "What's the approach where the model alternates between thinking and doing things like searching?",
+      "abstained": true,
+      "reason": "the query rewrite added nothing new (after 2 query rewrite attempt(s))",
+      "retries": 2,
+      "rewrites": [
+        "thinking search alternation",
+        "thinking search alternation"
+      ],
+      "grades": [
+        0.1771,
+        -2.7628
+      ],
+      "answer": "I don't have enough information in the indexed documents to answer that.",
+      "cited_arxiv": [],
+      "right_paper": false,
+      "seconds": 6.5
+    },
+    {
+      "id": "vh3",
+      "kind": "vague-heldout",
+      "question": "How can you answer questions about a whole pile of documents, like what the main themes are?",
+      "abstained": true,
+      "reason": "the query rewrite added nothing new (after 2 query rewrite attempt(s))",
+      "retries": 2,
+      "rewrites": [
+        "document clustering thematic analysis topic modeling",
+        "document clustering thematic analysis topic modeling"
+      ],
+      "grades": [
+        -3.8421,
+        -0.041
+      ],
+      "answer": "I don't have enough information in the indexed documents to answer that.",
+      "cited_arxiv": [],
+      "right_paper": false,
+      "seconds": 7.2
+    },
+    {
+      "id": "vh6",
+      "kind": "vague-heldout",
+      "question": "What's the way to have the model explore several lines of thought and backtrack?",
+      "abstained": true,
+      "reason": "the query rewrite added nothing new (after 2 query rewrite attempt(s))",
+      "retries": 2,
+      "rewrites": [
+        "exploration backtracking exploration strategies backtracking mechanisms",
+        "exploration backtracking exploration strategies backtracking mechanisms"
+      ],
+      "grades": [
+        0.6137,
+        0.5919
+      ],
+      "answer": "I don't have enough information in the indexed documents to answer that.",
+      "cited_arxiv": [],
+      "right_paper": false,
+      "seconds": 7.6
+    },
+    {
+      "id": "vh9",
+      "kind": "vague-heldout",
+      "question": "How can you score a retrieval pipeline's answers without human-written references?",
+      "abstained": true,
+      "reason": "the model found no answer in the sources",
+      "retries": 1,
+      "rewrites": [
+        "evaluation metrics retrieval pipeline answer evaluation"
+      ],
+      "grades": [
+        -3.7412,
+        2.7375
+      ],
+      "answer": "I don't have enough information in the indexed documents to answer that.",
+      "cited_arxiv": [],
+      "right_paper": false,
+      "seconds": 38.3
+    },
+    {
+      "id": "vh10",
+      "kind": "vague-heldout",
+      "question": "How do you embed a long document first and cut it into pieces afterwards?",
+      "abstained": false,
+      "reason": null,
+      "retries": 1,
+      "rewrites": [
+        "document segmentation long document embedding"
+      ],
+      "grades": [
+        1.0955,
+        3.9788
+      ],
+      "answer": "In late chunking, the transformer processes the entire text first, allowing chunk embeddings to capture context from the whole text, unlike the naive approach which first splits the text into sub-strings which are passed as independent units to the model [S2].",
+      "cited_arxiv": [
+        "2409.04701"
+      ],
+      "right_paper": true,
+      "seconds": 53.7
+    },
+    {
+      "id": "u01",
+      "kind": "trap",
+      "question": "What dropout rate did the original Transformer base model use?",
+      "abstained": false,
+      "reason": null,
+      "retries": 0,
+      "rewrites": [],
+      "grades": [
+        2.6315
+      ],
+      "answer": "The original Transformer base model used a dropout rate of 0.25 [S3].",
+      "cited_arxiv": [
+        "2112.04426"
+      ],
+      "right_paper": null,
+      "seconds": 34.7
+    },
+    {
+      "id": "u02",
+      "kind": "trap",
+      "question": "What is the capital of Australia?",
+      "abstained": true,
+      "reason": "the query rewrite added nothing new (after 2 query rewrite attempt(s))",
+      "retries": 2,
+      "rewrites": [
+        "capital of australia",
+        "capital of australia"
+      ],
+      "grades": [
+        -7.3657,
+        -7.3514
+      ],
+      "answer": "I don't have enough information in the indexed documents to answer that.",
+      "cited_arxiv": [],
+      "right_paper": null,
+      "seconds": 12.5
+    },
+    {
+      "id": "u03",
+      "kind": "trap",
+      "question": "How many parameters does GPT-4 have?",
+      "abstained": true,
+      "reason": "the model found no answer in the sources",
+      "retries": 0,
+      "rewrites": [],
+      "grades": [
+        3.6374
+      ],
+      "answer": "I don't have enough information in the indexed documents to answer that.",
+      "cited_arxiv": [],
+      "right_paper": null,
+      "seconds": 40.9
+    },
+    {
+      "id": "u04",
+      "kind": "trap",
+      "question": "What is the context window length of Llama 3?",
+      "abstained": true,
+      "reason": "the model found no answer in the sources",
+      "retries": 1,
+      "rewrites": [
+        "llama3 context window length"
+      ],
+      "grades": [
+        1.6333,
+        2.1549
+      ],
+      "answer": "I don't have enough information in the indexed documents to answer that.",
+      "cited_arxiv": [],
+      "right_paper": null,
+      "seconds": 52.5
+    },
+    {
+      "id": "u05",
+      "kind": "trap",
+      "question": "Who won the 2022 FIFA World Cup?",
+      "abstained": true,
+      "reason": "the query rewrite added nothing new (after 2 query rewrite attempt(s))",
+      "retries": 2,
+      "rewrites": [
+        "2022 fifa world cup winner",
+        "2022 fifa world cup winner"
+      ],
+      "grades": [
+        -4.9328,
+        -6.7155
+      ],
+      "answer": "I don't have enough information in the indexed documents to answer that.",
+      "cited_arxiv": [],
+      "right_paper": null,
+      "seconds": 13.7
+    },
+    {
+      "id": "t01",
+      "kind": "trap",
+      "question": "What batch size was DINOv2 trained with?",
+      "abstained": true,
+      "reason": "the model found no answer in the sources",
+      "retries": 0,
+      "rewrites": [],
+      "grades": [
+        5.1961
+      ],
+      "answer": "I don't have enough information in the indexed documents to answer that.",
+      "cited_arxiv": [],
+      "right_paper": null,
+      "seconds": 44.5
+    },
+    {
+      "id": "t02",
+      "kind": "trap",
+      "question": "How many GPUs were used to train Llama 2?",
+      "abstained": true,
+      "reason": "the model found no answer in the sources",
+      "retries": 0,
+      "rewrites": [],
+      "grades": [
+        3.4902
+      ],
+      "answer": "I don't have enough information in the indexed documents to answer that.",
+      "cited_arxiv": [],
+      "right_paper": null,
+      "seconds": 54.5
+    },
+    {
+      "id": "t03",
+      "kind": "trap",
+      "question": "What is the context window of Mixtral 8x22B?",
+      "abstained": true,
+      "reason": "the model found no answer in the sources",
+      "retries": 0,
+      "rewrites": [],
+      "grades": [
+        4.5415
+      ],
+      "answer": "I don't have enough information in the indexed documents to answer that.",
+      "cited_arxiv": [],
+      "right_paper": null,
+      "seconds": 39.8
+    },
+    {
+      "id": "t04",
+      "kind": "trap",
+      "question": "What is the embedding dimension of OpenAI's text-embedding-3-large?",
+      "abstained": true,
+      "reason": "the model found no answer in the sources",
+      "retries": 0,
+      "rewrites": [],
+      "grades": [
+        3.1461
+      ],
+      "answer": "I don't have enough information in the indexed documents to answer that.",
+      "cited_arxiv": [],
+      "right_paper": null,
+      "seconds": 34.9
+    },
+    {
+      "id": "t05",
+      "kind": "trap",
+      "question": "How many parameters does Claude 2.1 have?",
+      "abstained": true,
+      "reason": "the model found no answer in the sources",
+      "retries": 0,
+      "rewrites": [],
+      "grades": [
+        4.1675
+      ],
+      "answer": "I don't have enough information in the indexed documents to answer that.",
+      "cited_arxiv": [],
+      "right_paper": null,
+      "seconds": 40.5
+    },
+    {
+      "id": "n01",
+      "kind": "trap",
+      "question": "How many GPUs were used to train Mixtral?",
+      "abstained": true,
+      "reason": "the model found no answer in the sources",
+      "retries": 0,
+      "rewrites": [],
+      "grades": [
+        5.3928
+      ],
+      "answer": "I don't have enough information in the indexed documents to answer that.",
+      "cited_arxiv": [],
+      "right_paper": null,
+      "seconds": 25.3
+    },
+    {
+      "id": "n02",
+      "kind": "trap",
+      "question": "What batch size was CLIP trained with?",
+      "abstained": true,
+      "reason": "the model found no answer in the sources",
+      "retries": 0,
+      "rewrites": [],
+      "grades": [
+        2.2136
+      ],
+      "answer": "I don't have enough information in the indexed documents to answer that.",
+      "cited_arxiv": [],
+      "right_paper": null,
+      "seconds": 48.4
+    },
+    {
+      "id": "n03",
+      "kind": "trap",
+      "question": "How many tokens of text was RoBERTa pretrained on?",
+      "abstained": true,
+      "reason": "the model found no answer in the sources",
+      "retries": 1,
+      "rewrites": [
+        "roberta pretrained tokens"
+      ],
+      "grades": [
+        -1.7986,
+        3.4872
+      ],
+      "answer": "I don't have enough information in the indexed documents to answer that.",
+      "cited_arxiv": [],
+      "right_paper": null,
+      "seconds": 48.7
+    },
+    {
+      "id": "n04",
+      "kind": "trap",
+      "question": "What is the embedding dimension of E5-mistral?",
+      "abstained": true,
+      "reason": "the model found no answer in the sources",
+      "retries": 1,
+      "rewrites": [
+        "e5-mistral embedding dimension"
+      ],
+      "grades": [
+        -1.9983,
+        3.4117
+      ],
+      "answer": "I don't have enough information in the indexed documents to answer that.",
+      "cited_arxiv": [],
+      "right_paper": null,
+      "seconds": 49.4
+    },
+    {
+      "id": "n05",
+      "kind": "trap",
+      "question": "What peak learning rate was used to pretrain Llama 2 70B?",
+      "abstained": true,
+      "reason": "the model found no answer in the sources",
+      "retries": 0,
+      "rewrites": [],
+      "grades": [
+        3.7326
+      ],
+      "answer": "I don't have enough information in the indexed documents to answer that.",
+      "cited_arxiv": [],
+      "right_paper": null,
+      "seconds": 53.1
+    },
+    {
+      "id": "n06",
+      "kind": "trap",
+      "question": "What context window does Mistral Large support?",
+      "abstained": true,
+      "reason": "the model found no answer in the sources",
+      "retries": 0,
+      "rewrites": [],
+      "grades": [
+        2.0538
+      ],
+      "answer": "I don't have enough information in the indexed documents to answer that.",
+      "cited_arxiv": [],
+      "right_paper": null,
+      "seconds": 34.7
+    },
+    {
+      "id": "n07",
+      "kind": "trap",
+      "question": "What dropout rate was used to train BERT-base?",
+      "abstained": true,
+      "reason": "the query rewrite added nothing new (after 2 query rewrite attempt(s))",
+      "retries": 2,
+      "rewrites": [
+        "bert-base dropout rate",
+        "bert-base dropout rate"
+      ],
+      "grades": [
+        0.6932,
+        -1.9365
+      ],
+      "answer": "I don't have enough information in the indexed documents to answer that.",
+      "cited_arxiv": [],
+      "right_paper": null,
+      "seconds": 14.2
+    }
+  ]
+}

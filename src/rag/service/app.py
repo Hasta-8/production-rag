@@ -41,6 +41,12 @@ from rag.tracing import Trace, TraceStep
 # The leak check compares answers with the system prompt minus the refusal sentence: the
 # prompt tells the model to reply with exactly that sentence, so it is not a leak.
 LEAK_REFERENCE = SYSTEM_PROMPT.replace(REFUSAL, "")
+# The UI is same-origin static files; PDF.js runs a worker and may decode images in wasm.
+UI_CSP = (
+    "default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self' blob:; "
+    "img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; frame-ancestors 'self'; "
+    "base-uri 'none'; form-action 'self'"
+)
 LOCAL_HOSTS = {"127.0.0.1", "::1", "localhost", "testclient"}
 SNIPPET_CHARS = 300
 
@@ -328,6 +334,8 @@ def create_app(settings: Settings | None = None, engine: Engine | None = None) -
             response.headers["X-Content-Type-Options"] = "nosniff"
             response.headers["Referrer-Policy"] = "no-referrer"
             response.headers["X-Frame-Options"] = "SAMEORIGIN"
+            if response.headers.get("content-type", "").startswith("text/html"):
+                response.headers["Content-Security-Policy"] = UI_CSP
             return response
         finally:
             ms = (time.perf_counter() - t0) * 1000
@@ -501,11 +509,12 @@ def create_app(settings: Settings | None = None, engine: Engine | None = None) -
         if hit is not None:
 
             async def replay_cached() -> AsyncIterator[str]:
-                yield sse("meta", {"request_id": rid, "cached": True})
+                yield sse("meta", {"request_id": rid, "cached": True, "security": hit["security"]})
                 yield sse("final", _finish(hit, True, t0, req.include_trace))
 
             return StreamingResponse(replay_cached(), media_type="text/event-stream")
 
+        security = {"masked": screen.masked, "stripped": len(screen.stripped), "output_masked": []}
         ticket = _reserve()
         events: asyncio.Queue = asyncio.Queue()
         task = asyncio.create_task(run_answer(engine, req, screen, events, ticket))
@@ -513,7 +522,7 @@ def create_app(settings: Settings | None = None, engine: Engine | None = None) -
         async def stream() -> AsyncIterator[str]:
             token = request_id_var.set(rid)
             try:
-                yield sse("meta", {"request_id": rid, "cached": False})
+                yield sse("meta", {"request_id": rid, "cached": False, "security": security})
                 while True:
                     getter = asyncio.ensure_future(events.get())
                     done, _ = await asyncio.wait(
@@ -712,6 +721,18 @@ def create_app(settings: Settings | None = None, engine: Engine | None = None) -
             queue={"active": state.gate.active, "waiting": state.gate.waiting},
             cache_entries=len(state.cache),
         )
+
+    # The built UI (Phase 6), mounted last so every API route keeps precedence.
+    ui = settings.frontend_dir
+    if (ui / "index.html").is_file():
+        from fastapi.staticfiles import StaticFiles
+
+        app.mount("/", StaticFiles(directory=str(ui), html=True), name="ui")
+    else:
+
+        @app.get("/", include_in_schema=False)
+        async def root():
+            return {"service": "Production RAG", "ui": "not built (cd frontend && npm run build)"}
 
     return app
 

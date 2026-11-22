@@ -29,6 +29,7 @@ what the model sees, never what it is allowed to say.
 
 from __future__ import annotations
 
+import re
 from typing import Any, TypedDict
 
 from langgraph.graph import END, START, StateGraph
@@ -56,18 +57,54 @@ REWRITE_SYSTEM = (
     "one line."
 )
 
+# Rewrite v2 (E16). v1's user turn ended in "Query:", and the client appends " /no_think"
+# to the last user turn, so the model read "Query: /no_think" and answered slash-style
+# ("/search_billion_vectors_quickly"). v2 ends the turn with a sentence and shows the
+# expected output with two examples on topics outside the corpus.
+REWRITE_SYSTEM_V2 = (
+    "You turn a user's question into a search query for a library of AI and "
+    "machine-learning research papers. Use the technical terms a paper would use for the "
+    "idea in the question: method names, task names and standard jargon. Keep every name, "
+    "acronym and number from the question. Reply with the query only: 4 to 12 plain words "
+    "on one line, no slashes, no quotes."
+)
+_REWRITE_EXAMPLES = [
+    (
+        "How do they make big models smaller without losing much accuracy?",
+        "model compression knowledge distillation quantization pruning accuracy",
+    ),
+    (
+        "How do you stop a network from forgetting old tasks when it learns new ones?",
+        "catastrophic forgetting continual learning regularization rehearsal",
+    ),
+]
 
-def rewrite_messages(question: str) -> list[dict[str, str]]:
-    return [
-        {"role": "system", "content": REWRITE_SYSTEM},
-        {"role": "user", "content": f"Question: {question}\nQuery:"},
-    ]
+
+def _rewrite_turn(question: str) -> str:
+    return f"Question: {question}\nWrite the search query."
 
 
-def clean_query(text: str) -> str:
+def rewrite_messages(question: str, version: str = "2") -> list[dict[str, str]]:
+    if version == "1":
+        return [
+            {"role": "system", "content": REWRITE_SYSTEM},
+            {"role": "user", "content": f"Question: {question}\nQuery:"},
+        ]
+    msgs = [{"role": "system", "content": REWRITE_SYSTEM_V2}]
+    for q, a in _REWRITE_EXAMPLES:
+        msgs += [{"role": "user", "content": _rewrite_turn(q)}, {"role": "assistant", "content": a}]
+    return [*msgs, {"role": "user", "content": _rewrite_turn(question)}]
+
+
+def clean_query(text: str, version: str = "2") -> str:
     line = next((ln for ln in text.strip().splitlines() if ln.strip()), "")
     line = line.strip().removeprefix("Query:").strip()
-    return line.strip("\"'` ").strip()
+    line = line.strip("\"'` ").strip()
+    if version == "1":
+        return line
+    line = re.sub(r"/?no_think\b", " ", line)  # an echoed Qwen3 switch
+    line = re.sub(r"[/_]+", " ", line)  # "/search_billion_vectors" -> "search billion vectors"
+    return " ".join(line.split()).strip(" .,;:")
 
 
 class AgentState(TypedDict, total=False):
@@ -121,9 +158,10 @@ class RAGAgent:
         retries = state["retries"] + 1
         with state["trace"].step("rewrite", retry=retries, budget=self.settings.max_retries) as rec:
             gen = self.llm.generate(
-                rewrite_messages(state["question"]), self.settings.rewrite_max_tokens
+                rewrite_messages(state["question"], self.settings.rewrite_version),
+                self.settings.rewrite_max_tokens,
             )
-            query = clean_query(gen.text)
+            query = clean_query(gen.text, self.settings.rewrite_version)
             tried = [state["question"], *state["rewrites"]]
             repeated = not query or query.lower() in {t.lower() for t in tried}
             rec.update(model=gen.model, query=query, repeated=repeated)
@@ -253,7 +291,10 @@ class RAGAgent:
         common = dict(trace=st["trace"], pipeline="agent", retries=st["retries"])
         att = st.get("attempt")
         if att is None:  # never generated: the evidence stayed too weak
-            reason = st.get("abstain_reason") or st["grade"].reason
+            # The weak evidence is the cause; a stopped loop is only why there was no retry.
+            reason = st["grade"].reason
+            if st.get("abstain_reason"):
+                reason += f"; {st['abstain_reason']}"
             attempts = sum(step.name == "rewrite" for step in st["trace"].steps)
             if attempts:
                 reason += f" (after {attempts} query rewrite attempt(s))"

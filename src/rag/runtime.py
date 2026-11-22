@@ -134,4 +134,5 @@ def answer_settings(settings):
         focus_sentences=settings.focus_sentences,
         focus_gate=settings.focus_gate,
         entity_check=settings.entity_check,
+        rewrite_version=settings.rewrite_version,
     )

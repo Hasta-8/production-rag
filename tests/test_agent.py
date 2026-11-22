@@ -138,6 +138,7 @@ def test_a_repeated_rewrite_stops_the_loop(retriever):
     llm = ScriptedLLM(f'"{QUESTION}"')
     ans = RAGAgent(retriever, llm, settings(min_rerank_score=100.0)).answer(QUESTION)
     assert ans.abstained and "added nothing new" in ans.abstain_reason
+    assert ans.abstain_reason.startswith("best rerank score")  # the cause comes first
     assert "after 1 query rewrite attempt(s)" in ans.abstain_reason
     assert len(llm.calls) == 1
 
@@ -209,6 +210,32 @@ def test_focus_scores_a_repeated_sentence_once():
 )
 def test_clean_query(raw, query):
     assert clean_query(raw) == query
+
+
+@pytest.mark.parametrize(
+    ("raw", "query"),
+    [  # real rewrite-v1 outputs from the live run (E16)
+        (
+            "/trick/model/think/out/loud/before/answering",
+            "trick model think out loud before answering",
+        ),
+        ("/search_billion_vectors_quickly", "search billion vectors quickly"),
+        ("vector search /no_think", "vector search"),
+    ],
+)
+def test_clean_query_v2_repairs_slash_style_output(raw, query):
+    assert clean_query(raw) == query
+    assert clean_query(raw, version="1") == raw.strip()  # v1 kept for reproduction
+
+
+def test_rewrite_prompt_v2_does_not_end_where_the_no_think_switch_goes():
+    from rag.agent.graph import rewrite_messages
+
+    v2 = rewrite_messages("How do you search a billion vectors quickly?")
+    assert v2[-1]["role"] == "user" and v2[-1]["content"].endswith("Write the search query.")
+    assert [m["role"] for m in v2] == ["system", "user", "assistant", "user", "assistant", "user"]
+    v1 = rewrite_messages("q", version="1")
+    assert v1[-1]["content"].endswith("Query:")
 
 
 # ---------------------------------------------------------------- fallback gateway

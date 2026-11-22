@@ -34,6 +34,7 @@ class AnswerSettings:
     focus_sentences: int = 6  # sentences kept by the focus retry
     focus_gate: bool = True  # focused sentences must pass min_rerank_score (E12b)
     rewrite_max_tokens: int = 40
+    rewrite_version: str = "2"  # E16: v1 produced slash-style junk queries
     # E14: every name in the question must appear in a cited source (P35)
     entity_check: bool = True
 
