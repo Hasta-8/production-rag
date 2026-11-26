@@ -102,10 +102,7 @@ several projects can share one copy.
     even while the model is still loading. Record them with
     `uv run rag demo record`, against a freshly started service. Re-record
     after re-indexing; stale replays are flagged.
-  - If everything fails, use the [walkthrough video](https://youtu.be/EQdFXa5EfL4). To re-record it:
-    `(cd frontend && node e2e/walkthrough.mjs)` records a captioned live run of
-    every preset, and `uv run --with imageio-ffmpeg python scripts/make_video.py`
-    speeds up only the CPU-generation waits, with a caption saying so.
+  - If everything fails, use the [walkthrough video](https://youtu.be/EQdFXa5EfL4).
 - **Docker:** `docker compose up --build` builds the UI and the service into one
   1.2 GB image (non-root, HEALTHCHECK on `/health`), with the models, index and
   PDFs mounted rather than copied, and serves it on 127.0.0.1:8000 in demo mode.
